@@ -362,6 +362,15 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
   }
 
   const remaining = isTrainer ? teamRef.current.length - enemyIndex : 0
+  const biome = config.biome
+  const fieldStyle = biome
+    ? {
+        backgroundColor: '#1c1812',
+        backgroundImage: `linear-gradient(rgba(18,15,10,0.42), rgba(18,15,10,0.72)), url(${import.meta.env.BASE_URL}bg/battle/${biome}.jpg)`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }
+    : undefined
 
   const card = (c: Combatant, side: Side) => (
     <div
@@ -399,7 +408,7 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
           ⚔ {config.trainer.name} — 残り {remaining} 体
         </div>
       )}
-      <div className={`battlefield bg-${player.data.type} ${fx.flash ? 'flash' : ''}`}>
+      <div className={`battlefield bg-${player.data.type} ${fx.flash ? 'flash' : ''}`} style={fieldStyle}>
         {card(enemy, 'e')}
         <div className="vs">VS</div>
         {card(player, 'p')}

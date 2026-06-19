@@ -29,7 +29,7 @@ export default function Field({ state, setState, onStartBattle, onMenu }: Props)
     if (map.leader && map.leader.x === nx && map.leader.y === ny) {
       const trainer = TRAINERS[map.leader.trainerId]
       if (!state.defeatedTrainers.includes(trainer.id)) {
-        onStartBattle({ kind: 'trainer', trainer })
+        onStartBattle({ kind: 'trainer', trainer, biome: map.biome })
       }
       return
     }
@@ -48,7 +48,13 @@ export default function Field({ state, setState, onStartBattle, onMenu }: Props)
 
     // 草むらでエンカウント
     if (ch === 'G' && map.encounter && Math.random() < ENCOUNTER_RATE) {
-      onStartBattle({ kind: 'wild', pool: map.encounter.pool, min: map.encounter.min, max: map.encounter.max })
+      onStartBattle({
+        kind: 'wild',
+        pool: map.encounter.pool,
+        min: map.encounter.min,
+        max: map.encounter.max,
+        biome: map.biome,
+      })
     }
   }
 

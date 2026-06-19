@@ -84,5 +84,5 @@ export interface TrainerData {
 
 // バトル開始設定
 export type BattleConfig =
-  | { kind: 'wild'; pool?: string[]; min?: number; max?: number }
-  | { kind: 'trainer'; trainer: TrainerData }
+  | { kind: 'wild'; pool?: string[]; min?: number; max?: number; biome?: string }
+  | { kind: 'trainer'; trainer: TrainerData; biome?: string }

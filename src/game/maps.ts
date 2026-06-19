@@ -5,6 +5,7 @@ import type { TrainerData } from '../types'
 export interface GameMap {
   id: string
   name: string
+  biome: string // バトル背景の地形キー (public/bg/battle/<biome>.jpg)
   grid: string[]
   warps: { x: number; y: number; to: string; tx: number; ty: number }[]
   leader?: { x: number; y: number; trainerId: string }
@@ -16,6 +17,7 @@ export const MAPS: Record<string, GameMap> = {
   rapis: {
     id: 'rapis',
     name: '始まりの村ラピス',
+    biome: 'town',
     grid: [
       '#########',
       '#.H...H.#',
@@ -32,6 +34,7 @@ export const MAPS: Record<string, GameMap> = {
   forest: {
     id: 'forest',
     name: '緑霧の森',
+    biome: 'forest',
     grid: [
       '#########',
       '#...L...#',
