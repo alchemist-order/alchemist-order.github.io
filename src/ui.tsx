@@ -1,8 +1,13 @@
-import type { Combatant } from './types'
+import type { Combatant, StatusKind } from './types'
+import { spriteOf } from './game/sprites'
 
 export const TYPE_COLORS: Record<string, string> = {
   火: '#e2563b', 水: '#3b82e2', 風: '#4cae8b', 地: '#b08a3e', 雷: '#e2c23b',
   毒: '#9a4ce2', 聖: '#c9b033', 冥: '#6b4ce2', 錬成: '#8a8f99',
+}
+
+const STATUS_COLORS: Record<StatusKind, string> = {
+  やけど: '#e2563b', どく: '#9a4ce2', まひ: '#e2c23b', ねむり: '#5a7b8a', こおり: '#3bb6e2', 灰化: '#8a8f99',
 }
 
 export function TypeBadge({ t }: { t: string }) {
@@ -13,19 +18,28 @@ export function TypeBadge({ t }: { t: string }) {
   )
 }
 
-/** 種の頭文字を円形アイコンで表示するプレースホルダ(本来はスプライト) */
-export function Sprite({ name, type, size = 56 }: { name: string; type: string; size?: number }) {
+export function StatusBadge({ status }: { status: StatusKind | null }) {
+  if (!status) return null
+  return (
+    <span className="badge status-badge" style={{ background: STATUS_COLORS[status] }}>
+      {status}
+    </span>
+  )
+}
+
+/** 絵文字スプライト。type-color の光輪の上に表示 */
+export function Sprite({ id, type, size = 56 }: { id: string; type: string; size?: number }) {
   return (
     <div
       className="sprite"
       style={{
         width: size,
         height: size,
-        background: `radial-gradient(circle at 35% 30%, #ffffff33, ${TYPE_COLORS[type] ?? '#666'})`,
-        fontSize: size * 0.42,
+        background: `radial-gradient(circle at 35% 30%, #ffffff22, ${TYPE_COLORS[type] ?? '#666'}66)`,
+        fontSize: size * 0.6,
       }}
     >
-      {name.charAt(0)}
+      {spriteOf(id, type)}
     </div>
   )
 }

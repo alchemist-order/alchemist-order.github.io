@@ -59,7 +59,7 @@ export default function App() {
             const m = species(id)
             return (
               <button key={id} className="starter" onClick={() => pick(id)}>
-                <Sprite name={m.name} type={m.type} size={64} />
+                <Sprite id={m.id} type={m.type} size={64} />
                 <div className="mon-name">{m.name}</div>
                 <TypeBadge t={m.type} />
                 <p className="dex-text">{m.dex_text}</p>

@@ -577,6 +577,76 @@ button:disabled {
   margin-top: 16px;
 }
 
+/* ── バトル演出 ── */
+.battlefield {
+  border-radius: 14px;
+  padding: 10px;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.3s;
+}
+.battlefield.bg-火 { background: radial-gradient(120% 80% at 50% 0%, #3a201a, #1c1812); }
+.battlefield.bg-水 { background: radial-gradient(120% 80% at 50% 0%, #16263a, #1c1812); }
+.battlefield.bg-風 { background: radial-gradient(120% 80% at 50% 0%, #1c3329, #1c1812); }
+.battlefield.bg-地 { background: radial-gradient(120% 80% at 50% 0%, #332a1a, #1c1812); }
+.battlefield.bg-雷 { background: radial-gradient(120% 80% at 50% 0%, #34301a, #1c1812); }
+.battlefield.bg-毒 { background: radial-gradient(120% 80% at 50% 0%, #2a1c3a, #1c1812); }
+.battlefield.bg-聖 { background: radial-gradient(120% 80% at 50% 0%, #34301f, #1c1812); }
+.battlefield.bg-冥 { background: radial-gradient(120% 80% at 50% 0%, #221c33, #1c1812); }
+.battlefield.bg-錬成 { background: radial-gradient(120% 80% at 50% 0%, #2a2a2f, #1c1812); }
+.battlefield.flash::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: #fff;
+  opacity: 0;
+  animation: flash 0.4s ease;
+  pointer-events: none;
+}
+@keyframes flash { 0% { opacity: 0.7; } 100% { opacity: 0; } }
+
+.card { position: relative; transition: transform 0.12s, opacity 0.4s, filter 0.4s; }
+.card.fainted { opacity: 0.35; filter: grayscale(0.8); }
+.card.fx-atk-p { animation: lunge-up 0.3s ease; }
+.card.fx-atk-e { animation: lunge-down 0.3s ease; }
+.card.fx-hit { animation: shake 0.3s ease; }
+.card.fx-hit .sprite { animation: hitflash 0.3s ease; }
+@keyframes lunge-up { 50% { transform: translateY(-10px); } }
+@keyframes lunge-down { 50% { transform: translateY(10px); } }
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-6px); }
+  75% { transform: translateX(6px); }
+}
+@keyframes hitflash {
+  50% { filter: brightness(2.2) saturate(0.4); }
+}
+
+.dmg-popup {
+  position: absolute;
+  top: 8px;
+  right: 16px;
+  font-weight: 800;
+  font-size: 24px;
+  z-index: 5;
+  pointer-events: none;
+  animation: popup 0.85s ease forwards;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.7);
+}
+.dmg-popup.dmg { color: #ff7a6a; }
+.dmg-popup.crit { color: #ffd24c; font-size: 30px; }
+.dmg-popup.heal { color: #5fe08a; }
+@keyframes popup {
+  0% { opacity: 0; transform: translateY(8px) scale(0.8); }
+  20% { opacity: 1; transform: translateY(0) scale(1.1); }
+  100% { opacity: 0; transform: translateY(-26px) scale(1); }
+}
+
+.status-badge {
+  color: #1c1812;
+  border: 1px solid #00000033;
+}
+
 /* ── トレーナー戦バナー ── */
 .trainer-banner {
   background: linear-gradient(90deg, #5a2c2c, #7a3a3a);

@@ -52,7 +52,7 @@ export default function Dex({ state, onBack }: Props) {
               <span className="dex-no">No.{String(m.dex).padStart(3, '0')}</span>
               {isSeen ? (
                 <>
-                  <Sprite name={m.name} type={m.type} size={36} />
+                  <Sprite id={m.id} type={m.type} size={36} />
                   <span className="dex-cell-name">{m.name}</span>
                 </>
               ) : (
@@ -85,7 +85,7 @@ export default function Dex({ state, onBack }: Props) {
               </button>
             </div>
             <div className="row">
-              <Sprite name={selected.name} type={selected.type} size={80} />
+              <Sprite id={selected.id} type={selected.type} size={80} />
               <div className="grow">
                 <div className="badges">
                   <TypeBadge t={selected.type} />

@@ -23,15 +23,9 @@ export function makeCombatant(data: MonsterData, level: number): Combatant {
     def: statAt(def, level),
     spd: statAt(spd, level),
     mag: statAt(mag, level),
+    status: null,
+    statusTurns: 0,
   }
-}
-
-/** 個体が使える技 (MVP: 通常攻撃 + 固有技の2つ) */
-export function movesOf(c: Combatant): Move[] {
-  return [
-    { name: 'こうげき', power: 50, category: 'phys', type: c.data.type },
-    { name: c.data.sig, power: 80, category: 'spec', type: c.data.type },
-  ]
 }
 
 /** 攻撃タイプ → 防御側(複合可)への相性倍率 */
@@ -50,14 +44,17 @@ export interface DamageResult {
   stab: boolean // タイプ一致
 }
 
-/** ダメージ計算 */
+/** ダメージ計算 (状態異常の補正込み) */
 export function calcDamage(
   attacker: Combatant,
   defender: Combatant,
   move: Move,
   rand: number = 0.85 + Math.random() * 0.15,
 ): DamageResult {
-  const atkStat = move.category === 'phys' ? attacker.atk : attacker.mag
+  if (move.category === 'status' || move.power <= 0) return { damage: 0, eff: 1, stab: false }
+  let atkStat = move.category === 'phys' ? attacker.atk : attacker.mag
+  // やけど: 物理攻撃が半減
+  if (attacker.status === 'やけど' && move.category === 'phys') atkStat = Math.floor(atkStat / 2)
   const defStat = defender.def
   const stab = move.type === attacker.data.type || move.type === attacker.data.type2
   const defTypes = [defender.data.type, defender.data.type2].filter(Boolean) as string[]
@@ -66,8 +63,10 @@ export function calcDamage(
   const base = Math.floor(
     ((2 * attacker.level) / 5 + 2) * move.power * (atkStat / defStat) / 50 + 2,
   )
-  const damage = eff === 0 ? 0 : Math.max(1, Math.floor(base * (stab ? 1.5 : 1) * eff * rand))
-  return { damage, eff, stab }
+  let dmg = eff === 0 ? 0 : Math.max(1, Math.floor(base * (stab ? 1.5 : 1) * eff * rand))
+  // 灰化: 与ダメージ減
+  if (attacker.status === '灰化') dmg = Math.max(1, Math.floor(dmg * 0.85))
+  return { damage: dmg, eff, stab }
 }
 
 /** 相性倍率を日本語メッセージに */
@@ -77,6 +76,42 @@ export function effMessage(eff: number): string {
   if (eff > 1) return 'すこし効いている。'
   if (eff < 1) return 'こうかは いまひとつのようだ。'
   return ''
+}
+
+/** まひ時はすばやさ半減 */
+export function effectiveSpeed(c: Combatant): number {
+  return c.status === 'まひ' ? Math.max(1, Math.floor(c.spd / 2)) : c.spd
+}
+
+/** 行動前チェック(ねむり/こおり/まひ)。行動可否と状態変化後の値を返す */
+export function preMoveCheck(c: Combatant): {
+  act: boolean
+  msg?: string
+  status: Combatant['status']
+  statusTurns: number
+} {
+  if (c.status === 'ねむり') {
+    const t = c.statusTurns - 1
+    if (t <= 0) return { act: true, msg: `${c.data.name}は 目を覚ました！`, status: null, statusTurns: 0 }
+    return { act: false, msg: `${c.data.name}は ぐっすり 眠っている。`, status: 'ねむり', statusTurns: t }
+  }
+  if (c.status === 'こおり') {
+    if (Math.random() < 0.25) return { act: true, msg: `${c.data.name}の こおりが とけた！`, status: null, statusTurns: 0 }
+    return { act: false, msg: `${c.data.name}は こおって 動けない！`, status: 'こおり', statusTurns: c.statusTurns }
+  }
+  if (c.status === 'まひ' && Math.random() < 0.25) {
+    return { act: false, msg: `${c.data.name}は からだが しびれて 動けない！`, status: 'まひ', statusTurns: c.statusTurns }
+  }
+  return { act: true, status: c.status, statusTurns: c.statusTurns }
+}
+
+/** ターン終了時の状態異常ダメージ(やけど/どく/灰化) */
+export function endTurnStatus(c: Combatant): { dmg: number; msg?: string } {
+  if (c.hp <= 0 || !c.status) return { dmg: 0 }
+  if (c.status === 'やけど') return { dmg: Math.max(1, Math.floor(c.maxHp / 16)), msg: `${c.data.name}は やけどの ダメージ！` }
+  if (c.status === 'どく') return { dmg: Math.max(1, Math.floor(c.maxHp / 16)), msg: `${c.data.name}は どくの ダメージ！` }
+  if (c.status === '灰化') return { dmg: Math.max(1, Math.floor(c.maxHp / 12)), msg: `${c.data.name}は 灰化に 蝕まれている……` }
+  return { dmg: 0 }
 }
 
 export type { Combatant, Move, MonsterData, TypeChart }

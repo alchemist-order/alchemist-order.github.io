@@ -32,7 +32,7 @@ export default function Home({ state, setActive, onField, onDex }: Props) {
           <span className="mon-lv">Lv.{active.level}</span>
         </div>
         <div className="row">
-          <Sprite name={sp.name} type={sp.type} size={72} />
+          <Sprite id={sp.id} type={sp.type} size={72} />
           <div className="grow">
             <div className="badges">
               <TypeBadge t={sp.type} />
@@ -60,7 +60,7 @@ export default function Home({ state, setActive, onField, onDex }: Props) {
               className={`party-chip ${isActive ? 'sel' : ''}`}
               onClick={() => setActive(o.uid)}
             >
-              <Sprite name={s.name} type={s.type} size={40} />
+              <Sprite id={s.id} type={s.type} size={40} />
               <span className="chip-name">{s.name}</span>
               <span className="chip-lv">Lv.{o.level}</span>
             </button>

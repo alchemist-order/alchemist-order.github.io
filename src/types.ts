@@ -22,6 +22,9 @@ export interface TypeChart {
   chart: Record<string, Record<string, number>>
 }
 
+// 状態異常
+export type StatusKind = 'やけど' | 'どく' | 'まひ' | 'ねむり' | 'こおり' | '灰化'
+
 // バトル中の個体 (種族データ + レベルから算出)
 export interface Combatant {
   data: MonsterData
@@ -32,14 +35,22 @@ export interface Combatant {
   def: number
   spd: number
   mag: number
+  status: StatusKind | null
+  statusTurns: number // ねむりの残りターン等
 }
 
 // 技
 export interface Move {
+  id: string
   name: string
-  power: number
-  category: 'phys' | 'spec'
   type: string
+  category: 'phys' | 'spec' | 'status'
+  power: number
+  acc: number // 命中率 0..1
+  desc: string
+  inflict?: { status: StatusKind; chance: number } // 付与する状態異常
+  heal?: number // 自分のHPを maxHp*heal 回復
+  cures?: boolean // 自分の状態異常(灰化含む)を治す
 }
 
 // プレイヤーが所有する個体 (永続データ)
