@@ -19,7 +19,7 @@ import {
   withSeen,
 } from '../game/state'
 import { getMoveset } from '../game/moves'
-import { HpBar, Sprite, StatusBadge, TypeBadge } from '../ui'
+import { HpBar, LeaderToken, Sprite, StatusBadge, TypeBadge } from '../ui'
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n))
@@ -411,7 +411,12 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
       <div className={`battle-scene ${fx.flash ? 'flash' : ''}`} style={fieldStyle}>
         <div className="scene-intro" />
         {isTrainer && config.kind === 'trainer' && (
-          <div className="trainer-tag">⚔ {config.trainer.name}・残り{remaining}体</div>
+          <>
+            <div className="trainer-tag">⚔ {config.trainer.name}・残り{remaining}体</div>
+            <div className="trainer-portrait">
+              <LeaderToken trainerId={config.trainer.id} size={96} />
+            </div>
+          </>
         )}
         {combatant(enemy, 'e')}
         {combatant(player, 'p')}

@@ -782,3 +782,6 @@ button:disabled {
 }
 
 .leader-sprite { object-fit: contain; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.6)); display: block; }
+
+.trainer-portrait { position: absolute; top: 6px; right: 8px; z-index: 5; opacity: 0.96; }
+.trainer-portrait .leader-sprite { filter: drop-shadow(0 3px 5px rgba(0,0,0,0.7)); }
