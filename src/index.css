@@ -692,8 +692,8 @@ button:disabled {
 }
 
 .combatant { position: absolute; display: flex; flex-direction: column; align-items: center; z-index: 3; }
-.enemy-side { left: 5%; top: 24%; }
-.player-side { right: 5%; bottom: 14%; }
+.enemy-side { left: 7%; top: 14%; }
+.player-side { right: 7%; bottom: 8%; }
 .sprite-bare { display: flex; align-items: center; justify-content: center; line-height: 1; }
 .sprite-bare .sprite-img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 7px 6px rgba(0,0,0,0.55)); }
 .ground-shadow {
@@ -708,13 +708,14 @@ button:disabled {
 @keyframes lunge-right { 50% { transform: translateX(18px); } }
 @keyframes lunge-left { 50% { transform: translateX(-18px); } }
 
+.info-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
 .info-plate {
-  position: absolute; z-index: 4; width: 46%;
-  background: rgba(20,17,12,0.86); border: 1px solid var(--border);
-  border-radius: 10px; padding: 7px 10px;
+  background: var(--panel); border: 2px solid var(--border);
+  border-radius: 12px; padding: 9px 12px;
 }
-.enemy-plate { top: 10px; left: 10px; }
-.player-plate { bottom: 10px; right: 10px; }
+.enemy-plate { border-color: #6b3a3a; }
+.player-plate { border-color: #3a5a6b; }
+.ip-role { font-size: 10px; color: var(--ink-dim); letter-spacing: 0.12em; margin-bottom: 2px; }
 .ip-head { display: flex; justify-content: space-between; align-items: baseline; }
 .ip-name { font-size: 14px; font-weight: 700; color: var(--gold-bright); }
 .ip-lv { font-size: 11px; color: var(--ink-dim); }

@@ -376,6 +376,7 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
 
   const plate = (c: Combatant, who: Side) => (
     <div className={`info-plate ${who === 'e' ? 'enemy-plate' : 'player-plate'}`}>
+      <div className="ip-role">{who === 'e' ? '敵' : 'みかた'}</div>
       <div className="ip-head">
         <span className="ip-name">{c.data.name}</span>
         <span className="ip-lv">Lv.{c.level}</span>
@@ -400,7 +401,7 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
           {popup.text}
         </span>
       )}
-      <Sprite id={c.data.id} type={c.data.type} size={who === 'e' ? 128 : 148} bare flip={who === 'e'} />
+      <Sprite id={c.data.id} type={c.data.type} size={who === 'e' ? 146 : 166} bare flip={who === 'e'} />
       <div className="ground-shadow" />
     </div>
   )
@@ -412,10 +413,13 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
         {isTrainer && config.kind === 'trainer' && (
           <div className="trainer-tag">⚔ {config.trainer.name}・残り{remaining}体</div>
         )}
-        {plate(enemy, 'e')}
-        {plate(player, 'p')}
         {combatant(enemy, 'e')}
         {combatant(player, 'p')}
+      </div>
+
+      <div className="info-row">
+        {plate(enemy, 'e')}
+        {plate(player, 'p')}
       </div>
 
       <div className="battle-ui">
