@@ -22,7 +22,7 @@
     { "dex": 9, "id": "hellflare", "name": "ヘルフレア", "type": "火", "type2": "冥", "stage": 3, "from": "lanternwisp", "to": null, "at": null, "stats": [75, 80, 72, 88, 125], "sig": "煉獄火", "dex_text": "冥府の業火を操る鬼火の主。" },
 
     { "dex": 10, "id": "aquab", "name": "アクアブ", "type": "水", "stage": 1, "from": null, "to": "marinel", "at": 16, "canon": true, "stats": [55, 50, 58, 52, 60], "sig": "みずでっぽう", "dex_text": "水球状の身体を持つスライム魚。御三家・水。" },
-    { "dex": 11, "id": "marinel", "name": "マリネル", "type": "水", "stage": 2, "from": "aquab", "to": "leviaran", "at": 34, "canon": true, "stats": [75, 70, 78, 72, 88], "sig": "うずしお", "dex_text": "歌で波を操る人魚の幻獣。" },
+    { "dex": 11, "id": "marinel", "name": "マリネル", "type": "水", "stage": 2, "from": "aquab", "to": "leviaran", "at": 34, "canon": true, "stats": [75, 70, 78, 72, 88], "sig": "うずしお", "dex_text": "幼い海蛇の幻獣。水を操り、やがて大海蛇レヴィアランへと育つ。" },
     { "dex": 12, "id": "leviaran", "name": "レヴィアラン", "type": "水", "stage": 3, "from": "marinel", "to": null, "at": null, "canon": true, "stats": [100, 92, 98, 90, 110], "sig": "大海嘯", "dex_text": "深海に眠る海蛇の王。怒れば沿岸を呑む。御三家最終形。" },
 
     { "dex": 13, "id": "teary", "name": "ティアリィ", "type": "水", "type2": "聖", "stage": 1, "from": null, "to": "naiad", "at": 18, "stats": [50, 42, 48, 58, 62], "sig": "しずくだま", "dex_text": "泉の一滴から生まれた水妖精。" },
