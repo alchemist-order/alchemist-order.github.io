@@ -39,14 +39,14 @@ export const MAPS: Record<string, GameMap> = {
       '#.......#',
       '#########',
     ],
-    // 🚪(4,1)=北の門(森・要御三家)、左に師の家(2,2)/わが家(2,4)、右に宿屋(6,2)
+    // 絵に合わせ: 上段=家3軒(左=わが家/中央=師/右=宿屋)、下中央=森への道
     warps: [
-      { x: 4, y: 1, to: 'forest', tx: 4, ty: 5, gate: 'starter' },
-      { x: 2, y: 2, to: 'mentor_house', tx: 3, ty: 3 },
+      { x: 4, y: 6, to: 'forest', tx: 4, ty: 5, gate: 'starter' },
+      { x: 4, y: 2, to: 'mentor_house', tx: 3, ty: 3 },
+      { x: 2, y: 2, to: 'home', tx: 3, ty: 3 },
       { x: 6, y: 2, to: 'inn', tx: 3, ty: 3 },
-      { x: 2, y: 4, to: 'home', tx: 3, ty: 3 },
     ],
-    intro: '錬金工房が並ぶ静かな村。建物の扉から中へ。北の門の先に緑霧の森。',
+    intro: '錬金工房が並ぶ静かな村。家の扉から中へ。村の出口の先に緑霧の森が広がる。',
   },
   mentor_house: {
     id: 'mentor_house',
@@ -54,7 +54,7 @@ export const MAPS: Record<string, GameMap> = {
     biome: 'town',
     indoor: true,
     grid: ['#######', '#.....#', '#.....#', '#.....#', '#.....#', '#######'],
-    warps: [{ x: 3, y: 4, to: 'rapis', tx: 2, ty: 3 }],
+    warps: [{ x: 3, y: 4, to: 'rapis', tx: 4, ty: 3 }],
     npcs: [{ x: 3, y: 1, kind: 'mentor', name: '師ガレン' }],
     intro: '錬金道具と古びた書物が並ぶ、師の家。',
   },
@@ -64,7 +64,7 @@ export const MAPS: Record<string, GameMap> = {
     biome: 'town',
     indoor: true,
     grid: ['#######', '#.....#', '#.....#', '#.....#', '#.....#', '#######'],
-    warps: [{ x: 3, y: 4, to: 'rapis', tx: 2, ty: 5 }],
+    warps: [{ x: 3, y: 4, to: 'rapis', tx: 2, ty: 3 }],
     npcs: [{ x: 3, y: 1, kind: 'mom', name: 'おかあさん' }],
     intro: 'あたたかな わが家。',
   },
@@ -76,6 +76,7 @@ export const MAPS: Record<string, GameMap> = {
     grid: ['#######', '#.....#', '#.....#', '#.....#', '#.....#', '#######'],
     warps: [{ x: 3, y: 4, to: 'rapis', tx: 6, ty: 3 }],
     npcs: [{ x: 3, y: 1, kind: 'inn', name: '宿屋の主人' }],
+    // (宿屋の戻り先は村の右の家の前)
     intro: '暖炉のぬくもりが心地よい宿屋。',
   },
   forest: {
@@ -92,7 +93,7 @@ export const MAPS: Record<string, GameMap> = {
       '#...W...#',
       '#########',
     ],
-    warps: [{ x: 4, y: 6, to: 'rapis', tx: 4, ty: 2 }],
+    warps: [{ x: 4, y: 6, to: 'rapis', tx: 4, ty: 5 }],
     leader: { x: 4, y: 1, trainerId: 'gym_forest' },
     encounter: {
       pool: ['portabupa', 'venomite', 'sporin', 'hobgobalt', 'tsunousa', 'falcone', 'briezel', 'pibit'],

@@ -26,7 +26,7 @@ export function newGame(): GameState {
     activeUid: null,
     flasks: 0,
     wins: 0,
-    pos: { mapId: 'rapis', x: 4, y: 6 },
+    pos: { mapId: 'rapis', x: 4, y: 4 },
     badges: [],
     defeatedTrainers: [],
     items: { heal: 0 },
