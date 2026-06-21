@@ -692,8 +692,8 @@ button:disabled {
 }
 
 .combatant { position: absolute; display: flex; flex-direction: column; align-items: center; z-index: 3; }
-.enemy-side { left: 7%; top: 14%; }
-.player-side { right: 7%; bottom: 8%; }
+.enemy-side { left: 6%; bottom: 18%; }
+.player-side { right: 6%; bottom: 6%; }
 .sprite-bare { display: flex; align-items: center; justify-content: center; line-height: 1; }
 .sprite-bare .sprite-img { width: 100%; height: 100%; object-fit: contain; filter: drop-shadow(0 7px 6px rgba(0,0,0,0.55)); }
 .ground-shadow {
