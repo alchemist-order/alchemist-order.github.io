@@ -67,8 +67,9 @@ export default function App() {
   useEffect(() => {
     let key = 'title'
     if (phase === 'game') {
+      const townMaps = ['rapis', 'mentor_house', 'home', 'inn']
       if (screen === 'battle') key = battleConfig?.kind === 'trainer' ? 'boss' : 'battle'
-      else key = game.pos.mapId === 'rapis' ? 'town' : game.pos.mapId === 'forest' ? 'forest' : 'field'
+      else key = townMaps.includes(game.pos.mapId) ? 'town' : game.pos.mapId === 'forest' ? 'forest' : 'field'
     }
     audio.playBgm(key)
   }, [phase, screen, battleConfig, game.pos.mapId])

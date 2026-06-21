@@ -15,10 +15,12 @@ export interface GameMap {
   name: string
   biome: string // バトル背景の地形キー (public/bg/battle/<biome>.jpg)
   grid: string[]
-  warps: { x: number; y: number; to: string; tx: number; ty: number }[]
+  // gate:'starter' のワープは御三家入手まで通れない
+  warps: { x: number; y: number; to: string; tx: number; ty: number; gate?: string }[]
   leader?: { x: number; y: number; trainerId: string }
   encounter?: { pool: string[]; min: number; max: number }
   npcs?: Npc[]
+  indoor?: boolean // 室内(壁に木を出さず床表示)
   intro?: string
 }
 
@@ -37,14 +39,44 @@ export const MAPS: Record<string, GameMap> = {
       '#.......#',
       '#########',
     ],
-    // 上(4,1)が北の門＝森への道。スタートは下(4,6)。
-    warps: [{ x: 4, y: 1, to: 'forest', tx: 4, ty: 5 }],
-    npcs: [
-      { x: 2, y: 2, kind: 'mentor', name: '師ガレン' },
-      { x: 6, y: 2, kind: 'inn', name: '宿屋の主人' },
-      { x: 4, y: 4, kind: 'mom', name: 'おかあさん' },
+    // 🚪(4,1)=北の門(森・要御三家)、左に師の家(2,2)/わが家(2,4)、右に宿屋(6,2)
+    warps: [
+      { x: 4, y: 1, to: 'forest', tx: 4, ty: 5, gate: 'starter' },
+      { x: 2, y: 2, to: 'mentor_house', tx: 3, ty: 3 },
+      { x: 6, y: 2, to: 'inn', tx: 3, ty: 3 },
+      { x: 2, y: 4, to: 'home', tx: 3, ty: 3 },
     ],
-    intro: '錬金工房が並ぶ静かな村。北の門の先に緑霧の森が広がる。',
+    intro: '錬金工房が並ぶ静かな村。建物の扉から中へ。北の門の先に緑霧の森。',
+  },
+  mentor_house: {
+    id: 'mentor_house',
+    name: '師ガレンの家',
+    biome: 'town',
+    indoor: true,
+    grid: ['#######', '#.....#', '#.....#', '#.....#', '#.....#', '#######'],
+    warps: [{ x: 3, y: 4, to: 'rapis', tx: 2, ty: 3 }],
+    npcs: [{ x: 3, y: 1, kind: 'mentor', name: '師ガレン' }],
+    intro: '錬金道具と古びた書物が並ぶ、師の家。',
+  },
+  home: {
+    id: 'home',
+    name: 'わが家',
+    biome: 'town',
+    indoor: true,
+    grid: ['#######', '#.....#', '#.....#', '#.....#', '#.....#', '#######'],
+    warps: [{ x: 3, y: 4, to: 'rapis', tx: 2, ty: 5 }],
+    npcs: [{ x: 3, y: 1, kind: 'mom', name: 'おかあさん' }],
+    intro: 'あたたかな わが家。',
+  },
+  inn: {
+    id: 'inn',
+    name: 'ラピスの宿屋',
+    biome: 'town',
+    indoor: true,
+    grid: ['#######', '#.....#', '#.....#', '#.....#', '#.....#', '#######'],
+    warps: [{ x: 3, y: 4, to: 'rapis', tx: 6, ty: 3 }],
+    npcs: [{ x: 3, y: 1, kind: 'inn', name: '宿屋の主人' }],
+    intro: '暖炉のぬくもりが心地よい宿屋。',
   },
   forest: {
     id: 'forest',

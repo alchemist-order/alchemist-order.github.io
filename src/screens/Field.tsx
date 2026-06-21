@@ -75,7 +75,7 @@ export default function Field({ state, setState, onStartBattle, onMenu, onTalk, 
     // ワープ(幻獣未所持なら村から出られない)
     const warp = map.warps.find((w) => w.x === nx && w.y === ny)
     if (warp) {
-      if (!hasStarter) {
+      if (warp.gate === 'starter' && !hasStarter) {
         onBlockedExit()
         return
       }
@@ -147,7 +147,7 @@ export default function Field({ state, setState, onStartBattle, onMenu, onTalk, 
           </span>
         </div>
       ) : (
-        <div className="map-grid" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
+        <div className={`map-grid${map.indoor ? ' indoor' : ''}`} style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
           {map.grid.flatMap((row, ry) =>
             row.split('').map((ch, rx) => {
               const isPlayer = rx === x && ry === y
