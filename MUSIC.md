@@ -33,17 +33,19 @@ JRPG title screen, around 70 BPM, instrumental
 
 **Title 例**: `Ashen King`
 
-**Style（貼る）**:
+**Style（貼る／勇壮な行進曲調・「決戦」系）**:
 ```
-Epic orchestral-rock boss battle theme, intense and cinematic, aggressive staccato
-string ostinato, blaring brass stabs, heavy distorted electric guitar riffs,
-thunderous taiko and double-bass drums, dramatic Latin choir chant, ominous pipe organ,
-dark and heroic, relentless driving rhythm, dissonant tension into a key-change climax,
-JRPG final boss, around 160 BPM, instrumental
+Heroic militaristic orchestral boss-battle march, urgent and desperate yet triumphant,
+a bold brass main melody over a relentless galloping snare-and-timpani march rhythm,
+driving minor-key string ostinato, soaring French horns and trumpets, dramatic and grand,
+propulsive forward momentum, rising tension into a triumphant climax,
+classic 16-bit JRPG boss energy reimagined for full orchestra, around 150 BPM, instrumental
 ```
-**構成タグ（任意）**: `[Tense Intro] [Drop into main riff] [Choir chant section] [Guitar+strings duel] [Key-change climax] [Loop]`
+**構成タグ（任意）**: `[March intro] [Brass main theme] [String ostinato build] [Triumphant climax] [Loop]`
 
-> 「ラスボス＝灰王マグヌス」用に荘厳さ強め。通常ボス用に少し軽くするなら `final boss`→`battle theme`、BPMを `145` 程度に。
+**ロック寄りにしたい場合は末尾に追記**: `, with distorted electric guitar doubling the brass melody and a driving rock drum kit`
+
+> 狙い: 切迫感のある行進ビート＋堂々たる金管メロディ＝“決戦”系の高揚。ラスボス（灰王マグヌス）はさらに荘厳に `, with ominous pipe organ and dramatic choir`。通常ボスは `145 BPM` 程度に。
 
 ---
 
