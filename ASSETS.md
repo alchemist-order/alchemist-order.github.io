@@ -74,6 +74,12 @@ Render each scene I describe in exactly this style.
 
 → 保存して教えてくれれば、`<mapId>.png` に整えて配置（PNG変換含む）し、本番反映する。コマ（🧝主人公・🧙‍♀️支部長・🚪出口）は私が絵の上に重ねる位置を調整する。
 
+## 室内マップ（家・宿屋の内装・俯瞰）
+`public/bg/map/<id>.png` に置くと床タイル表示から一枚絵に差替わる。背景マスター指示を先に貼る。中央=歩ける床／上=NPC位置／下中央=出入口。正方形でOK。
+- `bg/map/mentor_house.png`（師ガレンの家）— `Top-down view of a cozy alchemist's study interior, open wooden floor center, shelves of bubbling flasks/books/alembics along walls, a small cauldron, a desk near the top, a doorway with a rug at bottom-center, warm candlelight, watercolor, no characters/text/grid.`
+- `bg/map/home.png`（わが家）— `Top-down view of a warm humble cottage home interior, open wooden floor center, stone fireplace with a cooking pot, dining table and chairs, a small bed in a corner, cupboards along walls, doormat at bottom-center, cozy daylight, watercolor, no characters/text/grid.`
+- `bg/map/inn.png`（ラピスの宿屋）— `Top-down view of a snug medieval inn interior, open wooden floor center, several quilted beds along the sides, a warm fireplace, a reception counter near the top, barrels and a rug, doorway at bottom-center, inviting warm light, watercolor, no characters/text/grid.`
+
 ## プレイヤーキャラ（2種・テイストを使い分け）
 主人公は「錬金術師の見習い」。用途で画風を分ける。
 
