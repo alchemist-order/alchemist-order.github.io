@@ -47,6 +47,41 @@ JRPG final boss, around 160 BPM, instrumental
 
 ---
 
+## ③ 始まりの村ラピス（穏やか・郷愁）
+
+**Title 例**: `Village of Lapis` → `town.mp3`
+```
+Warm cozy medieval-fantasy village theme, peaceful and nostalgic, gentle and hopeful,
+soft acoustic lute and classical guitar, recorder and flute melody, harp, light pizzicato
+strings, mild hand percussion, pastoral and homely, relaxed and loopable, daytime sunshine,
+JRPG hometown, around 90 BPM, instrumental
+```
+構成（任意）: `[Gentle intro] [Lute melody] [Flute counter-melody] [Soft loop]`
+
+## ④ 緑霧の森（神秘・うっすら哀愁）
+
+**Title 例**: `Misty Verdant Wood` → `forest.mp3`
+```
+Mysterious enchanted forest theme, misty and ethereal with a touch of melancholy,
+airy flute and oboe, harp glissandos, soft sustained strings and wordless choir pads,
+delicate bell and celesta accents, gentle ambient woodland atmosphere, subtle light percussion,
+exploratory and magical, slow and loopable, JRPG forest dungeon, around 80 BPM, instrumental
+```
+構成（任意）: `[Ambient intro] [Flute theme] [Choir pad swell] [Quiet loop]`
+
+## ⑤ 通常戦闘（爽快・ボスより軽い）
+
+**Title 例**: `Spark of Battle` → `battle.mp3`
+```
+Energetic cinematic JRPG random-battle theme, exciting and heroic but light,
+brisk staccato strings, bright brass fanfare hits, lively woodwinds, driving snare and
+timpani, a little playful tension, fast and catchy, very loopable, NOT as heavy as a boss,
+around 145 BPM, instrumental
+```
+構成（任意）: `[Battle start sting] [Main driving riff] [Brass melody] [Loop]`
+
+> 町・森はマップごとに別BGMを割り当てられるよう実装する（`town.mp3`/`forest.mp3`…）。今後の町・ダンジョンも同じ要領で増設。
+
 ## 命名・配置（決めておく）
 生成したMP3を `public/audio/<キー>.mp3` に置けば、こちらで画面ごとにループBGM＋ミュート切替を実装します。
 
@@ -54,9 +89,10 @@ JRPG final boss, around 160 BPM, instrumental
 |------|------|
 | `title.mp3` | タイトル/オープニング |
 | `boss.mp3` | ボス戦（ラスボス/支部長エース） |
-| `battle.mp3` | 通常戦闘（今後） |
-| `field.mp3` | フィールド探索（今後） |
-| `town.mp3` | 町（今後） |
+| `battle.mp3` | 通常戦闘 |
+| `town.mp3` | 始まりの村ラピス（町） |
+| `forest.mp3` | 緑霧の森（探索） |
+| `field.mp3` | その他フィールド（今後） |
 | `victory.mp3` | 勝利ファンファーレ（短尺・今後） |
 
 ## 今後ほしい曲（優先順メモ）
