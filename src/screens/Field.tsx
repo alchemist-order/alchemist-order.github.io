@@ -128,9 +128,7 @@ export default function Field({ state, setState, onStartBattle, onMenu, onTalk, 
       {artOk ? (
         <div className="map-art" style={{ backgroundImage: `url(${mapArtUrl})`, aspectRatio: `${cols} / ${rows}` }}>
           {map.warps.map((w) => (
-            <span key={`w${w.x}-${w.y}`} className="map-token warp-token" style={pct(w.x, w.y)}>
-              🚪
-            </span>
+            <span key={`w${w.x}-${w.y}`} className="map-token warp-token" style={pct(w.x, w.y)} aria-hidden />
           ))}
           {map.npcs?.map((n) => (
             <span key={`n${n.x}-${n.y}`} className="map-token npc-token" style={pct(n.x, n.y)}>
@@ -156,7 +154,7 @@ export default function Field({ state, setState, onStartBattle, onMenu, onTalk, 
               const npc = map.npcs?.find((n) => n.x === rx && n.y === ry)
               return (
                 <div key={`${rx}-${ry}`} className={`tile ${tileClass(ch)}`}>
-                  {isWarp && !isPlayer && <span className="tile-icon">🚪</span>}
+                  {isWarp && !isPlayer && <span className="tile-warp" aria-hidden />}
                   {npc && !isPlayer && (
                     <span className="tile-icon">
                       <NpcToken kind={npc.kind} size={28} />
