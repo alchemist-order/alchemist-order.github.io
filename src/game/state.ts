@@ -2,6 +2,7 @@
 import type { Combatant, GameState, MonsterData, OwnedMonster } from '../types'
 import monstersJson from '../../data/monsters.json'
 import { makeCombatant } from '../engine/battleEngine'
+import { getMoveset } from './moves'
 
 export const DEX = monstersJson.dex as unknown as MonsterData[]
 export const STARTER_IDS = monstersJson.meta.starters as string[]
@@ -25,9 +26,11 @@ export function newGame(): GameState {
     activeUid: null,
     flasks: 0,
     wins: 0,
-    pos: { mapId: 'rapis', x: 4, y: 3 },
+    pos: { mapId: 'rapis', x: 4, y: 6 },
     badges: [],
     defeatedTrainers: [],
+    items: { heal: 0 },
+    flags: [],
   }
 }
 
@@ -58,9 +61,35 @@ export function makeOwned(speciesId: string, level: number): OwnedMonster {
   return { uid: makeUid(), speciesId, level, exp: 0 }
 }
 
-/** active個体をバトル用Combatantに変換 */
+/** active個体をバトル用Combatantに変換(現在HPを反映) */
 export function ownedToCombatant(o: OwnedMonster): Combatant {
-  return makeCombatant(species(o.speciesId), o.level)
+  const c = makeCombatant(species(o.speciesId), o.level)
+  if (typeof o.hp === 'number') c.hp = Math.max(0, Math.min(c.maxHp, o.hp))
+  return c
+}
+
+// ── アイテム/フラグ/回復ヘルパ ──
+export function hasFlag(s: GameState, f: string): boolean {
+  return s.flags.includes(f)
+}
+export function withFlag(s: GameState, f: string): GameState {
+  return s.flags.includes(f) ? s : { ...s, flags: [...s.flags, f] }
+}
+/** 手持ち全員のHPを満タンに(宿屋) */
+export function healParty(s: GameState): GameState {
+  return { ...s, collection: s.collection.map((o) => ({ ...o, hp: undefined })) }
+}
+/** 指定個体のHPを満タン基準のmaxHpに対して amount 回復し、新collectionを返す */
+export function healOwned(s: GameState, uid: string, amount: number): GameState {
+  return {
+    ...s,
+    collection: s.collection.map((o) => {
+      if (o.uid !== uid) return o
+      const max = makeCombatant(species(o.speciesId), o.level).maxHp
+      const cur = typeof o.hp === 'number' ? o.hp : max
+      return { ...o, hp: Math.min(max, cur + amount) }
+    }),
+  }
 }
 
 // ── 経験値 ──
@@ -77,6 +106,7 @@ export function expReward(enemyLevel: number): number {
  */
 export function grantExp(owned: OwnedMonster, amount: number): string[] {
   const msgs: string[] = []
+  const beforeMoves = getMoveset(species(owned.speciesId), owned.level).map((m) => m.id)
   owned.exp += amount
   while (owned.level < MAX_LEVEL && owned.exp >= expToNext(owned.level)) {
     owned.exp -= expToNext(owned.level)
@@ -88,6 +118,13 @@ export function grantExp(owned: OwnedMonster, amount: number): string[] {
       owned.speciesId = sp.to
       msgs.push(`おや……？ ${beforeName}の ようすが……！`)
       msgs.push(`${beforeName}は ${species(sp.to).name}に しんかした！`)
+    }
+  }
+  // 新しく覚えた技の通知
+  const afterMoves = getMoveset(species(owned.speciesId), owned.level)
+  for (const mv of afterMoves) {
+    if (!beforeMoves.includes(mv.id)) {
+      msgs.push(`${species(owned.speciesId).name}は 技【${mv.name}】を おぼえた！`)
     }
   }
   return msgs

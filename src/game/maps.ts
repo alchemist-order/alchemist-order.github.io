@@ -2,6 +2,14 @@
 // グリッド文字: '#'=壁/木, 'H'=建物, '.'=地面, 'G'=草むら(エンカウント)
 import type { TrainerData } from '../types'
 
+export type NpcKind = 'mentor' | 'mom' | 'inn' | 'sign'
+export interface Npc {
+  x: number
+  y: number
+  kind: NpcKind
+  name: string
+}
+
 export interface GameMap {
   id: string
   name: string
@@ -10,6 +18,7 @@ export interface GameMap {
   warps: { x: number; y: number; to: string; tx: number; ty: number }[]
   leader?: { x: number; y: number; trainerId: string }
   encounter?: { pool: string[]; min: number; max: number }
+  npcs?: Npc[]
   intro?: string
 }
 
@@ -20,16 +29,22 @@ export const MAPS: Record<string, GameMap> = {
     biome: 'town',
     grid: [
       '#########',
-      '#.H...H.#',
       '#.......#',
       '#.......#',
       '#.......#',
       '#.......#',
-      '#...W...#',
+      '#.......#',
+      '#.......#',
       '#########',
     ],
-    warps: [{ x: 4, y: 6, to: 'forest', tx: 4, ty: 6 }],
-    intro: '錬金工房が並ぶ静かな村。北の森へ続く道がある。',
+    // 上(4,1)が北の門＝森への道。スタートは下(4,6)。
+    warps: [{ x: 4, y: 1, to: 'forest', tx: 4, ty: 5 }],
+    npcs: [
+      { x: 2, y: 2, kind: 'mentor', name: '師ガレン' },
+      { x: 6, y: 2, kind: 'inn', name: '宿屋の主人' },
+      { x: 4, y: 4, kind: 'mom', name: 'おかあさん' },
+    ],
+    intro: '錬金工房が並ぶ静かな村。北の門の先に緑霧の森が広がる。',
   },
   forest: {
     id: 'forest',
@@ -45,7 +60,7 @@ export const MAPS: Record<string, GameMap> = {
       '#...W...#',
       '#########',
     ],
-    warps: [{ x: 4, y: 6, to: 'rapis', tx: 4, ty: 6 }],
+    warps: [{ x: 4, y: 6, to: 'rapis', tx: 4, ty: 2 }],
     leader: { x: 4, y: 1, trainerId: 'gym_forest' },
     encounter: {
       pool: ['portabupa', 'venomite', 'sporin', 'hobgobalt', 'tsunousa', 'falcone', 'briezel', 'pibit'],

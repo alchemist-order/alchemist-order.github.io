@@ -129,6 +129,26 @@ export function LeaderToken({ trainerId, defeated, size = 46 }: { trainerId: str
   )
 }
 
+// 村のNPC。public/ui/npc_<kind>.png があれば画像、無ければ種別の絵文字。
+const NPC_EMOJI: Record<string, string> = { mentor: '🧙‍♂️', mom: '👩', inn: '🧑‍🍳', sign: '📜' }
+const npcImgState: Record<string, boolean> = {}
+export function NpcToken({ kind, size = 46 }: { kind: string; size?: number }) {
+  const [failed, setFailed] = useState(!!npcImgState[kind])
+  if (failed) return <span>{NPC_EMOJI[kind] ?? '❔'}</span>
+  return (
+    <img
+      className="leader-sprite"
+      src={`${import.meta.env.BASE_URL}ui/npc_${kind}.png`}
+      alt=""
+      style={{ height: size, width: 'auto' }}
+      onError={() => {
+        npcImgState[kind] = true
+        setFailed(true)
+      }}
+    />
+  )
+}
+
 export function HpBar({ c }: { c: Combatant }) {
   const ratio = c.hp / c.maxHp
   const hpColor = ratio > 0.5 ? '#43c463' : ratio > 0.2 ? '#e2c23b' : '#e2563b'

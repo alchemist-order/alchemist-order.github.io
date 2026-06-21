@@ -72,7 +72,11 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
   )
   const ownedRef = useRef<OwnedMonster>({ ...active })
 
-  const [player, setPlayer] = useState<Combatant>(() => makeCombatant(species(active.speciesId), active.level))
+  const [player, setPlayer] = useState<Combatant>(() => {
+    const c = makeCombatant(species(active.speciesId), active.level)
+    if (typeof active.hp === 'number' && active.hp > 0) c.hp = Math.min(c.maxHp, active.hp)
+    return c
+  })
   const [enemy, setEnemy] = useState<Combatant>(() =>
     config.kind === 'trainer' ? teamRef.current[0] : makeWild(active.level, config),
   )
@@ -366,6 +370,59 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
     setPhase('fled')
   }
 
+  // どうぐ(傷薬)を使う。回復して相手のターン
+  async function useItem() {
+    if (busy.current || phase !== 'fighting') return
+    if (state.items.heal <= 0) {
+      pushLog('どうぐを 持っていない！')
+      return
+    }
+    busy.current = true
+    setActing(true)
+    setState((s) => ({ ...s, items: { ...s.items, heal: s.items.heal - 1 } }))
+    const before = player.hp
+    const nh = Math.min(player.maxHp, before + Math.floor(player.maxHp * 0.6))
+    setPlayer((p) => ({ ...p, hp: nh }))
+    showPopup('p', `+${nh - before}`, 'heal')
+    pushLog(`傷薬を つかった！ ${player.data.name}の HPが 回復した。`)
+    await sleep(700)
+    const e = { ...enemy }
+    const p2 = { ...player, hp: nh }
+    const eMove = chooseEnemyMove(p2, e)
+    setFx({ atk: 'e' })
+    await sleep(160)
+    pushLog(`${isTrainer ? '' : '野生の '}${e.data.name}の ${eMove.name}！`)
+    if (eMove.category !== 'status' && Math.random() <= eMove.acc) {
+      const r = calcDamage(e, p2, eMove)
+      const pHp = Math.max(0, nh - r.damage)
+      setPlayer((p) => ({ ...p, hp: pHp }))
+      setFx({ hit: 'p', flash: r.eff >= 2 })
+      showPopup('p', `-${r.damage}`, r.eff >= 2 ? 'crit' : 'dmg')
+      const msg = effMessage(r.eff)
+      if (msg) pushLog(msg)
+      await sleep(440)
+      if (pHp <= 0) {
+        pushLog(`${player.data.name}は たおれてしまった……`)
+        setPhase('lost')
+      }
+    }
+    setFx({})
+    busy.current = false
+    setActing(false)
+    setMenu('root')
+  }
+
+  // バトル終了時に現在HPを手持ちへ保存(敗北は満タンに回復して戻す)
+  function exitBattle() {
+    setState((s) => ({
+      ...s,
+      collection: s.collection.map((o) =>
+        o.uid === active.uid ? { ...o, hp: phase === 'lost' ? undefined : player.hp } : o,
+      ),
+    }))
+    onExit()
+  }
+
   const remaining = isTrainer ? teamRef.current.length - enemyIndex : 0
   const biome = config.biome
   const fieldStyle = biome
@@ -442,13 +499,16 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
 
         <div className="cmd-box">
           {phase !== 'fighting' ? (
-            <button className="cmd-btn wide" onClick={onExit}>
+            <button className="cmd-btn wide" onClick={exitBattle}>
               フィールドに もどる
             </button>
           ) : menu === 'root' ? (
             <div className="cmd-grid">
               <button className="cmd-btn" disabled={acting} onClick={() => setMenu('fight')}>
                 たたかう
+              </button>
+              <button className="cmd-btn" disabled={acting || state.items.heal <= 0} onClick={useItem}>
+                どうぐ<span className="cmd-sub">傷薬{state.items.heal}</span>
               </button>
               {config.kind === 'wild' && (
                 <button className="cmd-btn" disabled={acting || state.flasks <= 0} onClick={throwFlask}>

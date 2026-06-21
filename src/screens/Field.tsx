@@ -1,16 +1,18 @@
 import { useEffect, useState } from 'react'
 import type { BattleConfig, GameState } from '../types'
 import { ENCOUNTER_RATE, MAPS, TRAINERS, isWall } from '../game/maps'
-import { LeaderToken, PlayerToken } from '../ui'
+import type { Npc } from '../game/maps'
+import { LeaderToken, NpcToken, PlayerToken } from '../ui'
 
 interface Props {
   state: GameState
   setState: (updater: (s: GameState) => GameState) => void
   onStartBattle: (config: BattleConfig) => void
   onMenu: () => void
+  onTalk: (npc: Npc) => void
+  onBlockedExit: () => void
 }
 
-// マップ俯瞰絵が無いものを記録(再リクエスト回避)
 const missingMaps = new Set<string>()
 
 function tileClass(ch: string): string {
@@ -20,7 +22,7 @@ function tileClass(ch: string): string {
   return 'ground'
 }
 
-export default function Field({ state, setState, onStartBattle, onMenu }: Props) {
+export default function Field({ state, setState, onStartBattle, onMenu, onTalk, onBlockedExit }: Props) {
   const map = MAPS[state.pos.mapId]
   const { x, y } = state.pos
   const cols = map.grid[0].length
@@ -28,6 +30,7 @@ export default function Field({ state, setState, onStartBattle, onMenu }: Props)
   const mapArtUrl = `${import.meta.env.BASE_URL}bg/map/${map.id}.png`
   const [artOk, setArtOk] = useState(!missingMaps.has(map.id))
   const [flip, setFlip] = useState(false)
+  const hasStarter = state.collection.length > 0
 
   useEffect(() => {
     if (missingMaps.has(map.id)) {
@@ -48,8 +51,9 @@ export default function Field({ state, setState, onStartBattle, onMenu }: Props)
     else if (dx > 0) setFlip(false)
     const nx = x + dx
     const ny = y + dy
-    if (ny < 0 || ny >= map.grid.length || nx < 0 || nx >= map.grid[0].length) return
+    if (ny < 0 || ny >= rows || nx < 0 || nx >= cols) return
 
+    // 支部長に話しかける
     if (map.leader && map.leader.x === nx && map.leader.y === ny) {
       const trainer = TRAINERS[map.leader.trainerId]
       if (!state.defeatedTrainers.includes(trainer.id)) {
@@ -58,11 +62,23 @@ export default function Field({ state, setState, onStartBattle, onMenu }: Props)
       return
     }
 
+    // NPCに話しかける(進入不可)
+    const npc = map.npcs?.find((n) => n.x === nx && n.y === ny)
+    if (npc) {
+      onTalk(npc)
+      return
+    }
+
     const ch = map.grid[ny][nx]
     if (isWall(ch)) return
 
+    // ワープ(幻獣未所持なら村から出られない)
     const warp = map.warps.find((w) => w.x === nx && w.y === ny)
     if (warp) {
+      if (!hasStarter) {
+        onBlockedExit()
+        return
+      }
       setState((s) => ({ ...s, pos: { mapId: warp.to, x: warp.tx, y: warp.ty } }))
       return
     }
@@ -110,14 +126,15 @@ export default function Field({ state, setState, onStartBattle, onMenu }: Props)
       {map.intro && <p className="field-intro">{map.intro}</p>}
 
       {artOk ? (
-        // 俯瞰マップ一枚絵 + コマ
-        <div
-          className="map-art"
-          style={{ backgroundImage: `url(${mapArtUrl})`, aspectRatio: `${cols} / ${rows}` }}
-        >
+        <div className="map-art" style={{ backgroundImage: `url(${mapArtUrl})`, aspectRatio: `${cols} / ${rows}` }}>
           {map.warps.map((w) => (
             <span key={`w${w.x}-${w.y}`} className="map-token warp-token" style={pct(w.x, w.y)}>
               🚪
+            </span>
+          ))}
+          {map.npcs?.map((n) => (
+            <span key={`n${n.x}-${n.y}`} className="map-token npc-token" style={pct(n.x, n.y)}>
+              <NpcToken kind={n.kind} size={46} />
             </span>
           ))}
           {map.leader && (
@@ -130,16 +147,21 @@ export default function Field({ state, setState, onStartBattle, onMenu }: Props)
           </span>
         </div>
       ) : (
-        // フォールバック: タイル表示
         <div className="map-grid" style={{ gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
           {map.grid.flatMap((row, ry) =>
             row.split('').map((ch, rx) => {
               const isPlayer = rx === x && ry === y
               const isLeader = map.leader && map.leader.x === rx && map.leader.y === ry
               const isWarp = map.warps.some((w) => w.x === rx && w.y === ry)
+              const npc = map.npcs?.find((n) => n.x === rx && n.y === ry)
               return (
                 <div key={`${rx}-${ry}`} className={`tile ${tileClass(ch)}`}>
                   {isWarp && !isPlayer && <span className="tile-icon">🚪</span>}
+                  {npc && !isPlayer && (
+                    <span className="tile-icon">
+                      <NpcToken kind={npc.kind} size={28} />
+                    </span>
+                  )}
                   {isLeader && !isPlayer && (
                     <span className="tile-icon">
                       <LeaderToken trainerId={map.leader!.trainerId} defeated={leaderDefeated} size={32} />
@@ -166,10 +188,10 @@ export default function Field({ state, setState, onStartBattle, onMenu }: Props)
         </div>
         <button className="move-btn menu-btn" onClick={onMenu}>
           <span className="move-name">📋 メニュー</span>
-          <span className="move-meta">手持ち・図鑑</span>
+          <span className="move-meta">手持ち・図鑑・どうぐ</span>
         </button>
       </div>
-      <p className="field-hint">矢印キー / WASD でも移動できます。草むらに幻獣がひそむ。</p>
+      <p className="field-hint">矢印キー / WASD でも移動。人に話しかけ、草むらで幻獣に出会う。</p>
     </div>
   )
 }
