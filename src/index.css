@@ -899,3 +899,14 @@ button:disabled {
 
 /* ── 移動を滑らかに(マス間を補間) ── */
 .map-token.player-token { transition: left 0.14s linear, top 0.14s linear; }
+
+/* ── 会話の立ち絵(テキスト枠の上にせり上がる) ── */
+.dialogue-portrait {
+  position: absolute;
+  left: 8px;
+  bottom: calc(100% - 14px);
+  height: clamp(150px, 32vh, 260px);
+  width: auto;
+  filter: drop-shadow(0 6px 10px rgba(0,0,0,0.6));
+  pointer-events: none;
+}

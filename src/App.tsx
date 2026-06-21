@@ -27,6 +27,7 @@ type Phase = 'title' | 'opening' | 'game'
 type Screen = 'field' | 'home' | 'battle' | 'dex'
 interface DialogueData {
   speaker?: string
+  portrait?: string
   lines: string[]
   after?: () => void
 }
@@ -87,6 +88,7 @@ export default function App() {
       if (game.collection.length === 0) {
         setDialogue({
           speaker: '師ガレン',
+          portrait: 'mentor',
           lines: [
             'よく来たな。今日からおまえも 錬獣師としての一歩を踏み出すのだ。',
             'この三つの核から、共に往く幻獣を ひとつ選びなさい。',
@@ -96,6 +98,7 @@ export default function App() {
       } else {
         setDialogue({
           speaker: '師ガレン',
+          portrait: 'mentor',
           lines: ['いい相棒を選んだな。', '各地のオーダー支部で 8つの記章を集めるのだ。北の森が最初の試練だぞ。'],
         })
       }
@@ -103,15 +106,17 @@ export default function App() {
       if (!hasFlag(game, 'mom_gift')) {
         setDialogue({
           speaker: 'おかあさん',
+          portrait: 'mom',
           lines: ['あら、いよいよ旅立ちね。', 'これを持っていきなさい。傷薬を3つ。無理だけはしないでね。'],
           after: () => setGame((s) => withFlag({ ...s, items: { ...s.items, heal: s.items.heal + 3 } }, 'mom_gift')),
         })
       } else {
-        setDialogue({ speaker: 'おかあさん', lines: ['体に気をつけてね。いつでも帰っておいで。'] })
+        setDialogue({ speaker: 'おかあさん', portrait: 'mom', lines: ['体に気をつけてね。いつでも帰っておいで。'] })
       }
     } else if (npc.kind === 'inn') {
       setDialogue({
         speaker: '宿屋の主人',
+        portrait: 'inn',
         lines: ['ようこそ宿屋へ。ゆっくり休んでいきな。', '……すぅ……zzz……', '幻獣たちは すっかり元気になった！'],
         after: () => setGame((s) => healParty(s)),
       })
@@ -134,7 +139,8 @@ export default function App() {
     setStarterOpen(false)
     setDialogue({
       speaker: '師ガレン',
-      lines: ['その子が おまえの最初の相棒だ。大切に育てなさい。', '北の門の先、緑霧の森へ。気をつけて行くのだぞ。'],
+      portrait: 'mentor',
+      lines: ['その子が おまえの最初の相棒だ。大切に育てなさい。', '村の出口の先、緑霧の森へ。気をつけて行くのだぞ。'],
     })
   }
 
@@ -221,6 +227,7 @@ export default function App() {
       {dialogue && (
         <Dialogue
           speaker={dialogue.speaker}
+          portrait={dialogue.portrait}
           lines={dialogue.lines}
           onDone={() => {
             const after = dialogue.after

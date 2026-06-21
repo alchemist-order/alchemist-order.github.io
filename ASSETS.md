@@ -131,6 +131,12 @@ transparent background, no text.
   imposing and tragic, waist-up portrait, transparent background, no text.
   ```
 
+### 村のNPC 水彩立ち絵（会話の枠に表示。先にキャラ用マスターを貼る）
+無い間はドット絵(ui/npc_*.png)で代用表示される。
+- `portraits/mentor.png`（師ガレン）— `Garen, an old wise alchemist mentor, long grey beard, deep teal robe with brass clasps, kindly but stern eyes, waist-up portrait, transparent background, no text.`
+- `portraits/mom.png`（おかあさん）— `a kind middle-aged village woman in an apron and simple dress, warm gentle smile, waist-up portrait, transparent background, no text.`
+- `portraits/inn.png`（宿屋の主人）— `a cheerful stout innkeeper, a man with a vest and apron holding a mug, friendly grin, waist-up portrait, transparent background, no text.`
+
 ### 敵トレーナー汎用テンプレート（水彩立ち絵）
 `{ }` を差し替えて量産。先頭にキャラ用マスターを貼る。
 ```
