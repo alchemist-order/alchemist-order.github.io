@@ -2,7 +2,7 @@
 // グリッド文字: '#'=壁/木, 'H'=建物, '.'=地面, 'G'=草むら(エンカウント)
 import type { TrainerData } from '../types'
 
-export type NpcKind = 'mentor' | 'mom' | 'inn' | 'sign' | 'villager'
+export type NpcKind = 'mentor' | 'mom' | 'inn' | 'sign' | 'villager' | 'shop'
 export interface Npc {
   x: number
   y: number
@@ -68,6 +68,7 @@ export const MAPS: Record<string, GameMap> = {
         emoji: '🧒',
         lines: ['ねえねえ、幻獣つれてるの！？ いいなあ！ あたしも錬獣師になるんだ！', '強くなったら、また見せてね。約束だよ！'],
       },
+      { x: 6, y: 5, kind: 'shop', name: '道具屋のラル', emoji: '🛒' },
     ],
     intro: '錬金工房が並ぶ静かな村。家の扉から中へ。村の出口の先に緑霧の森が広がる。',
   },

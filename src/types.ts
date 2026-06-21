@@ -73,7 +73,8 @@ export interface GameState {
   pos: { mapId: string; x: number; y: number } // フィールド上の位置
   badges: string[] // 獲得した記章
   defeatedTrainers: string[] // 撃破済みトレーナーid
-  items: { heal: number } // 傷薬の所持数
+  items: { heal: number; heal2: number } // 傷薬 / 上傷薬
+  money: number // 所持金（ゲル）
   flags: string[] // 一度きりイベントの完了フラグ
 }
 

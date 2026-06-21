@@ -21,8 +21,10 @@ export default function Home({ state, setActive, onField, onDex }: Props) {
         <h1>アルケミスト・オーダー</h1>
         <div className="home-stats">
           <span>図鑑 {state.caught.length}/{DEX_TOTAL}</span>
-          <span>🎖 記章 {state.badges.length}</span>
-          <span>🔮 フラスコ {state.flasks}</span>
+          <span>🎖 {state.badges.length}</span>
+          <span>💰 {state.money}</span>
+          <span>🔮 {state.flasks}</span>
+          <span>🧪 傷{state.items.heal}/上{state.items.heal2}</span>
         </div>
       </header>
 

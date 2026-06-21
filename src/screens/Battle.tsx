@@ -83,7 +83,7 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
   const [enemyIndex, setEnemyIndex] = useState(0)
   const [log, setLog] = useState<string[]>([])
   const [phase, setPhase] = useState<Phase>('fighting')
-  const [menu, setMenu] = useState<'root' | 'fight' | 'switch'>('root')
+  const [menu, setMenu] = useState<'root' | 'fight' | 'switch' | 'item'>('root')
   const [curUid, setCurUid] = useState(active.uid)
   const [mustSwitch, setMustSwitch] = useState(false)
   const [acting, setActing] = useState(false)
@@ -154,21 +154,24 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
         pushLog(`${enemy.data.name}を たおした！`, ...expMsgs, `${config.trainer.name}は ${next.data.name}を くりだした！`)
         return
       }
+      const prize = 150 + enemy.level * 12
       setState((s) => ({
         ...s,
         wins: s.wins + 1,
+        money: s.money + prize,
         badges: s.badges.includes(config.trainer.badge) ? s.badges : [...s.badges, config.trainer.badge],
         defeatedTrainers: s.defeatedTrainers.includes(config.trainer.id)
           ? s.defeatedTrainers
           : [...s.defeatedTrainers, config.trainer.id],
       }))
-      pushLog(`${enemy.data.name}を たおした！`, ...expMsgs, `${config.trainer.name}に かった！`, `🎖 ${config.trainer.badge}を 手に入れた！`)
+      pushLog(`${enemy.data.name}を たおした！`, ...expMsgs, `${config.trainer.name}に かった！`, `🎖 ${config.trainer.badge}を 手に入れた！`, `💰 ${prize}ゲルを 手に入れた！`)
       audio.playVictory()
       setPhase('won')
       return
     }
-    setState((s) => ({ ...s, wins: s.wins + 1, flasks: s.flasks + 1 }))
-    pushLog(`野生の ${enemy.data.name} を たおした！`, ...expMsgs, '🔮 封獣フラスコを 1個 拾った！')
+    const prize = 10 + enemy.level * 3
+    setState((s) => ({ ...s, wins: s.wins + 1, flasks: s.flasks + 1, money: s.money + prize }))
+    pushLog(`野生の ${enemy.data.name} を たおした！`, ...expMsgs, `🔮 封獣フラスコ＋1 / 💰 ${prize}ゲル`)
     audio.playVictory()
     setPhase('won')
   }
@@ -442,21 +445,23 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
     setPhase('fled')
   }
 
-  // どうぐ(傷薬)を使う。回復して相手のターン
-  async function useItem() {
+  // どうぐ(傷薬/上傷薬)を使う。回復して相手のターン
+  async function useItem(kind: 'heal' | 'heal2') {
     if (busy.current || phase !== 'fighting') return
-    if (state.items.heal <= 0) {
+    if (state.items[kind] <= 0) {
       pushLog('どうぐを 持っていない！')
       return
     }
     busy.current = true
     setActing(true)
-    setState((s) => ({ ...s, items: { ...s.items, heal: s.items.heal - 1 } }))
+    setMenu('root')
+    setState((s) => ({ ...s, items: { ...s.items, [kind]: s.items[kind] - 1 } }))
     const before = player.hp
-    const nh = Math.min(player.maxHp, before + Math.floor(player.maxHp * 0.6))
+    const amt = kind === 'heal2' ? player.maxHp : Math.floor(player.maxHp * 0.6)
+    const nh = Math.min(player.maxHp, before + amt)
     setPlayer((p) => ({ ...p, hp: nh }))
     showPopup('p', `+${nh - before}`, 'heal')
-    pushLog(`傷薬を つかった！ ${player.data.name}の HPが 回復した。`)
+    pushLog(`${kind === 'heal2' ? '上傷薬' : '傷薬'}を つかった！ ${player.data.name}の HPが 回復した。`)
     await sleep(700)
     await enemyTurn({ ...player, hp: nh })
     busy.current = false
@@ -555,6 +560,20 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
             <button className="cmd-btn wide" onClick={exitBattle}>
               フィールドに もどる
             </button>
+          ) : menu === 'item' ? (
+            <div className="cmd-grid">
+              <button className="cmd-btn move" disabled={acting || state.items.heal <= 0} onClick={() => useItem('heal')}>
+                <span className="m-name">傷薬</span>
+                <span className="m-meta">HP60%回復・所持{state.items.heal}</span>
+              </button>
+              <button className="cmd-btn move" disabled={acting || state.items.heal2 <= 0} onClick={() => useItem('heal2')}>
+                <span className="m-name">上傷薬</span>
+                <span className="m-meta">HP全回復・所持{state.items.heal2}</span>
+              </button>
+              <button className="cmd-btn back" disabled={acting} onClick={() => setMenu('root')}>
+                ← もどる
+              </button>
+            </div>
           ) : menu === 'switch' ? (
             <div className="cmd-grid">
               {mustSwitch && <div className="cmd-sub" style={{ gridColumn: '1 / -1' }}>つぎに たたかう幻獣を 選んで！</div>}
@@ -583,8 +602,12 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
               <button className="cmd-btn" disabled={acting} onClick={() => setMenu('fight')}>
                 たたかう
               </button>
-              <button className="cmd-btn" disabled={acting || state.items.heal <= 0} onClick={useItem}>
-                どうぐ<span className="cmd-sub">傷薬{state.items.heal}</span>
+              <button
+                className="cmd-btn"
+                disabled={acting || (state.items.heal <= 0 && state.items.heal2 <= 0)}
+                onClick={() => setMenu('item')}
+              >
+                どうぐ<span className="cmd-sub">傷薬{state.items.heal}/上{state.items.heal2}</span>
               </button>
               <button className="cmd-btn" disabled={acting || switchTargets.length === 0} onClick={() => setMenu('switch')}>
                 いれかえ<span className="cmd-sub">仲間{switchTargets.length}</span>

@@ -130,7 +130,7 @@ export function LeaderToken({ trainerId, defeated, size = 46 }: { trainerId: str
 }
 
 // 村のNPC。public/ui/npc_<kind>.png があれば画像、無ければ種別の絵文字。
-const NPC_EMOJI: Record<string, string> = { mentor: '🧙‍♂️', mom: '👩', inn: '🧑‍🍳', sign: '📜', villager: '🧑' }
+const NPC_EMOJI: Record<string, string> = { mentor: '🧙‍♂️', mom: '👩', inn: '🧑‍🍳', sign: '📜', villager: '🧑', shop: '🛒' }
 const npcImgState: Record<string, boolean> = {}
 export function NpcToken({ kind, emoji, size = 46 }: { kind: string; emoji?: string; size?: number }) {
   const [failed, setFailed] = useState(!!npcImgState[kind])

@@ -35,6 +35,12 @@ interface DialogueData {
 const STARTER_LEVEL = 8
 const STARTER_FLASKS = 8
 
+const SHOP_ITEMS: { key: string; name: string; desc: string; price: number; apply: (s: GameState) => GameState }[] = [
+  { key: 'heal', name: '傷薬', desc: 'HP60%回復', price: 200, apply: (s) => ({ ...s, items: { ...s.items, heal: s.items.heal + 1 } }) },
+  { key: 'heal2', name: '上傷薬', desc: 'HP全回復', price: 600, apply: (s) => ({ ...s, items: { ...s.items, heal2: s.items.heal2 + 1 } }) },
+  { key: 'flask', name: '封獣フラスコ', desc: '幻獣を捕まえる', price: 150, apply: (s) => ({ ...s, flasks: s.flasks + 1 }) },
+]
+
 const titleBg = {
   backgroundColor: '#15120d',
   backgroundImage: `linear-gradient(rgba(18,15,10,0.55), rgba(18,15,10,0.82)), url(${import.meta.env.BASE_URL}bg/title.jpg)`,
@@ -50,6 +56,7 @@ export default function App() {
   const [muted, setMuted] = useState(audio.isMuted())
   const [dialogue, setDialogue] = useState<DialogueData | null>(null)
   const [starterOpen, setStarterOpen] = useState(false)
+  const [shopOpen, setShopOpen] = useState(false)
 
   useEffect(() => {
     saveGame(game)
@@ -128,6 +135,8 @@ export default function App() {
         ],
         after: () => setGame((s) => healParty(s)),
       })
+    } else if (npc.kind === 'shop') {
+      setShopOpen(true)
     } else {
       setDialogue({ speaker: npc.name, lines: npc.lines ?? ['……'] })
     }
@@ -247,6 +256,32 @@ export default function App() {
             after?.()
           }}
         />
+      )}
+
+      {shopOpen && (
+        <div className="modal-backdrop" onClick={() => setShopOpen(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="card-head">
+              <span className="mon-name">🛒 道具屋のラル</span>
+              <button className="modal-close" onClick={() => setShopOpen(false)}>×</button>
+            </div>
+            <p className="dex-text">「いらっしゃい。何にするね？」　所持金 💰{game.money} ゲル</p>
+            {SHOP_ITEMS.map((it) => (
+              <div key={it.key} className="shop-row">
+                <span className="shop-name">{it.name}<span className="cmd-sub">　{it.desc}</span></span>
+                <span className="shop-price">💰{it.price}</span>
+                <button
+                  className="title-btn"
+                  style={{ padding: '6px 14px', fontSize: 14 }}
+                  disabled={game.money < it.price}
+                  onClick={() => setGame((s) => (s.money >= it.price ? it.apply({ ...s, money: s.money - it.price }) : s))}
+                >
+                  かう
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
       )}
 
       {starterOpen && (

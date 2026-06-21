@@ -29,7 +29,8 @@ export function newGame(): GameState {
     pos: { mapId: 'home2f', x: 2, y: 1 }, // 自室のベッドで目覚める
     badges: [],
     defeatedTrainers: [],
-    items: { heal: 0 },
+    items: { heal: 0, heal2: 0 },
+    money: 0,
     flags: [],
   }
 }
@@ -37,8 +38,14 @@ export function newGame(): GameState {
 export function loadGame(): GameState | null {
   try {
     const raw = localStorage.getItem(SAVE_KEY)
-    // 旧セーブに新フィールドが無くても既定値で補完
-    return raw ? { ...newGame(), ...(JSON.parse(raw) as GameState) } : null
+    if (!raw) return null
+    const p = JSON.parse(raw) as Partial<GameState>
+    const base = newGame()
+    const merged = { ...base, ...p } as GameState
+    // ネストは既定値で補完(旧セーブ対応)
+    merged.items = { heal: p.items?.heal ?? 0, heal2: p.items?.heal2 ?? 0 }
+    merged.money = p.money ?? 0
+    return merged
   } catch {
     return null
   }
