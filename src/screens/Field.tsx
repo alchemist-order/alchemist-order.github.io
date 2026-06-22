@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { BattleConfig, GameState } from '../types'
 import { ENCOUNTER_RATE, MAPS, TRAINERS, isWall } from '../game/maps'
 import type { Npc } from '../game/maps'
-import { LeaderToken, NpcToken, PlayerToken, PropToken } from '../ui'
+import { LeaderToken, NpcToken, PlayerToken, PropToken, type Dir } from '../ui'
 
 interface Props {
   state: GameState
@@ -53,7 +53,8 @@ export default function Field({ state, setState, onStartBattle, onTrainer, onMen
   const hasStarter = state.collection.length > 0
   const posRef = useRef(state.pos)
   const holdRef = useRef<number | undefined>(undefined)
-  const [flip, setFlip] = useState(false)
+  const [dir, setDir] = useState<Dir>('down')
+  const [step, setStep] = useState<0 | 1>(0)
   const vpRef = useRef<HTMLDivElement>(null)
   const [vw, setVw] = useState(0)
   const [, force] = useState(0)
@@ -106,11 +107,11 @@ export default function Field({ state, setState, onStartBattle, onTrainer, onMen
       window.clearInterval(holdRef.current)
       holdRef.current = undefined
     }
+    setStep(0) // 立ち止まったら直立ポーズ
   }
 
   function move(dx: number, dy: number) {
-    if (dx < 0) setFlip(true)
-    else if (dx > 0) setFlip(false)
+    setDir(dy < 0 ? 'up' : dy > 0 ? 'down' : dx < 0 ? 'left' : 'right')
     const cur = posRef.current
     const m = MAPS[cur.mapId]
     const nx = cur.x + dx
@@ -163,6 +164,7 @@ export default function Field({ state, setState, onStartBattle, onTrainer, onMen
 
     const np = { ...cur, x: nx, y: ny }
     posRef.current = np
+    setStep((s) => (s ? 0 : 1)) // 一歩ごとに足を入れ替え
     setState((s) => ({ ...s, pos: np }))
 
     if (ch === 'G' && m.encounter && Math.random() < ENCOUNTER_RATE) {
@@ -198,8 +200,15 @@ export default function Field({ state, setState, onStartBattle, onTrainer, onMen
       else return
       e.preventDefault()
     }
+    const onKeyUp = (e: KeyboardEvent) => {
+      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'w', 'a', 's', 'd'].includes(e.key)) setStep(0)
+    }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    window.addEventListener('keyup', onKeyUp)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      window.removeEventListener('keyup', onKeyUp)
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [state])
 
@@ -264,7 +273,7 @@ export default function Field({ state, setState, onStartBattle, onTrainer, onMen
               </span>
             )}
             <span className="world-token player-token person-token" style={{ left: x * TILE, top: y * TILE, width: TILE, height: TILE }}>
-              <PlayerToken flip={flip} size={TILE * 1.3} />
+              <PlayerToken dir={dir} step={step} size={TILE * 1.3} />
             </span>
           </div>
         </div>

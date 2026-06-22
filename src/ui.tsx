@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { Combatant, StatusKind } from './types'
 import { spriteFileNo, spriteOf } from './game/sprites'
 
@@ -86,12 +86,43 @@ export function Sprite({
   )
 }
 
-// プレイヤーの歩きキャラ(ドット絵)。public/ui/player.png があれば画像、無ければ🧝。
-const playerImgState = { missing: false }
-export function PlayerToken({ flip = false, size = 34 }: { flip?: boolean; size?: number }) {
-  const [failed, setFailed] = useState(playerImgState.missing)
-  const transform = flip ? 'scaleX(-1)' : undefined
-  if (failed) {
+// プレイヤーの歩きキャラ。向き(下/上/左/右)＋歩きフレーム(a/b)に対応。
+// public/ui/player_<dir>_<a|b>.png があれば方向アニメ、無ければ従来の player.png(左右反転)にフォールバック。
+// 左向きは右向き画像を反転して流用(生成は down/up/right の6枚でOK)。
+export type Dir = 'down' | 'up' | 'left' | 'right'
+const playerSprite = { scheme: 'unknown' as 'unknown' | 'directional' | 'legacy', legacyMissing: false }
+export function PlayerToken({ dir = 'down', step = 0, size = 34 }: { dir?: Dir; step?: 0 | 1; size?: number }) {
+  const [, force] = useState(0)
+  useEffect(() => {
+    if (playerSprite.scheme !== 'unknown') return
+    const img = new Image()
+    img.onload = () => {
+      playerSprite.scheme = 'directional'
+      force((n) => n + 1)
+    }
+    img.onerror = () => {
+      playerSprite.scheme = 'legacy'
+      force((n) => n + 1)
+    }
+    img.src = `${import.meta.env.BASE_URL}ui/player_down_a.png`
+  }, [])
+
+  const frame = step ? 'b' : 'a'
+  if (playerSprite.scheme === 'directional') {
+    const useDir = dir === 'left' ? 'right' : dir
+    const flip = dir === 'left'
+    return (
+      <img
+        className="player-sprite"
+        src={`${import.meta.env.BASE_URL}ui/player_${useDir}_${frame}.png`}
+        alt=""
+        style={{ width: size, height: size, transform: flip ? 'scaleX(-1)' : undefined }}
+      />
+    )
+  }
+  // フォールバック: 従来の1枚絵(左向きのみ反転)
+  const transform = dir === 'left' ? 'scaleX(-1)' : undefined
+  if (playerSprite.legacyMissing) {
     return <span style={{ transform, display: 'inline-block', fontSize: size * 0.92, lineHeight: 1 }}>🧝</span>
   }
   return (
@@ -101,8 +132,8 @@ export function PlayerToken({ flip = false, size = 34 }: { flip?: boolean; size?
       alt=""
       style={{ width: size, height: size, transform }}
       onError={() => {
-        playerImgState.missing = true
-        setFailed(true)
+        playerSprite.legacyMissing = true
+        force((n) => n + 1)
       }}
     />
   )
