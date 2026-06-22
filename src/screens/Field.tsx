@@ -253,7 +253,7 @@ export default function Field({ state, setState, onStartBattle, onTrainer, onChe
                   <div
                     key={`${rx}-${ry}`}
                     className={`tile2 t-${type}`}
-                    style={{ left: rx * TILE, top: ry * TILE, width: TILE, height: TILE, ...tileStyle(type) }}
+                    style={{ left: rx * TILE, top: ry * TILE, width: TILE + 1, height: TILE + 1, ...tileStyle(type) }}
                   />
                 )
               }),

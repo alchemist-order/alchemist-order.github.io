@@ -978,7 +978,7 @@ button:disabled {
   background: #1a1610;
 }
 .world { position: absolute; left: 0; top: 0; transition: transform 0.13s linear; }
-.tile2 { position: absolute; box-sizing: border-box; background-size: cover; background-position: center; box-shadow: inset 0 0 0 1px rgba(0,0,0,0.05); }
+.tile2 { position: absolute; box-sizing: border-box; background-size: 100% 100%; background-position: center; }
 .t-path { background-color: #b9a06d; background-image: linear-gradient(135deg, #c2a875, #ad9460); }
 .t-lawn { background-color: #5d9a45; background-image: radial-gradient(circle at 30% 25%, #6cab50, #538b3d); }
 .t-grass {
