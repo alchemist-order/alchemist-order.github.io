@@ -5,7 +5,9 @@ const BASE = import.meta.env.BASE_URL
 
 const readNum = (key: string, def: number): number => {
   try {
-    const v = Number(localStorage.getItem(key))
+    const raw = localStorage.getItem(key)
+    if (raw == null || raw === '') return def
+    const v = Number(raw)
     return Number.isFinite(v) && v >= 0 && v <= 1 ? v : def
   } catch {
     return def
