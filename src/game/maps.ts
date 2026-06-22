@@ -16,6 +16,17 @@ export interface Npc {
   lines?: string[] // villager/sign 用の台詞
 }
 
+// マップ上の小物(家具・装飾)。solid=通行不可、lines=調べると台詞
+export interface Prop {
+  x: number
+  y: number
+  kind: string // bed/bookshelf/cauldron/fountain/barrel/fence... (ui/prop_<kind>.png or 絵文字)
+  solid?: boolean
+  lines?: string[]
+  name?: string
+  emoji?: string
+}
+
 export interface GameMap {
   id: string
   name: string
@@ -26,6 +37,7 @@ export interface GameMap {
   leader?: { x: number; y: number; trainerId: string }
   encounter?: { pool: string[]; min: number; max: number }
   npcs?: Npc[]
+  props?: Prop[]
   indoor?: boolean // 室内(床・壁の見た目)
   intro?: string
 }
@@ -166,6 +178,20 @@ export const MAPS: Record<string, GameMap> = {
         lines: ['ねえねえ、幻獣つれてるの！？ いいなあ！ あたしも錬獣師になるんだ！', '強くなったら、また見せてね。約束だよ！'],
       },
     ],
+    props: [
+      { x: 9, y: 10, kind: 'fountain', solid: true, name: '噴水', lines: ['村の古い噴水。水面に錬金術の紋章が彫られている。'] },
+      { x: 16, y: 10, kind: 'barrel', solid: true },
+      { x: 16, y: 11, kind: 'crate', solid: true },
+      { x: 4, y: 12, kind: 'barrel', solid: true },
+      { x: 8, y: 7, kind: 'lamp', solid: true },
+      { x: 17, y: 7, kind: 'lamp', solid: true },
+      { x: 6, y: 7, kind: 'flower' },
+      { x: 18, y: 13, kind: 'flower' },
+      { x: 6, y: 13, kind: 'fence', solid: true },
+      { x: 7, y: 13, kind: 'fence', solid: true },
+      { x: 8, y: 13, kind: 'fence', solid: true },
+      { x: 13, y: 15, kind: 'sign', name: '立て札', lines: ['「↓ 南 — 緑霧の森」'] },
+    ],
     intro: '錬金工房が並ぶ静かな村。家の扉から中へ。南の門の先に緑霧の森が広がる。',
   },
   mentor_house: {
@@ -176,6 +202,13 @@ export const MAPS: Record<string, GameMap> = {
     grid: ['#######', '#.....#', '#.....#', '#.....#', '#.....#', '#######'],
     warps: [{ x: 3, y: 4, to: 'rapis', tx: 11, ty: 5 }],
     npcs: [{ x: 3, y: 1, kind: 'mentor', name: '師ガレン' }],
+    props: [
+      { x: 1, y: 1, kind: 'bookshelf', solid: true, name: '蔵書', lines: ['錬金術の古い写本がぎっしりだ。読めない記号が並んでいる。'] },
+      { x: 5, y: 1, kind: 'bookshelf', solid: true, name: '蔵書', lines: ['「賢者の石」について記された頁に、栞がはさまれている……。'] },
+      { x: 1, y: 3, kind: 'cauldron', solid: true, name: '錬成釜', lines: ['師の錬成釜。底に、虹色の残滓がこびりついている。'] },
+      { x: 5, y: 3, kind: 'candle', solid: true },
+      { x: 3, y: 3, kind: 'rug' },
+    ],
     intro: '錬金道具と古びた書物が並ぶ、師の家。',
   },
   home: {
@@ -189,6 +222,12 @@ export const MAPS: Record<string, GameMap> = {
       { x: 5, y: 1, to: 'home2f', tx: 4, ty: 4 },
     ],
     npcs: [{ x: 3, y: 1, kind: 'mom', name: 'おかあさん' }],
+    props: [
+      { x: 1, y: 1, kind: 'fireplace', solid: true, name: '暖炉', lines: ['ぱちぱちと薪がはぜている。あたたかい。'] },
+      { x: 1, y: 2, kind: 'plant', solid: true },
+      { x: 5, y: 3, kind: 'plant', solid: true },
+      { x: 3, y: 2, kind: 'rug' },
+    ],
     intro: 'あたたかな わが家。階段を上ると自分の部屋がある。',
   },
   home2f: {
@@ -198,6 +237,13 @@ export const MAPS: Record<string, GameMap> = {
     indoor: true,
     grid: ['#######', '#.....#', '#.....#', '#.....#', '#.....#', '#######'],
     warps: [{ x: 4, y: 4, to: 'home', tx: 5, ty: 2 }],
+    props: [
+      { x: 1, y: 1, kind: 'bed', solid: true, name: 'ベッド', lines: ['よく眠った。……今日から、旅が始まる。'] },
+      { x: 5, y: 1, kind: 'bookshelf', solid: true, name: '本棚', lines: ['古い幻獣図鑑。いつか、自分の見つけた幻獣を ここに書き足すんだ。'] },
+      { x: 4, y: 1, kind: 'candle', solid: true },
+      { x: 2, y: 3, kind: 'rug' },
+      { x: 3, y: 0, kind: 'window' },
+    ],
     intro: '自分の部屋。窓から朝の光が差し込んでいる。',
   },
   inn: {
@@ -208,6 +254,12 @@ export const MAPS: Record<string, GameMap> = {
     grid: ['#######', '#.....#', '#.....#', '#.....#', '#.....#', '#######'],
     warps: [{ x: 3, y: 4, to: 'rapis', tx: 19, ty: 6 }],
     npcs: [{ x: 3, y: 1, kind: 'inn', name: '宿屋の主人' }],
+    props: [
+      { x: 1, y: 1, kind: 'bed', solid: true },
+      { x: 5, y: 1, kind: 'bed', solid: true },
+      { x: 1, y: 3, kind: 'fireplace', solid: true, name: '暖炉', lines: ['旅人たちが暖を取っている。'] },
+      { x: 5, y: 3, kind: 'plant', solid: true },
+    ],
     intro: '暖炉のぬくもりが心地よい宿屋。',
   },
   forest: {
@@ -225,6 +277,14 @@ export const MAPS: Record<string, GameMap> = {
       min: 4,
       max: 8,
     },
+    props: [
+      { x: 3, y: 3, kind: 'rock', solid: true },
+      { x: 20, y: 17, kind: 'rock', solid: true },
+      { x: 6, y: 6, kind: 'mushroom' },
+      { x: 18, y: 6, kind: 'mushroom' },
+      { x: 9, y: 16, kind: 'log', solid: true },
+      { x: 10, y: 17, kind: 'sign', name: '道しるべ', lines: ['「↑ 奥へ — 支部長の気配」', '「→ 東 — 潮騒の道(新緑の記章が必要)」'] },
+    ],
     intro: '霧が立ちこめる森。高草には野生の幻獣がひそむ。奥に錬獣師の気配……。',
   },
   coast_road: {
@@ -237,6 +297,13 @@ export const MAPS: Record<string, GameMap> = {
       { x: 20, y: 6, to: 'port', tx: 2, ty: 8 }, // 東=港町へ
     ],
     encounter: { pool: ['shelk', 'frost', 'aquab', 'teary', 'pibit', 'briezel'], min: 9, max: 13 },
+    props: [
+      { x: 3, y: 9, kind: 'rock', solid: true },
+      { x: 18, y: 9, kind: 'rock', solid: true },
+      { x: 10, y: 9, kind: 'barrel', solid: true },
+      { x: 5, y: 10, kind: 'shell' },
+      { x: 15, y: 10, kind: 'shell' },
+    ],
     intro: '潮の香りが満ちる海沿いの道。葦のしげみに水辺の幻獣が現れる。',
   },
   port: {
@@ -255,6 +322,15 @@ export const MAPS: Record<string, GameMap> = {
         emoji: '🧑‍✈️',
         lines: ['沖に"灰の渦"が出てな……船もまともに出せやしねえ。', '支部長のマレアの姉さんが、なんとかしようと睨みを利かせてるよ。'],
       },
+    ],
+    props: [
+      { x: 5, y: 9, kind: 'barrel', solid: true },
+      { x: 6, y: 9, kind: 'crate', solid: true },
+      { x: 16, y: 9, kind: 'barrel', solid: true },
+      { x: 20, y: 11, kind: 'anchor', solid: true, name: '錨', lines: ['大きな船の錨。潮の匂いが染みついている。'] },
+      { x: 10, y: 6, kind: 'lamp', solid: true },
+      { x: 18, y: 7, kind: 'crate', solid: true },
+      { x: 8, y: 9, kind: 'fence', solid: true },
     ],
     intro: '船が行き交う潮鳴りの港町。海風の向こう、支部長マレアが待つ。',
   },

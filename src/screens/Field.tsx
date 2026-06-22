@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { BattleConfig, GameState } from '../types'
 import { ENCOUNTER_RATE, MAPS, TRAINERS, isWall } from '../game/maps'
 import type { Npc } from '../game/maps'
-import { LeaderToken, NpcToken, PlayerToken } from '../ui'
+import { LeaderToken, NpcToken, PlayerToken, PropToken } from '../ui'
 
 interface Props {
   state: GameState
@@ -125,6 +125,14 @@ export default function Field({ state, setState, onStartBattle, onMenu, onTalk, 
       return
     }
 
+    const prop = m.props?.find((p) => p.x === nx && p.y === ny)
+    if (prop?.lines) {
+      stopHold()
+      onTalk({ x: nx, y: ny, kind: 'sign', name: prop.name ?? '', lines: prop.lines })
+      return
+    }
+    if (prop?.solid) return
+
     const ch = m.grid[ny][nx]
     if (isWall(ch)) return
 
@@ -231,6 +239,11 @@ export default function Field({ state, setState, onStartBattle, onMenu, onTalk, 
                 style={{ left: w.x * TILE, top: w.y * TILE, width: TILE, height: TILE }}
                 aria-hidden
               />
+            ))}
+            {map.props?.map((p, i) => (
+              <span key={`p${i}`} className={`world-token prop-token${p.kind === 'rug' ? ' prop-flat' : ''}`} style={{ left: p.x * TILE, top: p.y * TILE, width: TILE, height: TILE }}>
+                <PropToken kind={p.kind} emoji={p.emoji} size={TILE} />
+              </span>
             ))}
             {map.npcs?.map((n) => (
               <span key={`n${n.x}-${n.y}`} className="world-token" style={{ left: n.x * TILE, top: n.y * TILE, width: TILE, height: TILE }}>

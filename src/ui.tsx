@@ -149,6 +149,33 @@ export function NpcToken({ kind, emoji, size = 46 }: { kind: string; emoji?: str
   )
 }
 
+// マップ上の小物。public/ui/prop_<kind>.png があれば画像、'fence'はCSS、無ければ絵文字。
+const PROP_EMOJI: Record<string, string> = {
+  bed: '🛏️', bookshelf: '📚', books: '📖', cauldron: '⚗️', candle: '🕯️', plant: '🪴',
+  rug: '🟥', window: '🪟', fireplace: '🔥', fountain: '⛲', barrel: '🛢️', crate: '📦',
+  lamp: '🏮', flower: '🌷', sign: '🪧', rock: '🪨', mushroom: '🍄', log: '🪵', anchor: '⚓', shell: '🐚',
+}
+const propImgState: Record<string, boolean> = {}
+export function PropToken({ kind, emoji, size = 30 }: { kind: string; emoji?: string; size?: number }) {
+  const [failed, setFailed] = useState(!!propImgState[kind])
+  if (!failed) {
+    return (
+      <img
+        className="prop-sprite"
+        src={`${import.meta.env.BASE_URL}ui/prop_${kind}.png`}
+        alt=""
+        style={{ width: size, height: size, objectFit: 'contain' }}
+        onError={() => {
+          propImgState[kind] = true
+          setFailed(true)
+        }}
+      />
+    )
+  }
+  if (kind === 'fence') return <span className="prop-fence" style={{ width: size, height: size * 0.5 }} aria-hidden />
+  return <span style={{ fontSize: size * 0.82, lineHeight: 1 }}>{emoji ?? PROP_EMOJI[kind] ?? '◽'}</span>
+}
+
 // タイトルロゴ。ui/logo.png があれば画像、無ければ文字。
 export function TitleLogo() {
   const [failed, setFailed] = useState(false)
