@@ -1031,6 +1031,36 @@ button:disabled {
 .building-token { z-index: 5; }
 .building-token::after { content: none !important; }
 .building-img { filter: drop-shadow(0 5px 8px rgba(0,0,0,0.5)); }
+.building-art { position: relative; line-height: 0; }
+.building-doorway {
+  position: absolute;
+  left: 50%;
+  bottom: 2.5%;
+  width: 20%;
+  height: 27%;
+  transform: translateX(-50%);
+  overflow: hidden;
+  border-radius: 45% 45% 3px 3px;
+  background: radial-gradient(ellipse at 50% 65%, #5d4930 0%, #251b12 62%, #090706 100%);
+  opacity: 0;
+  perspective: 220px;
+  transition: opacity 0.08s ease;
+}
+.building-art.door-open .building-doorway { opacity: 1; }
+.building-door-leaf {
+  position: absolute;
+  top: 0;
+  width: 51%;
+  height: 100%;
+  box-sizing: border-box;
+  background: repeating-linear-gradient(90deg, #6c4326 0 5px, #50301c 5px 7px);
+  border: 1px solid #2b190f;
+  transition: transform 0.32s cubic-bezier(.25,.75,.2,1);
+}
+.building-door-leaf.left { left: 0; transform-origin: left center; }
+.building-door-leaf.right { right: 0; transform-origin: right center; }
+.building-art.door-open .building-door-leaf.left { transform: rotateY(-82deg); }
+.building-art.door-open .building-door-leaf.right { transform: rotateY(82deg); }
 .css-house { position: relative; }
 .css-house .ch-roof { position: absolute; top: 0; left: -8%; width: 116%; height: 48%; background: linear-gradient(160deg, #9a5238, #6e3a2a); clip-path: polygon(50% 0, 100% 100%, 0 100%); filter: drop-shadow(0 3px 4px rgba(0,0,0,0.4)); }
 .css-house .ch-wall { position: absolute; bottom: 0; left: 9%; width: 82%; height: 56%; background: linear-gradient(#ddc89c, #c2a87e); border: 2px solid #6e5a3e; border-bottom: none; border-radius: 4px 4px 0 0; box-shadow: inset 0 -6px 10px rgba(0,0,0,0.12); }

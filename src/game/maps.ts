@@ -256,6 +256,28 @@ export const MAPS: Record<string, GameMap> = {
       { x: 29, y: 12, kind: 'fence', solid: true },
       // 案内板
       { x: 13, y: 12, kind: 'sign', name: '立て札', lines: ['「ようこそ、始まりの村ラピスへ。」'] },
+      // ── 追加の賑わい ──
+      // 花畑(各所)
+      { x: 4, y: 3, kind: 'flower' }, { x: 10, y: 3, kind: 'flower' }, { x: 15, y: 3, kind: 'flower' },
+      { x: 19, y: 3, kind: 'flower' }, { x: 24, y: 3, kind: 'flower' }, { x: 30, y: 3, kind: 'flower' },
+      { x: 2, y: 11, kind: 'flower' }, { x: 32, y: 11, kind: 'flower' }, { x: 8, y: 18, kind: 'flower' },
+      { x: 26, y: 18, kind: 'flower' }, { x: 6, y: 23, kind: 'flower' }, { x: 26, y: 23, kind: 'flower' },
+      { x: 15, y: 21, kind: 'flower' }, { x: 19, y: 21, kind: 'flower' },
+      // 植木・生垣
+      { x: 2, y: 3, kind: 'plant', solid: true }, { x: 31, y: 3, kind: 'plant', solid: true },
+      { x: 2, y: 9, kind: 'plant', solid: true }, { x: 32, y: 9, kind: 'plant', solid: true },
+      { x: 2, y: 18, kind: 'plant', solid: true }, { x: 32, y: 18, kind: 'plant', solid: true },
+      { x: 8, y: 24, kind: 'plant', solid: true }, { x: 28, y: 24, kind: 'plant', solid: true },
+      { x: 13, y: 18, kind: 'plant', solid: true }, { x: 21, y: 18, kind: 'plant', solid: true },
+      { x: 30, y: 17, kind: 'fence', solid: true }, { x: 31, y: 17, kind: 'fence', solid: true },
+      { x: 3, y: 11, kind: 'fence', solid: true }, { x: 3, y: 12, kind: 'fence', solid: true },
+      // 街灯
+      { x: 11, y: 8, kind: 'lamp', solid: true }, { x: 23, y: 8, kind: 'lamp', solid: true },
+      { x: 8, y: 13, kind: 'lamp', solid: true }, { x: 26, y: 13, kind: 'lamp', solid: true },
+      // 市場・倉庫(道具屋/宿屋まわり)
+      { x: 18, y: 16, kind: 'crate', solid: true }, { x: 18, y: 17, kind: 'barrel', solid: true },
+      { x: 28, y: 10, kind: 'barrel', solid: true }, { x: 29, y: 10, kind: 'crate', solid: true },
+      { x: 28, y: 11, kind: 'barrel', solid: true },
     ],
     chests: [
       { x: 31, y: 22, id: 'rapis_corner', item: 'heal', amount: 2 }, // 村の隅
@@ -372,6 +394,17 @@ export const MAPS: Record<string, GameMap> = {
       { x: 27, y: 19, kind: 'rock', solid: true },
       { x: 3, y: 4, kind: 'rock', solid: true },
       { x: 5, y: 24, kind: 'log', solid: true },
+      // ── 追加(非ソリッドは通路にも可、ソリッドは草地/広間/行き止まりのみ) ──
+      { x: 5, y: 21, kind: 'mushroom' }, { x: 22, y: 20, kind: 'mushroom' }, { x: 9, y: 15, kind: 'mushroom' },
+      { x: 25, y: 14, kind: 'mushroom' }, { x: 18, y: 5, kind: 'mushroom' }, { x: 3, y: 5, kind: 'mushroom' },
+      { x: 29, y: 26, kind: 'mushroom' }, { x: 26, y: 20, kind: 'mushroom' },
+      { x: 6, y: 19, kind: 'flower' }, { x: 23, y: 23, kind: 'flower' }, { x: 11, y: 13, kind: 'flower' },
+      { x: 27, y: 11, kind: 'flower' }, { x: 15, y: 4, kind: 'flower' }, { x: 20, y: 6, kind: 'flower' },
+      { x: 5, y: 20, kind: 'flower' }, { x: 30, y: 26, kind: 'flower' }, { x: 9, y: 12, kind: 'flower' },
+      { x: 4, y: 23, kind: 'rock', solid: true }, { x: 25, y: 23, kind: 'rock', solid: true },
+      { x: 24, y: 14, kind: 'rock', solid: true }, { x: 15, y: 6, kind: 'rock', solid: true },
+      { x: 29, y: 27, kind: 'rock', solid: true },
+      { x: 22, y: 21, kind: 'log', solid: true }, { x: 10, y: 13, kind: 'log', solid: true },
     ],
     chests: [
       { x: 3, y: 6, id: 'forest_nw', item: 'heal2', amount: 1 }, // 北西の行き止まり
@@ -396,6 +429,11 @@ export const MAPS: Record<string, GameMap> = {
       { x: 10, y: 9, kind: 'barrel', solid: true },
       { x: 5, y: 10, kind: 'shell' },
       { x: 15, y: 10, kind: 'shell' },
+      // ── 追加 ──
+      { x: 8, y: 10, kind: 'shell' }, { x: 12, y: 10, kind: 'shell' }, { x: 2, y: 9, kind: 'shell' },
+      { x: 19, y: 10, kind: 'shell' }, { x: 4, y: 9, kind: 'shell' },
+      { x: 6, y: 9, kind: 'rock', solid: true }, { x: 16, y: 9, kind: 'rock', solid: true },
+      { x: 13, y: 9, kind: 'barrel', solid: true }, { x: 14, y: 9, kind: 'crate', solid: true },
     ],
     intro: '潮の香りが満ちる海沿いの道。葦のしげみに水辺の幻獣が現れる。',
   },
@@ -430,6 +468,14 @@ export const MAPS: Record<string, GameMap> = {
       { x: 10, y: 6, kind: 'lamp', solid: true },
       { x: 18, y: 7, kind: 'crate', solid: true },
       { x: 8, y: 9, kind: 'fence', solid: true },
+      // ── 追加 ──
+      { x: 3, y: 3, kind: 'flower' }, { x: 21, y: 3, kind: 'flower' }, { x: 4, y: 11, kind: 'flower' },
+      { x: 10, y: 11, kind: 'flower' }, { x: 20, y: 10, kind: 'flower' },
+      { x: 6, y: 10, kind: 'barrel', solid: true }, { x: 5, y: 10, kind: 'crate', solid: true },
+      { x: 17, y: 9, kind: 'barrel', solid: true }, { x: 18, y: 9, kind: 'crate', solid: true },
+      { x: 4, y: 6, kind: 'lamp', solid: true }, { x: 20, y: 6, kind: 'lamp', solid: true },
+      { x: 2, y: 3, kind: 'plant', solid: true }, { x: 22, y: 3, kind: 'plant', solid: true },
+      { x: 2, y: 11, kind: 'plant', solid: true }, { x: 22, y: 11, kind: 'plant', solid: true },
     ],
     intro: '船が行き交う潮鳴りの港町。海風の向こう、支部長マレアが待つ。',
   },

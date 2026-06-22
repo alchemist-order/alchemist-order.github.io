@@ -278,21 +278,27 @@ export function ChestToken({ open = false, size = 30 }: { open?: boolean; size?:
 
 // 建物(立体イラスト)。public/ui/building_<kind>.png があれば画像、無ければCSSの簡易ハウス(屋根＋壁＋扉)。
 const buildingImgState: Record<string, boolean> = {}
-export function Building({ kind, w, tile }: { kind: string; w: number; tile: number }) {
+export function Building({ kind, w, tile, doorOpen = false }: { kind: string; w: number; tile: number; doorOpen?: boolean }) {
   const [failed, setFailed] = useState(!!buildingImgState[kind])
   const widthPx = w * tile
   if (!failed) {
     return (
-      <img
-        className="building-img"
-        src={`${import.meta.env.BASE_URL}ui/building_${kind}.png`}
-        alt=""
-        style={{ width: widthPx, height: 'auto' }}
-        onError={() => {
-          buildingImgState[kind] = true
-          setFailed(true)
-        }}
-      />
+      <div className={`building-art${doorOpen ? ' door-open' : ''}`} style={{ width: widthPx }}>
+        <img
+          className="building-img"
+          src={`${import.meta.env.BASE_URL}ui/building_${kind}.png`}
+          alt=""
+          style={{ width: widthPx, height: 'auto' }}
+          onError={() => {
+            buildingImgState[kind] = true
+            setFailed(true)
+          }}
+        />
+        <span className="building-doorway" aria-hidden>
+          <span className="building-door-leaf left" />
+          <span className="building-door-leaf right" />
+        </span>
+      </div>
     )
   }
   return (
