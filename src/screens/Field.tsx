@@ -1,14 +1,16 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import type { BattleConfig, GameState } from '../types'
 import { ENCOUNTER_RATE, MAPS, TRAINERS, isWall } from '../game/maps'
-import type { Npc } from '../game/maps'
-import { Building, LeaderToken, NpcToken, PlayerToken, PropToken, type Dir } from '../ui'
+import type { Chest, Npc } from '../game/maps'
+import { hasFlag } from '../game/state'
+import { Building, ChestToken, LeaderToken, NpcToken, PlayerToken, PropToken, type Dir } from '../ui'
 
 interface Props {
   state: GameState
   setState: (updater: (s: GameState) => GameState) => void
   onStartBattle: (config: BattleConfig) => void
   onTrainer: (trainer: (typeof TRAINERS)[string], biome: string) => void
+  onChest: (chest: Chest) => void
   onMenu: () => void
   onTalk: (npc: Npc) => void
   onBlockedExit: (msg: string) => void
@@ -44,7 +46,7 @@ const PROP_SCALE: Record<string, number> = {
 
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n))
 
-export default function Field({ state, setState, onStartBattle, onTrainer, onMenu, onTalk, onBlockedExit }: Props) {
+export default function Field({ state, setState, onStartBattle, onTrainer, onChest, onMenu, onTalk, onBlockedExit }: Props) {
   const map = MAPS[state.pos.mapId]
   const { x, y } = state.pos
   const cols = map.grid[0].length
@@ -131,6 +133,13 @@ export default function Field({ state, setState, onStartBattle, onTrainer, onMen
     if (npc) {
       stopHold()
       onTalk(npc)
+      return
+    }
+
+    const chest = m.chests?.find((c) => c.x === nx && c.y === ny)
+    if (chest) {
+      stopHold()
+      onChest(chest)
       return
     }
 
@@ -269,6 +278,11 @@ export default function Field({ state, setState, onStartBattle, onTrainer, onMen
             {map.props?.map((p, i) => (
               <span key={`p${i}`} className={`world-token prop-token${p.kind === 'rug' ? ' prop-flat' : ''}`} style={{ left: p.x * TILE, top: p.y * TILE, width: TILE, height: TILE }}>
                 <PropToken kind={p.kind} emoji={p.emoji} size={TILE * (PROP_SCALE[p.kind] ?? 1)} />
+              </span>
+            ))}
+            {map.chests?.map((c) => (
+              <span key={`c${c.id}`} className="world-token prop-token" style={{ left: c.x * TILE, top: c.y * TILE, width: TILE, height: TILE }}>
+                <ChestToken open={hasFlag(state, `chest_${c.id}`)} size={TILE * 0.92} />
               </span>
             ))}
             {map.npcs?.map((n) => (

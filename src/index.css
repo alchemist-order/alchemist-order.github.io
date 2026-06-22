@@ -1024,6 +1024,18 @@ button:disabled {
 .css-house .ch-roof { position: absolute; top: 0; left: -8%; width: 116%; height: 48%; background: linear-gradient(160deg, #9a5238, #6e3a2a); clip-path: polygon(50% 0, 100% 100%, 0 100%); filter: drop-shadow(0 3px 4px rgba(0,0,0,0.4)); }
 .css-house .ch-wall { position: absolute; bottom: 0; left: 9%; width: 82%; height: 56%; background: linear-gradient(#ddc89c, #c2a87e); border: 2px solid #6e5a3e; border-bottom: none; border-radius: 4px 4px 0 0; box-shadow: inset 0 -6px 10px rgba(0,0,0,0.12); }
 .css-house .ch-door { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); width: 36%; height: 64%; background: linear-gradient(#5a3a24, #3a2415); border: 2px solid #2a1c10; border-bottom: none; border-radius: 44% 44% 0 0; box-shadow: inset 0 3px 5px rgba(0,0,0,0.4); }
+/* 宝箱(CSS) */
+.chest { position: relative; display: inline-block; filter: drop-shadow(0 2px 3px rgba(0,0,0,0.45)); }
+.chest > span { position: absolute; box-sizing: border-box; }
+.chest .c-body { bottom: 0; left: 8%; width: 84%; height: 58%; background: linear-gradient(#8a5a32, #6e4424); border: 2px solid #4a2e16; border-radius: 0 0 4px 4px; }
+.chest .c-lid { top: 8%; left: 6%; width: 88%; height: 40%; background: linear-gradient(#9a6638, #7a4e28); border: 2px solid #4a2e16; border-radius: 8px 8px 2px 2px; transition: transform 0.2s; }
+.chest .c-band { top: 36%; left: 6%; width: 88%; height: 12%; background: #d9b53a; }
+.chest .c-lock { top: 40%; left: 45%; width: 10%; height: 13%; background: #f0d98a; border-radius: 2px; }
+.chest .c-glow { display: none; }
+.chest.open .c-lid { transform: translateY(-48%) rotate(-14deg); transform-origin: left bottom; }
+.chest.open .c-body { background: linear-gradient(#3a2415, #241509); }
+.chest.open .c-band, .chest.open .c-lock { display: none; }
+.chest.open .c-glow { display: block; inset: -20% 4% 28% 4%; background: radial-gradient(ellipse at center, rgba(240,217,154,0.55), rgba(240,217,154,0) 70%); }
 .prop-fence { display: inline-block; border-radius: 3px; background: repeating-linear-gradient(90deg, #8a6a44 0, #8a6a44 4px, #6f5436 4px, #6f5436 7px); border: 1px solid #5a4128; box-shadow: 0 2px 3px rgba(0,0,0,0.4); }
 
 /* ── 移動を滑らかに(マス間を補間) ── */

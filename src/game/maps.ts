@@ -29,6 +29,15 @@ export interface Prop {
   emoji?: string
 }
 
+// 宝箱。開けると item を amount 個入手。開封状態は flag 'chest_<id>' で保存
+export interface Chest {
+  x: number
+  y: number
+  id: string
+  item: 'heal' | 'heal2' | 'flask' | 'money'
+  amount: number
+}
+
 export interface GameMap {
   id: string
   name: string
@@ -41,6 +50,7 @@ export interface GameMap {
   npcs?: Npc[]
   props?: Prop[]
   buildings?: { x: number; y: number; w: number; h: number; kind: string }[] // 立体の家(footprintは'H'で進入不可)
+  chests?: Chest[]
   indoor?: boolean // 室内(床・壁の見た目)
   intro?: string
 }
@@ -247,6 +257,10 @@ export const MAPS: Record<string, GameMap> = {
       // 案内板
       { x: 13, y: 12, kind: 'sign', name: '立て札', lines: ['「ようこそ、始まりの村ラピスへ。」'] },
     ],
+    chests: [
+      { x: 31, y: 22, id: 'rapis_corner', item: 'heal', amount: 2 }, // 村の隅
+      { x: 3, y: 5, id: 'rapis_garden', item: 'money', amount: 150 }, // 家の脇
+    ],
     intro: '錬金工房が並ぶ静かな村。家の扉から中へ。南の門の先に緑霧の森が広がる。',
   },
   mentor_house: {
@@ -358,6 +372,11 @@ export const MAPS: Record<string, GameMap> = {
       { x: 27, y: 19, kind: 'rock', solid: true },
       { x: 3, y: 4, kind: 'rock', solid: true },
       { x: 5, y: 24, kind: 'log', solid: true },
+    ],
+    chests: [
+      { x: 3, y: 6, id: 'forest_nw', item: 'heal2', amount: 1 }, // 北西の行き止まり
+      { x: 30, y: 27, id: 'forest_se', item: 'flask', amount: 2 }, // 南東の行き止まり
+      { x: 27, y: 12, id: 'forest_r4', item: 'money', amount: 300 }, // 東の草地
     ],
     intro: '霧が立ちこめる森。高草には野生の幻獣がひそむ。奥に錬獣師の気配……。',
   },

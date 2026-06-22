@@ -227,6 +227,35 @@ export function PropToken({ kind, emoji, size = 30 }: { kind: string; emoji?: st
   return <span style={{ fontSize: size * 0.82, lineHeight: 1 }}>{emoji ?? PROP_EMOJI[kind] ?? '◽'}</span>
 }
 
+// 宝箱。public/ui/chest(_open).png があれば画像、無ければCSSの宝箱。openで開いた見た目。
+const chestImgState = { missing: false }
+export function ChestToken({ open = false, size = 30 }: { open?: boolean; size?: number }) {
+  const [failed, setFailed] = useState(chestImgState.missing)
+  if (!failed) {
+    return (
+      <img
+        className="chest-img"
+        src={`${import.meta.env.BASE_URL}ui/${open ? 'chest_open' : 'chest'}.png`}
+        alt=""
+        style={{ width: size, height: size, objectFit: 'contain', objectPosition: '50% 100%' }}
+        onError={() => {
+          chestImgState.missing = true
+          setFailed(true)
+        }}
+      />
+    )
+  }
+  return (
+    <span className={`chest${open ? ' open' : ''}`} style={{ width: size, height: size }}>
+      <span className="c-glow" />
+      <span className="c-lid" />
+      <span className="c-body" />
+      <span className="c-band" />
+      <span className="c-lock" />
+    </span>
+  )
+}
+
 // 建物(立体イラスト)。public/ui/building_<kind>.png があれば画像、無ければCSSの簡易ハウス(屋根＋壁＋扉)。
 const buildingImgState: Record<string, boolean> = {}
 export function Building({ kind, w, tile }: { kind: string; w: number; tile: number }) {

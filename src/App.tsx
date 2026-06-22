@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { BattleConfig, GameState, TrainerData } from './types'
-import type { Npc } from './game/maps'
+import type { Chest, Npc } from './game/maps'
 import {
   STARTER_IDS,
   hasFlag,
@@ -184,6 +184,32 @@ export default function App() {
     setDialogue({ lines: [msg] })
   }
 
+  // 宝箱を開ける(開封済みは flag で保存)
+  const onChest = (chest: Chest) => {
+    const flag = `chest_${chest.id}`
+    if (hasFlag(game, flag)) {
+      setDialogue({ lines: ['からっぽの 宝箱だ。'] })
+      return
+    }
+    setGame((s) => {
+      let ns = withFlag(s, flag)
+      if (chest.item === 'money') ns = { ...ns, money: ns.money + chest.amount }
+      else if (chest.item === 'flask') ns = { ...ns, flasks: ns.flasks + chest.amount }
+      else ns = { ...ns, items: { ...ns.items, [chest.item]: ns.items[chest.item] + chest.amount } }
+      return ns
+    })
+    audio.sfx('catch')
+    const label =
+      chest.item === 'money'
+        ? `💰 ${chest.amount}ゲル`
+        : chest.item === 'flask'
+          ? `🔮 封獣フラスコ × ${chest.amount}`
+          : chest.item === 'heal2'
+            ? `🧪 上傷薬 × ${chest.amount}`
+            : `🧪 傷薬 × ${chest.amount}`
+    setDialogue({ lines: ['たからばこを 開けた！', `${label} を 手に入れた！`] })
+  }
+
   const pickStarter = (id: string) => {
     const owned = makeOwned(id, STARTER_LEVEL)
     setGame((s) => {
@@ -276,6 +302,7 @@ export default function App() {
         setState={setGame}
         onStartBattle={startBattle}
         onTrainer={onTrainer}
+        onChest={onChest}
         onMenu={() => setScreen('home')}
         onTalk={onTalk}
         onBlockedExit={onBlockedExit}
