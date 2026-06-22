@@ -71,6 +71,14 @@ function frame(g: string[], ch = '#'): void {
   }
 }
 
+// 室内(壁で囲んだ床)。下壁の doorX に出入口を開ける
+function room(w: number, h: number, doorX: number): string[] {
+  const g = grid(w, h, '.')
+  frame(g, '#')
+  set(g, doorX, h - 1, '.')
+  return g
+}
+
 // 始まりの村ラピス(34x26) 広い芝生に石畳の十字路・家3軒・道具屋・南に森への門
 function buildRapis(): string[] {
   const g = grid(34, 26, ',')
@@ -151,9 +159,9 @@ export const MAPS: Record<string, GameMap> = {
     grid: buildRapis(),
     warps: [
       { x: 17, y: 24, to: 'forest', tx: 17, ty: 27, gate: 'starter' }, // 南=森へ
-      { x: 17, y: 6, to: 'mentor_house', tx: 3, ty: 3 }, // 中央=師の家
-      { x: 7, y: 8, to: 'home', tx: 3, ty: 3 }, // 左=わが家
-      { x: 26, y: 9, to: 'inn', tx: 3, ty: 3 }, // 右=宿屋
+      { x: 17, y: 6, to: 'mentor_house', tx: 5, ty: 7 }, // 中央=師の家
+      { x: 7, y: 8, to: 'home', tx: 5, ty: 7 }, // 左=わが家
+      { x: 26, y: 9, to: 'inn', tx: 5, ty: 7 }, // 右=宿屋
     ],
     npcs: [
       {
@@ -211,50 +219,53 @@ export const MAPS: Record<string, GameMap> = {
     name: '師ガレンの家',
     biome: 'town',
     indoor: true,
-    grid: ['#######', '#.....#', '#.....#', '#.....#', '#.....#', '#######'],
-    warps: [{ x: 3, y: 4, to: 'rapis', tx: 17, ty: 7 }],
-    npcs: [{ x: 3, y: 1, kind: 'mentor', name: '師ガレン' }],
+    grid: room(11, 9, 5),
+    warps: [{ x: 5, y: 8, to: 'rapis', tx: 17, ty: 7 }],
+    npcs: [{ x: 5, y: 2, kind: 'mentor', name: '師ガレン' }],
     props: [
       { x: 1, y: 1, kind: 'bookshelf', solid: true, name: '蔵書', lines: ['錬金術の古い写本がぎっしりだ。読めない記号が並んでいる。'] },
-      { x: 5, y: 1, kind: 'bookshelf', solid: true, name: '蔵書', lines: ['「賢者の石」について記された頁に、栞がはさまれている……。'] },
-      { x: 1, y: 3, kind: 'cauldron', solid: true, name: '錬成釜', lines: ['師の錬成釜。底に、虹色の残滓がこびりついている。'] },
-      { x: 5, y: 3, kind: 'candle', solid: true },
-      { x: 3, y: 3, kind: 'rug' },
+      { x: 2, y: 1, kind: 'bookshelf', solid: true, name: '蔵書', lines: ['「賢者の石」について記された頁に、栞がはさまれている……。'] },
+      { x: 8, y: 1, kind: 'bookshelf', solid: true },
+      { x: 9, y: 1, kind: 'bookshelf', solid: true },
+      { x: 1, y: 6, kind: 'cauldron', solid: true, name: '錬成釜', lines: ['師の錬成釜。底に、虹色の残滓がこびりついている。'] },
+      { x: 9, y: 6, kind: 'candle', solid: true },
+      { x: 5, y: 5, kind: 'rug' },
     ],
-    intro: '錬金道具と古びた書物が並ぶ、師の家。',
+    intro: '錬金道具と古びた書物が並ぶ、広い師の家。',
   },
   home: {
     id: 'home',
     name: 'わが家',
     biome: 'town',
     indoor: true,
-    grid: ['#######', '#.....#', '#.....#', '#.....#', '#.....#', '#######'],
+    grid: room(11, 9, 5),
     warps: [
-      { x: 3, y: 4, to: 'rapis', tx: 7, ty: 9 },
-      { x: 5, y: 1, to: 'home2f', tx: 4, ty: 4 },
+      { x: 5, y: 8, to: 'rapis', tx: 7, ty: 9 },
+      { x: 9, y: 1, to: 'home2f', tx: 5, ty: 7 }, // 階段(上)
     ],
-    npcs: [{ x: 3, y: 1, kind: 'mom', name: 'おかあさん' }],
+    npcs: [{ x: 3, y: 2, kind: 'mom', name: 'おかあさん' }],
     props: [
       { x: 1, y: 1, kind: 'fireplace', solid: true, name: '暖炉', lines: ['ぱちぱちと薪がはぜている。あたたかい。'] },
-      { x: 1, y: 2, kind: 'plant', solid: true },
-      { x: 5, y: 3, kind: 'plant', solid: true },
-      { x: 3, y: 2, kind: 'rug' },
+      { x: 1, y: 6, kind: 'plant', solid: true },
+      { x: 9, y: 6, kind: 'plant', solid: true },
+      { x: 7, y: 1, kind: 'bookshelf', solid: true },
+      { x: 4, y: 5, kind: 'rug' },
     ],
-    intro: 'あたたかな わが家。階段を上ると自分の部屋がある。',
+    intro: 'あたたかな わが家。奥の階段を上ると自分の部屋がある。',
   },
   home2f: {
     id: 'home2f',
     name: 'わが家・2階',
     biome: 'town',
     indoor: true,
-    grid: ['#######', '#.....#', '#.....#', '#.....#', '#.....#', '#######'],
-    warps: [{ x: 4, y: 4, to: 'home', tx: 5, ty: 2 }],
+    grid: room(11, 9, 5),
+    warps: [{ x: 5, y: 8, to: 'home', tx: 9, ty: 2 }], // 階段(下)
     props: [
       { x: 1, y: 1, kind: 'bed', solid: true, name: 'ベッド', lines: ['よく眠った。……今日から、旅が始まる。'] },
-      { x: 5, y: 1, kind: 'bookshelf', solid: true, name: '本棚', lines: ['古い幻獣図鑑。いつか、自分の見つけた幻獣を ここに書き足すんだ。'] },
-      { x: 4, y: 1, kind: 'candle', solid: true },
-      { x: 2, y: 3, kind: 'rug' },
-      { x: 3, y: 0, kind: 'window' },
+      { x: 9, y: 1, kind: 'bookshelf', solid: true, name: '本棚', lines: ['古い幻獣図鑑。いつか、自分の見つけた幻獣を ここに書き足すんだ。'] },
+      { x: 9, y: 6, kind: 'candle', solid: true },
+      { x: 5, y: 5, kind: 'rug' },
+      { x: 5, y: 0, kind: 'window' },
     ],
     intro: '自分の部屋。窓から朝の光が差し込んでいる。',
   },
@@ -263,16 +274,19 @@ export const MAPS: Record<string, GameMap> = {
     name: 'ラピスの宿屋',
     biome: 'town',
     indoor: true,
-    grid: ['#######', '#.....#', '#.....#', '#.....#', '#.....#', '#######'],
-    warps: [{ x: 3, y: 4, to: 'rapis', tx: 26, ty: 10 }],
-    npcs: [{ x: 3, y: 1, kind: 'inn', name: '宿屋の主人' }],
+    grid: room(11, 9, 5),
+    warps: [{ x: 5, y: 8, to: 'rapis', tx: 26, ty: 10 }],
+    npcs: [{ x: 5, y: 2, kind: 'inn', name: '宿屋の主人' }],
     props: [
       { x: 1, y: 1, kind: 'bed', solid: true },
-      { x: 5, y: 1, kind: 'bed', solid: true },
-      { x: 1, y: 3, kind: 'fireplace', solid: true, name: '暖炉', lines: ['旅人たちが暖を取っている。'] },
-      { x: 5, y: 3, kind: 'plant', solid: true },
+      { x: 2, y: 1, kind: 'bed', solid: true },
+      { x: 8, y: 1, kind: 'bed', solid: true },
+      { x: 9, y: 1, kind: 'bed', solid: true },
+      { x: 1, y: 6, kind: 'fireplace', solid: true, name: '暖炉', lines: ['旅人たちが暖を取っている。'] },
+      { x: 9, y: 6, kind: 'plant', solid: true },
+      { x: 5, y: 5, kind: 'rug' },
     ],
-    intro: '暖炉のぬくもりが心地よい宿屋。',
+    intro: '暖炉のぬくもりが心地よい広い宿屋。',
   },
   forest: {
     id: 'forest',
