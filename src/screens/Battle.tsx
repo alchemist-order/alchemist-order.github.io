@@ -20,7 +20,7 @@ import {
 } from '../game/state'
 import { getMoveset } from '../game/moves'
 import * as audio from '../game/audio'
-import { BattlePortrait, HpBar, Sprite, StatusBadge, TypeBadge } from '../ui'
+import { BattlePortrait, GetMonsterOverlay, HpBar, Sprite, StatusBadge, TypeBadge } from '../ui'
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n))
@@ -93,6 +93,7 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
   const [curUid, setCurUid] = useState(active.uid)
   const [mustSwitch, setMustSwitch] = useState(false)
   const [acting, setActing] = useState(false)
+  const [caught, setCaught] = useState<{ id: string; name: string; type: string } | null>(null)
 
   // 手持ちの生存メンバー(現在出ている個体を除く)
   const mk = (o: OwnedMonster): Combatant => {
@@ -457,6 +458,7 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
       setState((s) => withCaught({ ...s, collection: [...s.collection, caught] }, enemy.data.id))
       audio.sfx('catch')
       pushLog(`やった！ 野生の ${enemy.data.name}を 捕まえた！`, '🔮 図鑑に 登録された。')
+      setCaught({ id: enemy.data.id, name: enemy.data.name, type: enemy.data.type })
       setPhase('caught')
     } else {
       pushLog('ああっ！ 幻獣が フラスコから 出てしまった！')
@@ -682,6 +684,10 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
           )}
         </div>
       </div>
+
+      {caught && (
+        <GetMonsterOverlay id={caught.id} name={caught.name} type={caught.type} onClose={() => setCaught(null)} />
+      )}
     </div>
   )
 }

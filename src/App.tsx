@@ -15,7 +15,7 @@ import {
   withSeen,
 } from './game/state'
 import * as audio from './game/audio'
-import { Sprite, TitleLogo, TypeBadge } from './ui'
+import { GetMonsterOverlay, Sprite, TitleLogo, TypeBadge } from './ui'
 import Home from './screens/Home'
 import Battle from './screens/Battle'
 import Dex from './screens/Dex'
@@ -57,6 +57,7 @@ export default function App() {
   const [dialogue, setDialogue] = useState<DialogueData | null>(null)
   const [starterOpen, setStarterOpen] = useState(false)
   const [shopOpen, setShopOpen] = useState(false)
+  const [getMon, setGetMon] = useState<{ id: string; name: string; type: string; label?: string; after?: () => void } | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [vol, setVol] = useState(audio.getVolume())
   const [sfxOn, setSfxOn] = useState(audio.isSfxOn())
@@ -191,14 +192,23 @@ export default function App() {
       return next
     })
     setStarterOpen(false)
-    setDialogue({
-      speaker: '師ガレン',
-      portrait: 'mentor',
-      lines: [
-        '……いい目だ。その子が、おまえの最初の相棒。大切に育てなさい。',
-        '強さとは、勝つ数ではない。共に時を重ねた証だ。',
-        'さあ、行きなさい。村の出口の先、緑霧の森へ。',
-      ],
+    const m = species(id)
+    audio.sfx('catch')
+    setGetMon({
+      id,
+      name: m.name,
+      type: m.type,
+      label: 'を 相棒にした！',
+      after: () =>
+        setDialogue({
+          speaker: '師ガレン',
+          portrait: 'mentor',
+          lines: [
+            '……いい目だ。その子が、おまえの最初の相棒。大切に育てなさい。',
+            '強さとは、勝つ数ではない。共に時を重ねた証だ。',
+            'さあ、行きなさい。村の出口の先、緑霧の森へ。',
+          ],
+        }),
     })
   }
 
@@ -326,6 +336,20 @@ export default function App() {
             </div>
           </div>
         </div>
+      )}
+
+      {getMon && (
+        <GetMonsterOverlay
+          id={getMon.id}
+          name={getMon.name}
+          type={getMon.type}
+          label={getMon.label}
+          onClose={() => {
+            const after = getMon.after
+            setGetMon(null)
+            after?.()
+          }}
+        />
       )}
 
       {dialogue && (

@@ -791,6 +791,21 @@ button:disabled {
 .trainer-portrait .leader-sprite { filter: drop-shadow(0 3px 5px rgba(0,0,0,0.7)); }
 .battle-portrait-img { filter: drop-shadow(0 4px 10px rgba(0,0,0,0.6)); }
 
+/* ── 幻獣入手の演出 ── */
+.get-overlay { position: fixed; inset: 0; z-index: 130; display: flex; align-items: center; justify-content: center; background: rgba(10,8,5,0.82); animation: get-fade 0.25s ease; }
+@keyframes get-fade { from { opacity: 0 } to { opacity: 1 } }
+.get-card { position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 28px 34px; }
+.get-rays { position: absolute; top: 50%; left: 50%; width: 360px; height: 360px; transform: translate(-50%, -62%); border-radius: 50%; background: repeating-conic-gradient(from 0deg, rgba(240,217,154,0.20) 0deg 6deg, rgba(240,217,154,0) 6deg 18deg); animation: get-spin 9s linear infinite; filter: blur(0.5px); pointer-events: none; }
+@keyframes get-spin { to { transform: translate(-50%, -62%) rotate(360deg) } }
+.get-burst { position: absolute; inset: 0; background: radial-gradient(circle at center, rgba(255,255,255,0.55), rgba(255,255,255,0) 32%); animation: get-flash 0.55s ease forwards; pointer-events: none; }
+@keyframes get-flash { 0% { opacity: 0 } 22% { opacity: 1 } 100% { opacity: 0 } }
+.get-sprite { position: relative; z-index: 1; animation: get-pop 0.5s cubic-bezier(0.2, 1.4, 0.4, 1); filter: drop-shadow(0 10px 20px rgba(0,0,0,0.6)); }
+@keyframes get-pop { 0% { transform: scale(0.2); opacity: 0 } 60% { transform: scale(1.14) } 100% { transform: scale(1); opacity: 1 } }
+.get-name { position: relative; z-index: 1; font-size: 23px; font-weight: 800; color: var(--gold-bright); text-shadow: 0 2px 6px #000; animation: get-up 0.5s 0.12s both ease; }
+.get-name span { color: var(--ink); font-size: 16px; font-weight: 600; }
+@keyframes get-up { from { opacity: 0; transform: translateY(14px) } to { opacity: 1; transform: none } }
+.get-ok { position: relative; z-index: 1; margin-top: 6px; animation: get-up 0.5s 0.28s both ease; }
+
 /* ── タイトル画面 ── */
 .title-screen {
   min-height: 78vh;

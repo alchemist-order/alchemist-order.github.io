@@ -248,6 +248,41 @@ export function TitleLogo() {
   )
 }
 
+// 幻獣を入手したときの全画面演出(捕獲・御三家など)
+export function GetMonsterOverlay({
+  id,
+  name,
+  type,
+  label = 'を 仲間にした！',
+  onClose,
+}: {
+  id: string
+  type: string
+  name: string
+  label?: string
+  onClose: () => void
+}) {
+  return (
+    <div className="get-overlay" onClick={onClose}>
+      <div className="get-burst" />
+      <div className="get-card" onClick={(e) => e.stopPropagation()}>
+        <div className="get-rays" />
+        <div className="get-sprite">
+          <Sprite id={id} type={type} size={172} bare />
+        </div>
+        <div className="get-name">
+          {name}
+          <span>{label}</span>
+        </div>
+        <TypeBadge t={type} />
+        <button className="title-btn primary get-ok" onClick={onClose}>
+          やった！
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export function HpBar({ c }: { c: Combatant }) {
   const ratio = c.hp / c.maxHp
   const hpColor = ratio > 0.5 ? '#43c463' : ratio > 0.2 ? '#e2c23b' : '#e2563b'
