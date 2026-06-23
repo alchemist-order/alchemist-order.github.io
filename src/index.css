@@ -840,6 +840,7 @@ button:disabled {
 .fuse-plus { font-size: 20px; color: var(--gold-bright); }
 .fuse-preview { text-align: center; font-size: 15px; color: var(--ink); padding: 6px; background: rgba(0,0,0,0.25); border-radius: 8px; }
 .fuse-preview b { color: var(--gold-bright); }
+.inherit-tag { font-size: 9px; background: #9a6cd0; color: #fff; border-radius: 5px; padding: 0 5px; margin-left: 5px; vertical-align: middle; }
 
 /* ── 幻獣入手の演出 ── */
 .get-overlay { position: fixed; inset: 0; z-index: 130; display: flex; align-items: center; justify-content: center; background: rgba(10,8,5,0.82); animation: get-fade 0.25s ease; }

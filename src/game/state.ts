@@ -1,8 +1,8 @@
 // ゲーム状態の管理 — 種族データ参照・経験値/進化・捕獲・セーブ復元
-import type { Combatant, GameState, MonsterData, OwnedMonster } from '../types'
+import type { Combatant, GameState, MonsterData, Move, OwnedMonster } from '../types'
 import monstersJson from '../../data/monsters.json'
 import { makeCombatant } from '../engine/battleEngine'
-import { getMoveset } from './moves'
+import { getMoveset, signatureMove } from './moves'
 
 export const DEX = monstersJson.dex as unknown as MonsterData[]
 export const STARTER_IDS = monstersJson.meta.starters as string[]
@@ -134,13 +134,31 @@ export function pendingDexMilestones(s: GameState): { n: number; reward: Reward 
 // ── 錬成(融合) ──
 export const FUSION_COST = 300 // 錬成の費用(ゲル)
 export const TALENT_MAX = 10
-/** ベースaを素材bで錬成した結果。aは可能なら進化、才能は+1(上限) */
-export function fuseResult(a: OwnedMonster, b: OwnedMonster): { speciesId: string; level: number; talent: number; evolved: boolean } {
+export const MAX_INHERITED = 2 // 遺伝技の保持上限
+/** ベースaを素材bで錬成した結果。aは可能なら進化、才能+1、素材の必殺技を遺伝技として継承 */
+export function fuseResult(a: OwnedMonster, b: OwnedMonster): { speciesId: string; level: number; talent: number; evolved: boolean; inherited: Move[] } {
   const sp = species(a.speciesId)
   const evolvedId = sp.to && DEX.some((d) => d.id === sp.to) ? (sp.to as string) : a.speciesId
   const level = Math.max(5, Math.min(60, Math.round((a.level + b.level) / 2) + 3))
   const talent = Math.min(TALENT_MAX, Math.max(a.talent ?? 0, b.talent ?? 0) + 1)
-  return { speciesId: evolvedId, level, talent, evolved: evolvedId !== a.speciesId }
+  // 素材の必殺技＋両者の既存遺伝技を、id重複を除いて末尾2つに
+  const resultNatural = getMoveset(species(evolvedId), level)
+  const pool = [signatureMove(species(b.speciesId)), ...(a.inheritedMoves ?? []), ...(b.inheritedMoves ?? [])]
+  const inherited: Move[] = []
+  for (const mv of pool) {
+    if (inherited.some((m) => m.id === mv.id)) continue
+    if (resultNatural.some((m) => m.id === mv.id)) continue
+    inherited.push(mv)
+    if (inherited.length >= MAX_INHERITED) break
+  }
+  return { speciesId: evolvedId, level, talent, evolved: evolvedId !== a.speciesId, inherited }
+}
+
+/** 所有個体の実際の技セット(習得技＋遺伝技、id重複除く) */
+export function ownedMoveset(o: OwnedMonster): Move[] {
+  const natural = getMoveset(species(o.speciesId), o.level)
+  const extra = (o.inheritedMoves ?? []).filter((m) => !natural.some((n) => n.id === m.id))
+  return [...natural, ...extra]
 }
 
 export function saveGame(s: GameState): void {

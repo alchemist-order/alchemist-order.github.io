@@ -8,10 +8,10 @@ import {
   DEX_TOTAL,
   expToNext,
   grantReward,
+  ownedMoveset,
   species,
 } from '../game/state'
 import { statAt } from '../engine/battleEngine'
-import { getMoveset } from '../game/moves'
 import * as audio from '../game/audio'
 import { ItemIcon, Sprite, TypeBadge } from '../ui'
 
@@ -79,7 +79,8 @@ export default function Home({ state, setState, setActive, onField, onDex }: Pro
   const hpColor = hpRatio > 0.5 ? '#43c463' : hpRatio > 0.2 ? '#e2c23b' : '#e2563b'
   const expNeed = expToNext(sel.level)
   const expRatio = Math.min(1, sel.exp / expNeed)
-  const moves = getMoveset(sp, sel.level)
+  const moves = ownedMoveset(sel)
+  const inheritedIds = new Set((sel.inheritedMoves ?? []).map((m) => m.id))
   const isActive = sel.uid === active.uid
 
   return (
@@ -214,7 +215,10 @@ export default function Home({ state, setState, setActive, onField, onDex }: Pro
             <div className="move-list">
               {moves.map((mv) => (
                 <div className="move-chip" key={mv.id}>
-                  <span className="mc-name">{mv.name}</span>
+                  <span className="mc-name">
+                    {mv.name}
+                    {inheritedIds.has(mv.id) && <span className="inherit-tag">遺伝</span>}
+                  </span>
                   <span className="mc-meta">
                     <TypeBadge t={mv.type} />
                     {mv.category === 'status' ? (mv.heal ? '回復' : '状態') : `威${mv.power}`}・命{Math.round(mv.acc * 100)}

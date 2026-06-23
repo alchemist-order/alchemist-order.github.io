@@ -33,6 +33,13 @@ const maxPP = (m: Move): number =>
 const initPP = (moves: Move[]): Record<string, number> =>
   Object.fromEntries(moves.map((m) => [m.id, maxPP(m)]))
 
+// 習得技＋遺伝技(id重複除く)。バトル中の進化にも対応するため data/level から組む
+const withInherited = (data: Combatant['data'], level: number, inherited?: Move[]): Move[] => {
+  const natural = getMoveset(data, level)
+  const extra = (inherited ?? []).filter((m) => !natural.some((n) => n.id === m.id))
+  return [...natural, ...extra]
+}
+
 function makeWild(playerLevel: number, config: Extract<BattleConfig, { kind: 'wild' }>): Combatant {
   // DEVデモ用: localStorage.demo_enemy が指定されていればその種を出す(本番では無効)
   if (import.meta.env.DEV) {
@@ -109,8 +116,11 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
   const popupKey = useRef(0)
   const logEndRef = useRef<HTMLDivElement>(null)
 
-  const playerMoves = useMemo(() => getMoveset(player.data, player.level), [player.data, player.level])
-  const [pp, setPp] = useState<Record<string, number>>(() => initPP(getMoveset(player.data, player.level)))
+  const playerMoves = useMemo(
+    () => withInherited(player.data, player.level, state.collection.find((o) => o.uid === curUid)?.inheritedMoves),
+    [player.data, player.level, curUid, state.collection],
+  )
+  const [pp, setPp] = useState<Record<string, number>>(() => initPP(withInherited(player.data, player.level, active.inheritedMoves)))
   const struggle: Move = { id: 'struggle', name: 'あがき', type: player.data.type, category: 'phys', power: 30, acc: 1, desc: 'PPが尽きたときの最後のあがき。少し反動を受ける。' }
   const ppOf = (mv: Move) => pp[mv.id] ?? maxPP(mv)
   const allEmpty = playerMoves.every((mv) => ppOf(mv) <= 0)
@@ -292,7 +302,7 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
     setCurUid(uid)
     const newC = mk(target)
     setPlayer(newC)
-    setPp(initPP(getMoveset(newC.data, newC.level)))
+    setPp(initPP(withInherited(newC.data, newC.level, target.inheritedMoves)))
     pushLog(`ゆけ、${newC.data.name}！`)
     setMustSwitch(false)
     setMenu('root')

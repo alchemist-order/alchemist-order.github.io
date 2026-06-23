@@ -223,7 +223,7 @@ export default function App() {
     const b = game.collection.find((o) => o.uid === fuseB)
     if (!a || !b || a.uid === b.uid || game.money < FUSION_COST) return
     const r = fuseResult(a, b)
-    const result = { ...makeOwned(r.speciesId, r.level), talent: r.talent }
+    const result = { ...makeOwned(r.speciesId, r.level), talent: r.talent, inheritedMoves: r.inherited }
     setGame((s) => {
       const coll = [...s.collection.filter((o) => o.uid !== a.uid && o.uid !== b.uid), result]
       const activeUid = s.activeUid === a.uid || s.activeUid === b.uid ? result.uid : s.activeUid
@@ -505,7 +505,11 @@ export default function App() {
                   </div>
                   <div className="fuse-preview">
                     {prev ? (
-                      <span>→ <b>{species(prev.speciesId).name}</b> Lv{prev.level}・才能★{prev.talent}{prev.evolved ? '（進化！）' : ''}</span>
+                      <span>
+                        → <b>{species(prev.speciesId).name}</b> Lv{prev.level}・才能★{prev.talent}
+                        {prev.evolved ? '（進化！）' : ''}
+                        {prev.inherited.length > 0 && <><br />遺伝技: {prev.inherited.map((m) => m.name).join('、')}</>}
+                      </span>
                     ) : (
                       <span className="cmd-sub">2体を選ぶと結果が表示されます</span>
                     )}
