@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { BattleConfig, GameState, TrainerData } from './types'
 import type { Chest, Npc } from './game/maps'
 import {
   STARTER_IDS,
+  applyDailyLogin,
   hasFlag,
   healParty,
   loadGame,
@@ -87,6 +88,23 @@ export default function App() {
     window.addEventListener('click', h)
     return () => window.removeEventListener('click', h)
   }, [])
+
+  // ログインボーナス(日付が変わっていれば付与)。本編に入った時に1度だけ
+  const loginRef = useRef(false)
+  useEffect(() => {
+    if (phase !== 'game' || loginRef.current) return
+    loginRef.current = true
+    const { state: ns, reward } = applyDailyLogin(game)
+    setGame(() => ns)
+    if (reward) {
+      audio.sfx('coin')
+      setDialogue({
+        speaker: 'ログインボーナス',
+        lines: [`${reward.streak}日 連続ログイン！`, `💰 ${reward.money}ゲル と 🔮 封獣フラスコ×${reward.flask} を 受け取った！`],
+      })
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase])
 
   useEffect(() => {
     let key = 'title'
@@ -280,6 +298,7 @@ export default function App() {
     content = (
       <Home
         state={game}
+        setState={setGame}
         setActive={(uid) => setGame((s) => ({ ...s, activeUid: uid }))}
         onField={() => setScreen('field')}
         onDex={() => setScreen('dex')}

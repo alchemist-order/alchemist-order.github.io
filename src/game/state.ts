@@ -45,10 +45,90 @@ export function loadGame(): GameState | null {
     // ネストは既定値で補完(旧セーブ対応)
     merged.items = { heal: p.items?.heal ?? 0, heal2: p.items?.heal2 ?? 0 }
     merged.money = p.money ?? 0
+    merged.achievements = p.achievements ?? []
+    merged.dexClaimed = p.dexClaimed ?? []
     return merged
   } catch {
     return null
   }
+}
+
+// ── やりこみ(日課/実績/図鑑報酬) ──
+export type Reward = { money?: number; flask?: number; heal?: number; heal2?: number }
+export const DAILY_GOAL = 3 // デイリー: 野生討伐数
+export const DAILY_REWARD: { money: number; flask: number } = { money: 150, flask: 2 }
+
+function dateStr(d: Date): string {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+export function today(): string {
+  return dateStr(new Date())
+}
+function yesterdayStr(): string {
+  const d = new Date()
+  d.setDate(d.getDate() - 1)
+  return dateStr(d)
+}
+
+export function grantReward(s: GameState, r: Reward): GameState {
+  return {
+    ...s,
+    money: s.money + (r.money ?? 0),
+    flasks: s.flasks + (r.flask ?? 0),
+    items: { heal: s.items.heal + (r.heal ?? 0), heal2: s.items.heal2 + (r.heal2 ?? 0) },
+  }
+}
+
+/** ログイン処理。日付が変わっていればボーナス付与＋デイリーをリセット。reward!=nullなら新規ログイン */
+export function applyDailyLogin(s: GameState): { state: GameState; reward: { money: number; flask: number; streak: number } | null } {
+  const t = today()
+  if (s.lastLogin === t) {
+    const daily = s.daily && s.daily.date === t ? s.daily : { date: t, wild: 0, claimed: false }
+    return { state: { ...s, daily }, reward: null }
+  }
+  const streak = s.lastLogin === yesterdayStr() ? (s.loginStreak ?? 0) + 1 : 1
+  const money = 100 + Math.min(streak, 7) * 20
+  const flask = 1
+  const ns: GameState = {
+    ...grantReward(s, { money, flask }),
+    lastLogin: t,
+    loginStreak: streak,
+    daily: { date: t, wild: 0, claimed: false },
+  }
+  return { state: ns, reward: { money, flask, streak } }
+}
+
+export interface Achievement {
+  id: string
+  name: string
+  desc: string
+  reward: Reward
+  check: (s: GameState) => boolean
+}
+export const ACHIEVEMENTS: Achievement[] = [
+  { id: 'first_win', name: 'はじめての勝利', desc: 'バトルに 1回 勝つ', reward: { money: 100 }, check: (s) => s.wins >= 1 },
+  { id: 'catch_5', name: 'コレクター見習い', desc: '5体 つかまえる', reward: { flask: 3 }, check: (s) => s.caught.length >= 5 },
+  { id: 'catch_15', name: 'コレクター', desc: '15体 つかまえる', reward: { money: 300 }, check: (s) => s.caught.length >= 15 },
+  { id: 'badge_1', name: '最初の記章', desc: '記章を 1つ 得る', reward: { heal2: 2 }, check: (s) => s.badges.length >= 1 },
+  { id: 'rich', name: '小金持ち', desc: '所持金 1000ゲル', reward: { money: 200 }, check: (s) => s.money >= 1000 },
+  { id: 'wins_20', name: '歴戦の錬獣師', desc: '20回 勝つ', reward: { money: 500 }, check: (s) => s.wins >= 20 },
+  { id: 'party_3', name: 'にぎやかな旅', desc: '手持ちを 3体にする', reward: { heal: 3 }, check: (s) => s.collection.length >= 3 },
+]
+/** 達成済みだが未受取の実績 */
+export function pendingAchievements(s: GameState): Achievement[] {
+  const got = s.achievements ?? []
+  return ACHIEVEMENTS.filter((a) => a.check(s) && !got.includes(a.id))
+}
+
+export const DEX_MILESTONES: { n: number; reward: Reward }[] = [
+  { n: 10, reward: { money: 200 } },
+  { n: 25, reward: { flask: 5 } },
+  { n: 50, reward: { money: 1000 } },
+  { n: 100, reward: { heal2: 10 } },
+]
+export function pendingDexMilestones(s: GameState): { n: number; reward: Reward }[] {
+  const claimed = s.dexClaimed ?? []
+  return DEX_MILESTONES.filter((m) => s.caught.length >= m.n && !claimed.includes(m.n))
 }
 
 export function saveGame(s: GameState): void {

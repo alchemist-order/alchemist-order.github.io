@@ -1,15 +1,35 @@
 import { useState } from 'react'
 import type { GameState, OwnedMonster } from '../types'
-import { DEX_TOTAL, expToNext, species } from '../game/state'
+import {
+  ACHIEVEMENTS,
+  DAILY_GOAL,
+  DAILY_REWARD,
+  DEX_MILESTONES,
+  DEX_TOTAL,
+  expToNext,
+  grantReward,
+  species,
+} from '../game/state'
 import { statAt } from '../engine/battleEngine'
 import { getMoveset } from '../game/moves'
+import * as audio from '../game/audio'
 import { ItemIcon, Sprite, TypeBadge } from '../ui'
 
 interface Props {
   state: GameState
+  setState: (updater: (s: GameState) => GameState) => void
   setActive: (uid: string) => void
   onField: () => void
   onDex: () => void
+}
+
+function rewardLabel(r: { money?: number; flask?: number; heal?: number; heal2?: number }): string {
+  const parts: string[] = []
+  if (r.money) parts.push(`💰${r.money}`)
+  if (r.flask) parts.push(`🔮×${r.flask}`)
+  if (r.heal) parts.push(`🧪傷×${r.heal}`)
+  if (r.heal2) parts.push(`🧪上×${r.heal2}`)
+  return parts.join(' ')
 }
 
 const STAT_LABELS = ['さいだいHP', 'こうげき', 'ぼうぎょ', 'すばやさ', 'まりょく']
@@ -25,9 +45,29 @@ function ownedStats(o: OwnedMonster) {
   }
 }
 
-export default function Home({ state, setActive, onField, onDex }: Props) {
+export default function Home({ state, setState, setActive, onField, onDex }: Props) {
   const active = state.collection.find((o) => o.uid === state.activeUid) ?? state.collection[0]
-  const [tab, setTab] = useState<'party' | 'items'>('party')
+  const [tab, setTab] = useState<'party' | 'items' | 'note'>('party')
+
+  // やりこみ: 受け取り処理
+  const dailyDone = !!state.daily && state.daily.wild >= DAILY_GOAL
+  const dailyClaimable = dailyDone && !state.daily?.claimed
+  const claimDaily = () => {
+    if (!dailyClaimable) return
+    audio.sfx('coin')
+    setState((s) => (s.daily && s.daily.wild >= DAILY_GOAL && !s.daily.claimed ? { ...grantReward(s, DAILY_REWARD), daily: { ...s.daily, claimed: true } } : s))
+  }
+  const claimDex = (n: number, reward: { money?: number; flask?: number; heal?: number; heal2?: number }) => {
+    audio.sfx('coin')
+    setState((s) => ((s.dexClaimed ?? []).includes(n) || s.caught.length < n ? s : { ...grantReward(s, reward), dexClaimed: [...(s.dexClaimed ?? []), n] }))
+  }
+  const claimAch = (id: string) => {
+    const a = ACHIEVEMENTS.find((x) => x.id === id)
+    if (!a) return
+    audio.sfx('coin')
+    setState((s) => ((s.achievements ?? []).includes(id) || !a.check(s) ? s : { ...grantReward(s, a.reward), achievements: [...(s.achievements ?? []), id] }))
+  }
+
   const [selUid, setSelUid] = useState(active.uid)
   const sel = state.collection.find((o) => o.uid === selUid) ?? active
 
@@ -58,9 +98,65 @@ export default function Home({ state, setActive, onField, onDex }: Props) {
         <button className={`menu-tab ${tab === 'items' ? 'on' : ''}`} onClick={() => setTab('items')}>
           どうぐ
         </button>
+        <button className={`menu-tab ${tab === 'note' ? 'on' : ''}`} onClick={() => setTab('note')}>
+          ノート{dailyClaimable ? ' ●' : ''}
+        </button>
       </div>
 
-      {tab === 'party' ? (
+      {tab === 'note' ? (
+        <div className="items-pane">
+          {/* ログイン */}
+          <div className="money-box">🔥 連続ログイン <b>{state.loginStreak ?? 1}</b> 日</div>
+          {/* デイリー */}
+          <h3 className="section-title">デイリー</h3>
+          <div className="item-row">
+            <span className="item-ico">⚔</span>
+            <div className="grow">
+              <div className="item-name">野生の幻獣を {DAILY_GOAL}体 たおす</div>
+              <div className="item-desc">進捗 {Math.min(state.daily?.wild ?? 0, DAILY_GOAL)}/{DAILY_GOAL} ・ 報酬 {rewardLabel(DAILY_REWARD)}</div>
+            </div>
+            <button className="title-btn" style={{ padding: '6px 14px', fontSize: 14 }} disabled={!dailyClaimable} onClick={claimDaily}>
+              {state.daily?.claimed ? '受取済' : dailyDone ? '受け取る' : `${Math.min(state.daily?.wild ?? 0, DAILY_GOAL)}/${DAILY_GOAL}`}
+            </button>
+          </div>
+          {/* 図鑑報酬 */}
+          <h3 className="section-title">図鑑報酬（{state.caught.length}/{DEX_TOTAL}）</h3>
+          {DEX_MILESTONES.map((m) => {
+            const claimed = (state.dexClaimed ?? []).includes(m.n)
+            const reached = state.caught.length >= m.n
+            return (
+              <div className="item-row" key={m.n}>
+                <span className="item-ico">📖</span>
+                <div className="grow">
+                  <div className="item-name">{m.n}体 とうろく</div>
+                  <div className="item-desc">報酬 {rewardLabel(m.reward)}</div>
+                </div>
+                <button className="title-btn" style={{ padding: '6px 14px', fontSize: 14 }} disabled={!reached || claimed} onClick={() => claimDex(m.n, m.reward)}>
+                  {claimed ? '受取済' : reached ? '受け取る' : '🔒'}
+                </button>
+              </div>
+            )
+          })}
+          {/* 実績 */}
+          <h3 className="section-title">実績</h3>
+          {ACHIEVEMENTS.map((a) => {
+            const done = (state.achievements ?? []).includes(a.id)
+            const met = a.check(state)
+            return (
+              <div className="item-row" key={a.id}>
+                <span className="item-ico">{done ? '🏅' : met ? '✨' : '🔒'}</span>
+                <div className="grow">
+                  <div className="item-name">{a.name}</div>
+                  <div className="item-desc">{a.desc} ・ 報酬 {rewardLabel(a.reward)}</div>
+                </div>
+                <button className="title-btn" style={{ padding: '6px 14px', fontSize: 14 }} disabled={done || !met} onClick={() => claimAch(a.id)}>
+                  {done ? '達成' : met ? '受け取る' : '🔒'}
+                </button>
+              </div>
+            )
+          })}
+        </div>
+      ) : tab === 'party' ? (
         <>
           {/* 選択中の幻獣 詳細 */}
           <div className="card detail-card">

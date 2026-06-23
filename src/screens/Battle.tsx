@@ -15,6 +15,7 @@ import {
   expReward,
   grantExp,
   species,
+  today,
   withCaught,
   withSeen,
 } from '../game/state'
@@ -183,7 +184,13 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
       return
     }
     const prize = 10 + enemy.level * 3
-    setState((s) => ({ ...s, wins: s.wins + 1, flasks: s.flasks + 1, money: s.money + prize }))
+    setState((s) => ({
+      ...s,
+      wins: s.wins + 1,
+      flasks: s.flasks + 1,
+      money: s.money + prize,
+      daily: s.daily && s.daily.date === today() ? { ...s.daily, wild: s.daily.wild + 1 } : s.daily,
+    }))
     pushLog(`野生の ${enemy.data.name} を たおした！`, ...expMsgs, `🔮 封獣フラスコ＋1 / 💰 ${prize}ゲル`)
     audio.playVictory()
     setPhase('won')
