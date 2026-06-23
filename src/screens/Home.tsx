@@ -12,6 +12,7 @@ import {
   getParty,
   grantReward,
   ownedMoveset,
+  playerTitle,
   species,
   withdrawToParty,
 } from '../game/state'
@@ -25,6 +26,7 @@ interface Props {
   setActive: (uid: string) => void
   onField: () => void
   onDex: () => void
+  initialTab?: 'party' | 'items' | 'note' | 'record'
 }
 
 function rewardLabel(r: { money?: number; flask?: number; heal?: number; heal2?: number }): string {
@@ -51,9 +53,9 @@ function ownedStats(o: OwnedMonster) {
   }
 }
 
-export default function Home({ state, setState, setActive, onField, onDex }: Props) {
+export default function Home({ state, setState, setActive, onField, onDex, initialTab = 'party' }: Props) {
   const active = state.collection.find((o) => o.uid === state.activeUid) ?? state.collection[0]
-  const [tab, setTab] = useState<'party' | 'items' | 'note'>('party')
+  const [tab, setTab] = useState<'party' | 'items' | 'note' | 'record'>(initialTab)
   const [zoom, setZoom] = useState(false) // 幻獣の大きい表示
 
   // やりこみ: 受け取り処理
@@ -156,6 +158,9 @@ export default function Home({ state, setState, setActive, onField, onDex }: Pro
         </button>
         <button className={`menu-tab ${tab === 'note' ? 'on' : ''}`} onClick={() => setTab('note')}>
           ノート{dailyClaimable ? ' ●' : ''}
+        </button>
+        <button className={`menu-tab ${tab === 'record' ? 'on' : ''}`} onClick={() => setTab('record')}>
+          記録
         </button>
       </div>
 
@@ -311,6 +316,60 @@ export default function Home({ state, setState, setActive, onField, onDex }: Pro
             {boxMons.map((o) => monRow(o, 'box'))}
           </div>
         </>
+      ) : tab === 'record' ? (
+        <div className="items-pane">
+          {/* プロフィール */}
+          <div className="card detail-card" style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+            <Sprite id={sp.id} type={sp.type} size={56} />
+            <div className="grow">
+              <input
+                value={state.playerName ?? ''}
+                placeholder="なまえを入力"
+                maxLength={12}
+                onChange={(e) => setState((s) => ({ ...s, playerName: e.target.value }))}
+                style={{
+                  width: '100%', fontSize: 18, fontWeight: 700, padding: '6px 10px', borderRadius: 8,
+                  border: '1px solid rgba(212,175,90,0.5)', background: 'rgba(20,16,10,0.5)', color: '#f3e6c4',
+                }}
+              />
+              <div className="dex-text" style={{ marginTop: 4 }}>称号：<b>{playerTitle(state)}</b></div>
+            </div>
+          </div>
+
+          {/* 戦績 */}
+          <h3 className="section-title">戦績</h3>
+          {(() => {
+            const pct = Math.round((state.caught.length / DEX_TOTAL) * 100)
+            const rows: { ico: string; name: string; val: string }[] = [
+              { ico: '📖', name: '図鑑コンプリート', val: `${state.caught.length} / ${DEX_TOTAL} 体（${pct}%）` },
+              { ico: '🎖', name: '記章', val: `${state.badges.length} / 8` },
+              { ico: '🗼', name: '試練の塔 自己ベスト', val: `${state.towerBest ?? 0} 階` },
+              { ico: '⚔', name: '通算勝利数', val: `${state.wins} 勝` },
+              { ico: '🏛', name: '撃破した支部長', val: `${state.defeatedTrainers.length} 人` },
+              { ico: '💰', name: '所持金', val: `${state.money} ゲル` },
+              { ico: '🔥', name: '連続ログイン', val: `${state.loginStreak ?? 1} 日` },
+              { ico: '🧬', name: '所持幻獣', val: `${state.collection.length} 体（パーティ ${partyMons.length}）` },
+            ]
+            return rows.map((r) => (
+              <div className="item-row" key={r.name}>
+                <span className="item-ico">{r.ico}</span>
+                <div className="grow"><div className="item-name">{r.name}</div></div>
+                <span className="item-count">{r.val}</span>
+              </div>
+            ))
+          })()}
+
+          {/* 記章一覧 */}
+          <h3 className="section-title">獲得記章 {state.badges.length}/8</h3>
+          <div className="badge-list">
+            {state.badges.length === 0 && <span className="ink-dim">まだ記章を持っていない。</span>}
+            {state.badges.map((b) => (
+              <span key={b} className="badge-pill">🎖 {b}</span>
+            ))}
+          </div>
+
+          <div className="money-box" style={{ marginTop: 14 }}>🏆 共通ランキングは準備中。この記録（塔ベスト等）を提出して順位を競う予定。</div>
+        </div>
       ) : (
         <div className="items-pane">
           <div className="money-box">所持金 <b><ItemIcon kind="money" size={24} /> {state.money}</b> ゲル</div>

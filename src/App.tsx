@@ -81,6 +81,7 @@ export default function App() {
   const [shopOpen, setShopOpen] = useState(false)
   const [worldsOpen, setWorldsOpen] = useState(false)
   const [tower, setTower] = useState<{ floor: number; cleared: number } | null>(null)
+  const [homeTab, setHomeTab] = useState<'party' | 'items' | 'note' | 'record'>('party')
   const [getMon, setGetMon] = useState<{ id: string; name: string; type: string; label?: string; after?: () => void } | null>(null)
   const [fusionOpen, setFusionOpen] = useState(false)
   const [fuseA, setFuseA] = useState<string | null>(null)
@@ -251,7 +252,13 @@ export default function App() {
       setDialogue({
         speaker: npc.name,
         lines: ['預かり所へ ようこそ。たくさんの幻獣を あずかっているよ。', 'パーティの 入れ替え・並び替えは メニューの「手持ち」から どうぞ。'],
-        after: () => setScreen('home'),
+        after: () => { setHomeTab('party'); setScreen('home') },
+      })
+    } else if (npc.kind === 'records') {
+      setDialogue({
+        speaker: npc.name,
+        lines: ['ようこそ、記録の間へ。あなたの歩みは すべて ここに刻まれている。', '名前も ここで決められる。……いずれ、世界中の錬獣師と 記録を競う日が来るだろう。'],
+        after: () => { setHomeTab('record'); setScreen('home') },
       })
     } else if (npc.kind === 'portal') {
       if (game.collection.length === 0) {
@@ -444,6 +451,7 @@ export default function App() {
         setActive={(uid) => setGame((s) => setLeader(s, uid))}
         onField={() => setScreen('field')}
         onDex={() => setScreen('dex')}
+        initialTab={homeTab}
       />
     )
   } else if (screen === 'battle' && battleConfig && active) {
@@ -467,7 +475,7 @@ export default function App() {
         onStartBattle={startBattle}
         onTrainer={onTrainer}
         onChest={onChest}
-        onMenu={() => setScreen('home')}
+        onMenu={() => { setHomeTab('party'); setScreen('home') }}
         onTalk={onTalk}
         onBlockedExit={onBlockedExit}
       />

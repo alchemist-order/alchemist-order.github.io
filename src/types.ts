@@ -87,6 +87,7 @@ export interface GameState {
   dexClaimed?: number[] // 受取済みの図鑑マイルストーン
   mats?: { talentStone: number; slotCharm: number } // プレミアム錬成素材
   towerBest?: number // 試練の塔の自己ベスト到達階(スコアアタック)
+  playerName?: string // プレイヤー名(将来の共通ランキングの識別子)
 }
 
 // トレーナー(ジム支部長など)

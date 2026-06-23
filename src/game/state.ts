@@ -20,6 +20,12 @@ const MAX_LEVEL = 100
 
 export const PARTY_MAX = 6 // 戦うパーティの上限。残りは預かりボックス
 
+// 記章の数から称号を導出(プロフィール表示用)
+export function playerTitle(s: GameState): string {
+  const n = s.badges.length
+  return n >= 8 ? 'オーダー認定マスター' : n >= 5 ? '熟練の錬獣師' : n >= 3 ? '一人前の錬獣師' : n >= 1 ? '駆け出しの錬獣師' : '見習い錬獣師'
+}
+
 // パーティの uid 列を返す(旧セーブ移行: party未設定なら先頭PARTY_MAX体)。collectionに無いidは除外
 export function getParty(s: GameState): string[] {
   const ids = new Set(s.collection.map((o) => o.uid))
