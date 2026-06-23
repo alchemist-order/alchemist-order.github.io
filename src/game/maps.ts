@@ -5,6 +5,18 @@
 //   'F'=花(歩行可・装飾)  '~'=砂浜(歩行可)
 // 広大マップ＋カメラ追従。画面に映るのは一部だけで、移動でスクロールする。
 import type { TrainerData } from '../types'
+import monstersJson from '../../data/monsters.json'
+
+// 図鑑から、指定タイプ・進化段階の幻獣idを集める(野生出現プール生成用)
+const ALL_DEX = monstersJson.dex as { id: string; type: string; type2?: string; stage: number; dex: number }[]
+function wildOfTypes(types: string[], maxStage = 1, opts: { genOnly?: boolean } = {}): string[] {
+  return ALL_DEX.filter(
+    (d) =>
+      (!opts.genOnly || d.dex >= 101) && // 生成幻獣(dex101-300)に限定するか
+      d.stage <= maxStage && // 野生は若い個体(序盤は1段階目)
+      (types.includes(d.type) || (d.type2 != null && types.includes(d.type2))),
+  ).map((d) => d.id)
+}
 
 export type NpcKind = 'mentor' | 'mom' | 'inn' | 'sign' | 'villager' | 'shop' | 'alchemist'
 export interface Npc {
@@ -111,36 +123,36 @@ function buildRapis(): string[] {
   return g
 }
 
-// 緑霧の森(34x30) 密林の中を細い小道が曲がりくねる迷路。蛇行して奥の広間の支部長へ。
-// 草地=エンカウント、行き止まり=宝箱用。各部屋・通路は一つの連結網に接続(構築順で重なりを担保)。
+// 緑霧の森(34x42) 密林を蛇行する長い迷路。南の入口から6本の横廊下を折り返しながら最奥の支部長へ。
+// 横廊下に沿って草地6部屋(G=エンカウント)が口を開け、東端で潮騒の道へ抜ける。
+// 連結はサーペンタイン(一本道の折り返し)で担保。袋小路に宝箱。solid小物は草地内のみ(通路は塞がない)。
 function buildForest(): string[] {
-  const g = grid(34, 30, '#') // 一面の密林(木)
-  // 南の入口(3マス幅)
-  fill(g, 16, 25, 18, 29, '.')
-  fill(g, 17, 22, 17, 26, '.') // 入口→大廊下
-  // 東西の大廊下(row22)
-  fill(g, 3, 22, 28, 22, '.')
-  // 南西/南東の草地(廊下に接続)
-  fill(g, 3, 19, 6, 24, 'G')
-  fill(g, 21, 19, 27, 24, 'G')
-  // 西の縦廊下→中段の横廊下→草地R3→中央縦廊下
-  fill(g, 7, 12, 7, 22, '.')
-  fill(g, 7, 16, 12, 16, '.')
-  fill(g, 8, 12, 12, 16, 'G')
-  fill(g, 12, 10, 12, 16, '.')
-  // 上段の横廊下(row10)＋東の出口へ
-  fill(g, 12, 10, 30, 10, '.')
-  fill(g, 23, 11, 28, 15, 'G') // 草地R4
-  fill(g, 30, 10, 30, 15, '.')
-  fill(g, 30, 15, 32, 15, '.') // (32,15)=東の出口
-  // ボスへ: 縦廊下→上段の横廊下→広間
-  fill(g, 22, 6, 22, 10, '.')
-  fill(g, 3, 6, 22, 6, '.')
-  fill(g, 13, 3, 21, 7, '.') // 支部長の広間(leader 17,3)
-  // 行き止まり(宝箱用)
-  fill(g, 2, 4, 5, 7, '.') // 北西
-  fill(g, 28, 25, 31, 28, '.')
-  fill(g, 27, 24, 28, 25, '.') // 南東(R2へ接続)
+  const g = grid(34, 42, '#') // 一面の密林(木)
+  // ── 南の入口(3マス幅・最下段まで開口) ──
+  fill(g, 16, 38, 18, 41, '.')
+  // ── サーペンタイン本道(下→上へ折り返し) ──
+  fill(g, 4, 39, 17, 39, '.') // 廊下1(入口から西へ)
+  fill(g, 4, 33, 4, 39, '.') // 西端を上へ
+  fill(g, 4, 33, 29, 33, '.') // 廊下2(東へ)
+  fill(g, 29, 27, 29, 33, '.') // 東端を上へ
+  fill(g, 4, 27, 29, 27, '.') // 廊下3(西へ)
+  fill(g, 4, 21, 4, 27, '.') // 西端を上へ
+  fill(g, 4, 21, 29, 21, '.') // 廊下4(東へ)
+  fill(g, 29, 15, 29, 21, '.') // 東端を上へ
+  fill(g, 4, 15, 32, 15, '.') // 廊下5(東の(32,15)=潮騒の道へ抜ける)
+  fill(g, 4, 9, 4, 15, '.') // 西端を上へ
+  fill(g, 4, 9, 24, 9, '.') // 廊下6(東へ)
+  fill(g, 16, 4, 16, 9, '.') // 中央を上へ→広間
+  fill(g, 12, 2, 21, 6, '.') // 支部長の広間(leader 17,3)
+  // ── 草地6部屋(各横廊下に口を開け接続。Gの行に通路行を含めて連結) ──
+  fill(g, 7, 30, 12, 33, 'G') // 草地A(廊下2)
+  fill(g, 20, 33, 26, 36, 'G') // 草地B(廊下2)
+  fill(g, 8, 24, 14, 27, 'G') // 草地C(廊下3)
+  fill(g, 18, 18, 24, 21, 'G') // 草地D(廊下4)
+  fill(g, 24, 12, 30, 16, 'G') // 草地E(廊下5・東の出口そば)
+  fill(g, 8, 9, 14, 12, 'G') // 草地F(廊下6)
+  // ── 袋小路(宝箱用) ──
+  fill(g, 1, 33, 4, 36, '.') // 北西寄りの袋小路(廊下2の西端から)
   return g
 }
 
@@ -176,9 +188,9 @@ export const MAPS: Record<string, GameMap> = {
     biome: 'town',
     grid: buildRapis(),
     warps: [
-      { x: 17, y: 24, to: 'forest', tx: 17, ty: 27, gate: 'starter' }, // 南=森へ
+      { x: 17, y: 24, to: 'forest', tx: 17, ty: 39, gate: 'starter' }, // 南=森へ(入口の開口)
       { x: 17, y: 6, to: 'mentor_house', tx: 5, ty: 7 }, // 中央=師の家
-      { x: 7, y: 8, to: 'home', tx: 5, ty: 7 }, // 左=わが家
+      { x: 7, y: 8, to: 'home', tx: 5, ty: 6 }, // 左=わが家
       { x: 26, y: 9, to: 'inn', tx: 5, ty: 7 }, // 右=宿屋
       { x: 21, y: 17, to: 'shop', tx: 4, ty: 5 }, // 道具屋(店内へ)
     ],
@@ -295,25 +307,25 @@ export const MAPS: Record<string, GameMap> = {
     name: 'わが家',
     biome: 'town',
     indoor: true,
-    grid: room(11, 9, 5),
+    grid: room(9, 8, 5),
     warps: [
-      { x: 5, y: 8, to: 'rapis', tx: 7, ty: 9 },
-      { x: 9, y: 1, to: 'home2f', tx: 5, ty: 7 }, // 階段(上)
+      { x: 5, y: 7, to: 'rapis', tx: 7, ty: 9 },
+      { x: 7, y: 1, to: 'home2f', tx: 4, ty: 6 }, // 階段(上)
     ],
     npcs: [{ x: 3, y: 2, kind: 'mom', name: 'おかあさん' }],
     props: [
       // 壁
-      { x: 3, y: 0, kind: 'window' }, { x: 7, y: 0, kind: 'painting' }, { x: 5, y: 0, kind: 'clock' },
-      // 台所(左上)
+      { x: 2, y: 0, kind: 'window' }, { x: 6, y: 0, kind: 'painting' }, { x: 4, y: 0, kind: 'clock' },
+      // 台所(左)
       { x: 1, y: 1, kind: 'stove', solid: true }, { x: 2, y: 1, kind: 'shelf', solid: true, name: '食器棚' },
       { x: 1, y: 2, kind: 'pot', solid: true }, { x: 1, y: 4, kind: 'vase', solid: true },
       // 食卓(中央)
-      { x: 4, y: 5, kind: 'table', solid: true }, { x: 3, y: 5, kind: 'chair', solid: true }, { x: 4, y: 6, kind: 'chair', solid: true },
+      { x: 4, y: 4, kind: 'table', solid: true }, { x: 3, y: 4, kind: 'chair', solid: true }, { x: 4, y: 5, kind: 'chair', solid: true },
       // 暖炉のある居間(右)
-      { x: 9, y: 4, kind: 'fireplace', solid: true, name: '暖炉', lines: ['ぱちぱちと薪がはぜている。あたたかい。'] },
-      { x: 8, y: 5, kind: 'rug' }, { x: 9, y: 6, kind: 'plant', solid: true }, { x: 1, y: 6, kind: 'plant', solid: true },
+      { x: 7, y: 3, kind: 'fireplace', solid: true, name: '暖炉', lines: ['ぱちぱちと薪がはぜている。あたたかい。'] },
+      { x: 6, y: 4, kind: 'rug' }, { x: 7, y: 5, kind: 'plant', solid: true },
       // 玄関マット
-      { x: 5, y: 7, kind: 'rug' },
+      { x: 5, y: 6, kind: 'rug' },
     ],
     intro: 'あたたかな わが家。奥の階段を上ると自分の部屋がある。',
   },
@@ -322,20 +334,20 @@ export const MAPS: Record<string, GameMap> = {
     name: 'わが家・2階',
     biome: 'town',
     indoor: true,
-    grid: room(11, 9, 5),
-    warps: [{ x: 5, y: 8, to: 'home', tx: 9, ty: 2 }], // 階段(下)
+    grid: room(9, 8, 5),
+    warps: [{ x: 5, y: 7, to: 'home', tx: 7, ty: 2 }], // 階段(下)
     props: [
       // 壁
-      { x: 5, y: 0, kind: 'window' }, { x: 3, y: 0, kind: 'painting' }, { x: 8, y: 0, kind: 'clock' },
+      { x: 5, y: 0, kind: 'window' }, { x: 3, y: 0, kind: 'painting' }, { x: 7, y: 0, kind: 'clock' },
       // 寝床(左)
       { x: 1, y: 1, kind: 'bed', solid: true, name: 'ベッド', lines: ['よく眠った。……今日から、旅が始まる。'] },
-      { x: 2, y: 2, kind: 'rug' }, { x: 1, y: 6, kind: 'plant', solid: true },
+      { x: 2, y: 2, kind: 'rug' }, { x: 1, y: 5, kind: 'plant', solid: true },
       // 学習机(右)
-      { x: 9, y: 1, kind: 'bookshelf', solid: true, name: '本棚', lines: ['古い幻獣図鑑。いつか、自分の見つけた幻獣を ここに書き足すんだ。'] },
-      { x: 8, y: 2, kind: 'table', solid: true }, { x: 8, y: 3, kind: 'chair', solid: true },
-      { x: 9, y: 2, kind: 'candle', solid: true }, { x: 9, y: 6, kind: 'vase', solid: true },
+      { x: 7, y: 1, kind: 'bookshelf', solid: true, name: '本棚', lines: ['古い幻獣図鑑。いつか、自分の見つけた幻獣を ここに書き足すんだ。'] },
+      { x: 6, y: 2, kind: 'table', solid: true }, { x: 6, y: 3, kind: 'chair', solid: true },
+      { x: 7, y: 5, kind: 'vase', solid: true },
       // 中央
-      { x: 5, y: 5, kind: 'rug' },
+      { x: 4, y: 4, kind: 'rug' },
     ],
     intro: '自分の部屋。窓から朝の光が差し込んでいる。',
   },
@@ -391,40 +403,48 @@ export const MAPS: Record<string, GameMap> = {
     biome: 'forest',
     grid: buildForest(),
     warps: [
-      { x: 17, y: 28, to: 'rapis', tx: 17, ty: 23 }, // 南=村へ
+      { x: 17, y: 41, to: 'rapis', tx: 17, ty: 23 }, // 南=村へ(最下段の開口)
       { x: 32, y: 15, to: 'coast_road', tx: 2, ty: 6, gate: '新緑の記章' }, // 東=海へ(要・新緑の記章)
     ],
     leader: { x: 17, y: 3, trainerId: 'gym_forest' },
     encounter: {
-      pool: ['portabupa', 'venomite', 'sporin', 'hobgobalt', 'tsunousa', 'falcone', 'briezel', 'pibit'],
+      // 既定の固有幻獣 ＋ 森に合う生成幻獣(地/毒/風/雷/火の1段階目)
+      pool: [
+        'portabupa', 'venomite', 'sporin', 'hobgobalt', 'tsunousa', 'falcone', 'briezel', 'pibit',
+        ...wildOfTypes(['地', '毒', '風', '雷', '火'], 1, { genOnly: true }),
+      ],
       min: 4,
       max: 8,
     },
     props: [
-      { x: 16, y: 27, kind: 'sign', name: '道しるべ', lines: ['「奥へ進むほど 道は入り組む。支部長は 最奥の広間に。」', '「→ 東 — 潮騒の道(新緑の記章が必要)」'] },
-      { x: 4, y: 20, kind: 'mushroom' },
-      { x: 24, y: 21, kind: 'mushroom' },
-      { x: 10, y: 14, kind: 'mushroom' },
-      { x: 26, y: 13, kind: 'mushroom' },
-      { x: 27, y: 19, kind: 'rock', solid: true },
-      { x: 3, y: 4, kind: 'rock', solid: true },
-      { x: 5, y: 24, kind: 'log', solid: true },
-      // ── 追加(非ソリッドは通路にも可、ソリッドは草地/広間/行き止まりのみ) ──
-      { x: 5, y: 21, kind: 'mushroom' }, { x: 22, y: 20, kind: 'mushroom' }, { x: 9, y: 15, kind: 'mushroom' },
-      { x: 25, y: 14, kind: 'mushroom' }, { x: 18, y: 5, kind: 'mushroom' }, { x: 3, y: 5, kind: 'mushroom' },
-      { x: 29, y: 26, kind: 'mushroom' }, { x: 26, y: 20, kind: 'mushroom' },
-      { x: 6, y: 19, kind: 'flower' }, { x: 23, y: 23, kind: 'flower' }, { x: 11, y: 13, kind: 'flower' },
-      { x: 27, y: 11, kind: 'flower' }, { x: 15, y: 4, kind: 'flower' }, { x: 20, y: 6, kind: 'flower' },
-      { x: 5, y: 20, kind: 'flower' }, { x: 30, y: 26, kind: 'flower' }, { x: 9, y: 12, kind: 'flower' },
-      { x: 4, y: 23, kind: 'rock', solid: true }, { x: 25, y: 23, kind: 'rock', solid: true },
-      { x: 24, y: 14, kind: 'rock', solid: true }, { x: 15, y: 6, kind: 'rock', solid: true },
-      { x: 29, y: 27, kind: 'rock', solid: true },
-      { x: 22, y: 21, kind: 'log', solid: true }, { x: 10, y: 13, kind: 'log', solid: true },
+      // 道しるべ(入口)
+      { x: 18, y: 38, kind: 'sign', name: '道しるべ', lines: ['「奥へ進むほど 道は折り返し 入り組む。支部長は 最奥の広間に。」', '「→ 東 — 潮騒の道(新緑の記章が必要)」'] },
+      // 草地A(7-12,30-33) 廊下は row33
+      { x: 8, y: 31, kind: 'mushroom' }, { x: 10, y: 30, kind: 'flower' }, { x: 11, y: 31, kind: 'rock', solid: true },
+      // 草地B(20-26,33-36) 廊下は row33
+      { x: 22, y: 35, kind: 'mushroom' }, { x: 24, y: 34, kind: 'flower' }, { x: 23, y: 35, kind: 'log', solid: true },
+      // 草地C(8-14,24-27) 廊下は row27
+      { x: 10, y: 25, kind: 'mushroom' }, { x: 12, y: 26, kind: 'flower' }, { x: 13, y: 25, kind: 'rock', solid: true },
+      // 草地D(18-24,18-21) 廊下は row21
+      { x: 20, y: 19, kind: 'mushroom' }, { x: 22, y: 20, kind: 'flower' }, { x: 21, y: 19, kind: 'log', solid: true },
+      // 草地E(24-30,12-16) 廊下は row15・東の出口そば
+      { x: 26, y: 14, kind: 'mushroom' }, { x: 28, y: 13, kind: 'flower' }, { x: 27, y: 14, kind: 'rock', solid: true },
+      // 草地F(8-14,9-12) 廊下は row9
+      { x: 10, y: 11, kind: 'mushroom' }, { x: 13, y: 11, kind: 'flower' },
+      // 支部長の広間(12-21,2-6) leader 17,3
+      { x: 13, y: 5, kind: 'plant', solid: true }, { x: 20, y: 5, kind: 'plant', solid: true },
+      { x: 14, y: 2, kind: 'flower' }, { x: 19, y: 2, kind: 'flower' },
+      // 通路沿いの装飾(非ソリッド・折り返しの角)
+      { x: 5, y: 36, kind: 'flower' }, { x: 29, y: 30, kind: 'mushroom' }, { x: 5, y: 24, kind: 'flower' },
+      { x: 29, y: 18, kind: 'mushroom' }, { x: 5, y: 12, kind: 'flower' }, { x: 17, y: 40, kind: 'mushroom' },
+      // 北西の袋小路(1-4,33-36)
+      { x: 3, y: 34, kind: 'mushroom' },
     ],
     chests: [
-      { x: 3, y: 6, id: 'forest_nw', item: 'heal2', amount: 1 }, // 北西の行き止まり
-      { x: 30, y: 27, id: 'forest_se', item: 'flask', amount: 2 }, // 南東の行き止まり
-      { x: 27, y: 12, id: 'forest_r4', item: 'money', amount: 300 }, // 東の草地
+      { x: 2, y: 35, id: 'forest_nw', item: 'heal2', amount: 1 }, // 北西の袋小路
+      { x: 25, y: 35, id: 'forest_se', item: 'flask', amount: 2 }, // 草地B
+      { x: 29, y: 13, id: 'forest_r4', item: 'money', amount: 300 }, // 草地E(東の出口そば)
+      { x: 11, y: 10, id: 'forest_top', item: 'heal', amount: 3 }, // 草地F(最奥手前)
     ],
     intro: '霧が立ちこめる森。高草には野生の幻獣がひそむ。奥に錬獣師の気配……。',
   },
@@ -437,7 +457,12 @@ export const MAPS: Record<string, GameMap> = {
       { x: 1, y: 6, to: 'forest', tx: 31, ty: 15 }, // 西=森へ
       { x: 20, y: 6, to: 'port', tx: 2, ty: 8 }, // 東=港町へ
     ],
-    encounter: { pool: ['shelk', 'frost', 'aquab', 'teary', 'pibit', 'briezel'], min: 9, max: 13 },
+    encounter: {
+      // 既定の固有幻獣 ＋ 海辺に合う生成幻獣(水/風/雷の1段階目)
+      pool: ['shelk', 'frost', 'aquab', 'teary', 'pibit', 'briezel', ...wildOfTypes(['水', '風', '雷'], 1, { genOnly: true })],
+      min: 9,
+      max: 13,
+    },
     props: [
       { x: 3, y: 9, kind: 'rock', solid: true },
       { x: 18, y: 9, kind: 'rock', solid: true },
