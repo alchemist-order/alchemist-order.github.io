@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import type { BattleConfig, GameState, TrainerData } from './types'
 import type { Chest, Npc } from './game/maps'
+import { WORLDS } from './game/maps'
 import {
   FUSION_COST,
   STARTER_IDS,
@@ -74,6 +75,7 @@ export default function App() {
   const [dialogue, setDialogue] = useState<DialogueData | null>(null)
   const [starterOpen, setStarterOpen] = useState(false)
   const [shopOpen, setShopOpen] = useState(false)
+  const [worldsOpen, setWorldsOpen] = useState(false)
   const [getMon, setGetMon] = useState<{ id: string; name: string; type: string; label?: string; after?: () => void } | null>(null)
   const [fusionOpen, setFusionOpen] = useState(false)
   const [fuseA, setFuseA] = useState<string | null>(null)
@@ -216,6 +218,12 @@ export default function App() {
       })
     } else if (npc.kind === 'shop') {
       setShopOpen(true)
+    } else if (npc.kind === 'portal') {
+      if (game.collection.length === 0) {
+        setDialogue({ lines: ['転送門は静かに眠っている。', 'まずは師ガレンに 話しかけて 最初の幻獣を 受け取ろう。'] })
+      } else {
+        setWorldsOpen(true)
+      }
     } else if (npc.kind === 'alchemist') {
       if (game.collection.length < 2) {
         setDialogue({ speaker: npc.name, lines: ['錬成には 幻獣が 2体 必要だよ。', 'ベースと 素材を 釜に入れれば……新たな力が 宿る。'] })
@@ -233,6 +241,15 @@ export default function App() {
 
   const onBlockedExit = (msg: string) => {
     setDialogue({ lines: [msg] })
+  }
+
+  // 転送門から世界へワープ
+  const warpToWorld = (w: (typeof WORLDS)[number]) => {
+    if (w.unlock && !game.badges.includes(w.unlock)) return
+    setWorldsOpen(false)
+    audio.sfx('door')
+    setGame((s) => ({ ...s, pos: { mapId: w.mapId, x: w.tx, y: w.ty } }))
+    setScreen('field')
   }
 
   // 錬成(融合): ベースaを素材bで錬成
@@ -315,7 +332,7 @@ export default function App() {
           lines: [
             '……いい目だ。その子が、おまえの最初の相棒。大切に育てなさい。',
             '強さとは、勝つ数ではない。共に時を重ねた証だ。',
-            'さあ、行きなさい。村の出口の先、緑霧の森へ。',
+            'さあ、行きなさい。中央広場の転送門が、おまえを最初の世界――緑霧の森へ導く。',
           ],
         }),
     })
@@ -505,6 +522,40 @@ export default function App() {
                 </button>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {worldsOpen && (
+        <div className="modal-backdrop" onClick={() => setWorldsOpen(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="card-head">
+              <span className="mon-name">🌀 転送門 — 世界を選ぶ</span>
+              <button className="modal-close" onClick={() => setWorldsOpen(false)}>×</button>
+            </div>
+            <p className="dex-text" style={{ marginTop: 0 }}>跳びたい世界を選ぼう。支部長を倒すと、新たな世界が開かれる。</p>
+            {WORLDS.map((w) => {
+              const unlocked = !w.unlock || game.badges.includes(w.unlock)
+              const cleared = game.defeatedTrainers.includes(w.boss)
+              return (
+                <div key={w.id} className={`shop-row${unlocked ? '' : ' locked'}`} style={!unlocked ? { opacity: 0.55 } : undefined}>
+                  <span className="shop-name">
+                    {unlocked ? w.icon : '🔒'} {w.name}
+                    {cleared && <span className="lead-tag" style={{ marginLeft: 6 }}>✓クリア</span>}
+                    <span className="cmd-sub">　{unlocked ? w.desc : `「${w.unlock}」を 集めると 解放`}</span>
+                  </span>
+                  <button
+                    className="title-btn"
+                    style={{ padding: '6px 14px', fontSize: 14 }}
+                    disabled={!unlocked}
+                    onClick={() => warpToWorld(w)}
+                  >
+                    {unlocked ? 'ワープ' : '？？？'}
+                  </button>
+                </div>
+              )
+            })}
+            <p className="cmd-sub" style={{ textAlign: 'center', marginTop: 10 }}>……さらなる世界は、これから開かれていく。</p>
           </div>
         </div>
       )}

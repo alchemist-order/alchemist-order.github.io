@@ -18,7 +18,7 @@ function wildOfTypes(types: string[], maxStage = 1, opts: { genOnly?: boolean } 
   ).map((d) => d.id)
 }
 
-export type NpcKind = 'mentor' | 'mom' | 'inn' | 'sign' | 'villager' | 'shop' | 'alchemist'
+export type NpcKind = 'mentor' | 'mom' | 'inn' | 'sign' | 'villager' | 'shop' | 'alchemist' | 'portal'
 export interface Npc {
   x: number
   y: number
@@ -66,6 +66,24 @@ export interface GameMap {
   indoor?: boolean // 室内(床・壁の見た目)
   intro?: string
 }
+
+// ── 世界(ワープ先)定義 ──
+// 本拠地ラピス村の転送門から各世界へワープ。ボスを倒すとクリア、unlock記章で解放。
+export interface World {
+  id: string
+  name: string
+  icon: string // 一覧表示の絵文字
+  mapId: string // 入口マップ
+  tx: number
+  ty: number // 入口座標
+  boss: string // クリア判定に使うトレーナーid(TRAINERS)
+  unlock: string | null // 解放に必要な記章(nullなら最初から)
+  desc: string
+}
+export const WORLDS: World[] = [
+  { id: 'forest', name: '緑霧の森', icon: '🌲', mapId: 'forest', tx: 17, ty: 39, boss: 'gym_forest', unlock: null, desc: '霧立ちこめる迷いの森。支部長シルヴァが待つ、最初の世界。' },
+  { id: 'sea', name: '潮鳴りの海', icon: '🌊', mapId: 'coast_road', tx: 2, ty: 6, boss: 'gym_port', unlock: '新緑の記章', desc: '潮騒の道から港町へ。支部長マレアが灰の渦を睨む。' },
+]
 
 // ── マップ生成ヘルパー(座標ズレ防止) ──
 function grid(w: number, h: number, fill = '.'): string[] {
@@ -188,7 +206,7 @@ export const MAPS: Record<string, GameMap> = {
     biome: 'town',
     grid: buildRapis(),
     warps: [
-      { x: 17, y: 24, to: 'forest', tx: 17, ty: 39, gate: 'starter' }, // 南=森へ(入口の開口)
+      // 森へは徒歩でなく中央広場の転送門からワープ(App側で世界選択)
       { x: 17, y: 6, to: 'mentor_house', tx: 5, ty: 7 }, // 中央=師の家
       { x: 7, y: 8, to: 'home', tx: 5, ty: 6 }, // 左=わが家
       { x: 26, y: 9, to: 'inn', tx: 5, ty: 7 }, // 右=宿屋
@@ -218,6 +236,8 @@ export const MAPS: Record<string, GameMap> = {
         portrait: 'tina',
         lines: ['ねえねえ、幻獣つれてるの！？ いいなあ！ あたしも錬獣師になるんだ！', '強くなったら、また見せてね。約束だよ！'],
       },
+      // ── 転送門(本拠地ハブ): 調べると世界選択(App側で処理) ──
+      { x: 17, y: 20, kind: 'portal', name: '転送門', emoji: '🌀' },
     ],
     buildings: [
       { x: 6, y: 6, w: 3, h: 2, kind: 'home' }, // わが家(左)
@@ -263,14 +283,14 @@ export const MAPS: Record<string, GameMap> = {
       { x: 2, y: 2, kind: 'plant', solid: true }, { x: 31, y: 2, kind: 'plant', solid: true },
       { x: 2, y: 12, kind: 'plant', solid: true }, { x: 31, y: 12, kind: 'plant', solid: true },
       { x: 2, y: 24, kind: 'plant', solid: true }, { x: 8, y: 24, kind: 'plant', solid: true }, { x: 28, y: 24, kind: 'plant', solid: true },
-      // ── 南門の案内板 ──
-      { x: 18, y: 23, kind: 'sign', name: '立て札', lines: ['「↓ 南 — 緑霧の森」'] },
+      // ── 転送門の案内板(中央広場) ──
+      { x: 15, y: 20, kind: 'sign', name: '立て札', lines: ['「中央の転送門に触れれば、各地の世界へ跳べる。」', '「記章を集めるほど、新たな世界が開かれる。」'] },
     ],
     chests: [
       { x: 31, y: 22, id: 'rapis_corner', item: 'heal', amount: 2 }, // 村の隅
       { x: 3, y: 5, id: 'rapis_garden', item: 'money', amount: 150 }, // 家の脇
     ],
-    intro: '錬金工房が並ぶ静かな村。家の扉から中へ。南の門の先に緑霧の森が広がる。',
+    intro: '錬金工房が並ぶ静かな村。ここがあなたの本拠地。中央広場の転送門から、各地の世界へ旅立とう。',
   },
   mentor_house: {
     id: 'mentor_house',
@@ -403,8 +423,7 @@ export const MAPS: Record<string, GameMap> = {
     biome: 'forest',
     grid: buildForest(),
     warps: [
-      { x: 17, y: 41, to: 'rapis', tx: 17, ty: 23 }, // 南=村へ(最下段の開口)
-      { x: 32, y: 15, to: 'coast_road', tx: 2, ty: 6, gate: '新緑の記章' }, // 東=海へ(要・新緑の記章)
+      { x: 17, y: 41, to: 'rapis', tx: 17, ty: 22 }, // 南=本拠地へ帰還(転送門の近く)
     ],
     leader: { x: 17, y: 3, trainerId: 'gym_forest' },
     encounter: {
@@ -418,7 +437,7 @@ export const MAPS: Record<string, GameMap> = {
     },
     props: [
       // 道しるべ(入口)
-      { x: 18, y: 38, kind: 'sign', name: '道しるべ', lines: ['「奥へ進むほど 道は折り返し 入り組む。支部長は 最奥の広間に。」', '「→ 東 — 潮騒の道(新緑の記章が必要)」'] },
+      { x: 18, y: 38, kind: 'sign', name: '道しるべ', lines: ['「奥へ進むほど 道は折り返し 入り組む。支部長は 最奥の広間に。」', '「南へ戻れば 本拠地ラピス村へ 帰れる。」'] },
       // 草地A(7-12,30-33) 廊下は row33
       { x: 8, y: 31, kind: 'mushroom' }, { x: 10, y: 30, kind: 'flower' }, { x: 11, y: 31, kind: 'rock', solid: true },
       // 草地B(20-26,33-36) 廊下は row33
@@ -454,8 +473,8 @@ export const MAPS: Record<string, GameMap> = {
     biome: 'sea',
     grid: buildCoast(),
     warps: [
-      { x: 1, y: 6, to: 'forest', tx: 31, ty: 15 }, // 西=森へ
-      { x: 20, y: 6, to: 'port', tx: 2, ty: 8 }, // 東=港町へ
+      { x: 1, y: 6, to: 'rapis', tx: 17, ty: 22 }, // 西=本拠地へ帰還(転送門の近く)
+      { x: 20, y: 6, to: 'port', tx: 2, ty: 8 }, // 東=港町へ(海の世界の内部)
     ],
     encounter: {
       // 既定の固有幻獣 ＋ 海辺に合う生成幻獣(水/風/雷の1段階目)
