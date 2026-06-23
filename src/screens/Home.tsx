@@ -38,10 +38,12 @@ const STAT_MAX = 240 // ステータスバーの目安上限
 function ownedStats(o: OwnedMonster) {
   const sp = species(o.speciesId)
   const [hp, atk, def, spd, mag] = sp.stats
+  const m = 1 + (o.talent ?? 0) * 0.04
+  const r = (v: number) => Math.round(v * m)
   return {
     sp,
-    maxHp: statAt(hp, o.level, true),
-    values: [statAt(hp, o.level, true), statAt(atk, o.level), statAt(def, o.level), statAt(spd, o.level), statAt(mag, o.level)],
+    maxHp: r(statAt(hp, o.level, true)),
+    values: [r(statAt(hp, o.level, true)), r(statAt(atk, o.level)), r(statAt(def, o.level)), r(statAt(spd, o.level)), r(statAt(mag, o.level))],
   }
 }
 
@@ -164,6 +166,7 @@ export default function Home({ state, setState, setActive, onField, onDex }: Pro
               <span className="mon-name">
                 {sp.name}
                 {isActive && <span className="lead-tag">先頭</span>}
+                {sel.talent ? <span className="lead-tag" style={{ background: '#9a6cd0', color: '#fff' }}>才能★{sel.talent}</span> : null}
               </span>
               <span className="mon-lv">Lv.{sel.level}</span>
             </div>

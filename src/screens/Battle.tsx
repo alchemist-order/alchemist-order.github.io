@@ -80,7 +80,7 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
   const ownedRef = useRef<OwnedMonster>({ ...active })
 
   const [player, setPlayer] = useState<Combatant>(() => {
-    const c = makeCombatant(species(active.speciesId), active.level)
+    const c = makeCombatant(species(active.speciesId), active.level, active.talent ?? 0)
     if (typeof active.hp === 'number' && active.hp > 0) c.hp = Math.min(c.maxHp, active.hp)
     return c
   })
@@ -98,7 +98,7 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
 
   // 手持ちの生存メンバー(現在出ている個体を除く)
   const mk = (o: OwnedMonster): Combatant => {
-    const c = makeCombatant(species(o.speciesId), o.level)
+    const c = makeCombatant(species(o.speciesId), o.level, o.talent ?? 0)
     if (typeof o.hp === 'number' && o.hp > 0) c.hp = Math.min(c.maxHp, o.hp)
     return c
   }
@@ -617,7 +617,7 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
               {mustSwitch && <div className="cmd-sub" style={{ gridColumn: '1 / -1' }}>つぎに たたかう幻獣を 選んで！</div>}
               {switchTargets.map((o) => {
                 const sp = species(o.speciesId)
-                const maxhp = makeCombatant(sp, o.level).maxHp
+                const maxhp = makeCombatant(sp, o.level, o.talent ?? 0).maxHp
                 const hp = o.hp == null ? maxhp : o.hp
                 return (
                   <button key={o.uid} className="cmd-btn move" disabled={acting} onClick={() => doSwitch(o.uid)}>

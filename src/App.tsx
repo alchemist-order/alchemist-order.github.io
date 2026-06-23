@@ -2,8 +2,10 @@ import { useEffect, useRef, useState } from 'react'
 import type { BattleConfig, GameState, TrainerData } from './types'
 import type { Chest, Npc } from './game/maps'
 import {
+  FUSION_COST,
   STARTER_IDS,
   applyDailyLogin,
+  fuseResult,
   hasFlag,
   healParty,
   loadGame,
@@ -59,6 +61,9 @@ export default function App() {
   const [starterOpen, setStarterOpen] = useState(false)
   const [shopOpen, setShopOpen] = useState(false)
   const [getMon, setGetMon] = useState<{ id: string; name: string; type: string; label?: string; after?: () => void } | null>(null)
+  const [fusionOpen, setFusionOpen] = useState(false)
+  const [fuseA, setFuseA] = useState<string | null>(null)
+  const [fuseB, setFuseB] = useState<string | null>(null)
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [vol, setVol] = useState(audio.getVolume())
   const [sfxOn, setSfxOn] = useState(audio.isSfxOn())
@@ -195,6 +200,14 @@ export default function App() {
       })
     } else if (npc.kind === 'shop') {
       setShopOpen(true)
+    } else if (npc.kind === 'alchemist') {
+      if (game.collection.length < 2) {
+        setDialogue({ speaker: npc.name, lines: ['錬成には 幻獣が 2体 必要だよ。', 'ベースと 素材を 釜に入れれば……新たな力が 宿る。'] })
+      } else {
+        setFuseA(null)
+        setFuseB(null)
+        setFusionOpen(true)
+      }
     } else {
       setDialogue({ speaker: npc.name, portrait: npc.portrait, lines: npc.lines ?? ['……'] })
     }
@@ -202,6 +215,28 @@ export default function App() {
 
   const onBlockedExit = (msg: string) => {
     setDialogue({ lines: [msg] })
+  }
+
+  // 錬成(融合): ベースaを素材bで錬成
+  const doFuse = () => {
+    const a = game.collection.find((o) => o.uid === fuseA)
+    const b = game.collection.find((o) => o.uid === fuseB)
+    if (!a || !b || a.uid === b.uid || game.money < FUSION_COST) return
+    const r = fuseResult(a, b)
+    const result = { ...makeOwned(r.speciesId, r.level), talent: r.talent }
+    setGame((s) => {
+      const coll = [...s.collection.filter((o) => o.uid !== a.uid && o.uid !== b.uid), result]
+      const activeUid = s.activeUid === a.uid || s.activeUid === b.uid ? result.uid : s.activeUid
+      let ns: GameState = { ...s, collection: coll, activeUid, money: s.money - FUSION_COST }
+      ns = withCaught(withSeen(ns, r.speciesId), r.speciesId)
+      return ns
+    })
+    audio.sfx('coin')
+    setFusionOpen(false)
+    setFuseA(null)
+    setFuseB(null)
+    const sp = species(r.speciesId)
+    setGetMon({ id: r.speciesId, name: sp.name, type: sp.type, label: `が 錬成された！ 才能★${r.talent}` })
   }
 
   // 宝箱を開ける(開封済みは flag で保存)
@@ -439,6 +474,75 @@ export default function App() {
                 </button>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {fusionOpen && (
+        <div className="modal-backdrop" onClick={() => setFusionOpen(false)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="card-head">
+              <span className="mon-name">⚗️ 錬成釜</span>
+              <button className="modal-close" onClick={() => setFusionOpen(false)}>×</button>
+            </div>
+            <p className="dex-text">「ベースと素材を選んでおくれ。ベースが進化し、才能が宿る。」　費用 💰{FUSION_COST}・所持 💰{game.money}</p>
+            {(() => {
+              const a = game.collection.find((o) => o.uid === fuseA)
+              const b = game.collection.find((o) => o.uid === fuseB)
+              const prev = a && b && a.uid !== b.uid ? fuseResult(a, b) : null
+              return (
+                <>
+                  <div className="fuse-slots">
+                    <div className="fuse-slot">
+                      <span className="fuse-slot-label">ベース</span>
+                      {a ? <span className="cmd-sub">{species(a.speciesId).name} Lv{a.level}{a.talent ? ` ★${a.talent}` : ''}</span> : <span className="cmd-sub">未選択</span>}
+                    </div>
+                    <span className="fuse-plus">＋</span>
+                    <div className="fuse-slot">
+                      <span className="fuse-slot-label">素材</span>
+                      {b ? <span className="cmd-sub">{species(b.speciesId).name} Lv{b.level}{b.talent ? ` ★${b.talent}` : ''}</span> : <span className="cmd-sub">未選択</span>}
+                    </div>
+                  </div>
+                  <div className="fuse-preview">
+                    {prev ? (
+                      <span>→ <b>{species(prev.speciesId).name}</b> Lv{prev.level}・才能★{prev.talent}{prev.evolved ? '（進化！）' : ''}</span>
+                    ) : (
+                      <span className="cmd-sub">2体を選ぶと結果が表示されます</span>
+                    )}
+                  </div>
+                  <button className="title-btn primary" style={{ width: '100%', marginTop: 8 }} disabled={!prev || game.money < FUSION_COST} onClick={doFuse}>
+                    錬成する（素材は消費されます）
+                  </button>
+                  <div className="party-list" style={{ marginTop: 12 }}>
+                    {game.collection.map((o) => {
+                      const sp = species(o.speciesId)
+                      const role = o.uid === fuseA ? 'base' : o.uid === fuseB ? 'mat' : null
+                      return (
+                        <button
+                          key={o.uid}
+                          className={`party-row ${role ? 'sel' : ''}`}
+                          onClick={() => {
+                            if (fuseA === o.uid) setFuseA(null)
+                            else if (fuseB === o.uid) setFuseB(null)
+                            else if (!fuseA) setFuseA(o.uid)
+                            else if (!fuseB) setFuseB(o.uid)
+                          }}
+                        >
+                          <Sprite id={sp.id} type={sp.type} size={36} />
+                          <div className="pr-info">
+                            <div className="pr-head">
+                              <span className="pr-name">{sp.name}</span>
+                              {role && <span className="lead-tag">{role === 'base' ? 'ベース' : '素材'}</span>}
+                              <span className="pr-lv">Lv{o.level}{o.talent ? ` ★${o.talent}` : ''}</span>
+                            </div>
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+                </>
+              )
+            })()}
           </div>
         </div>
       )}

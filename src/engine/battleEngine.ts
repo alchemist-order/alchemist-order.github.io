@@ -10,19 +10,20 @@ export function statAt(base: number, level: number, isHp = false): number {
   return isHp ? core + level + 10 : core + 5
 }
 
-/** MonsterData から指定レベルのバトル個体を生成 */
-export function makeCombatant(data: MonsterData, level: number): Combatant {
+/** MonsterData から指定レベルのバトル個体を生成。talentで全能力に+4%/段 */
+export function makeCombatant(data: MonsterData, level: number, talent = 0): Combatant {
   const [hp, atk, def, spd, mag] = data.stats
-  const maxHp = statAt(hp, level, true)
+  const m = 1 + Math.max(0, talent) * 0.04
+  const maxHp = Math.round(statAt(hp, level, true) * m)
   return {
     data,
     level,
     maxHp,
     hp: maxHp,
-    atk: statAt(atk, level),
-    def: statAt(def, level),
-    spd: statAt(spd, level),
-    mag: statAt(mag, level),
+    atk: Math.round(statAt(atk, level) * m),
+    def: Math.round(statAt(def, level) * m),
+    spd: Math.round(statAt(spd, level) * m),
+    mag: Math.round(statAt(mag, level) * m),
     status: null,
     statusTurns: 0,
   }

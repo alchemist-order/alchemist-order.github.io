@@ -833,6 +833,13 @@ button:disabled {
 .item-count { font-size: 17px; color: var(--gold-bright); font-weight: 700; }
 .badge-list { display: flex; flex-wrap: wrap; gap: 8px; }
 .badge-pill { background: rgba(60,50,30,0.7); border: 1px solid var(--gold); border-radius: 999px; padding: 5px 12px; font-size: 13px; color: var(--gold-bright); }
+/* 錬成 */
+.fuse-slots { display: flex; align-items: center; justify-content: center; gap: 12px; margin: 10px 0; }
+.fuse-slot { flex: 1; min-height: 52px; border: 1px dashed var(--border); border-radius: 10px; padding: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; }
+.fuse-slot-label { font-size: 11px; color: var(--gold); }
+.fuse-plus { font-size: 20px; color: var(--gold-bright); }
+.fuse-preview { text-align: center; font-size: 15px; color: var(--ink); padding: 6px; background: rgba(0,0,0,0.25); border-radius: 8px; }
+.fuse-preview b { color: var(--gold-bright); }
 
 /* ── 幻獣入手の演出 ── */
 .get-overlay { position: fixed; inset: 0; z-index: 130; display: flex; align-items: center; justify-content: center; background: rgba(10,8,5,0.82); animation: get-fade 0.25s ease; }

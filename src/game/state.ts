@@ -131,6 +131,18 @@ export function pendingDexMilestones(s: GameState): { n: number; reward: Reward 
   return DEX_MILESTONES.filter((m) => s.caught.length >= m.n && !claimed.includes(m.n))
 }
 
+// ── 錬成(融合) ──
+export const FUSION_COST = 300 // 錬成の費用(ゲル)
+export const TALENT_MAX = 10
+/** ベースaを素材bで錬成した結果。aは可能なら進化、才能は+1(上限) */
+export function fuseResult(a: OwnedMonster, b: OwnedMonster): { speciesId: string; level: number; talent: number; evolved: boolean } {
+  const sp = species(a.speciesId)
+  const evolvedId = sp.to && DEX.some((d) => d.id === sp.to) ? (sp.to as string) : a.speciesId
+  const level = Math.max(5, Math.min(60, Math.round((a.level + b.level) / 2) + 3))
+  const talent = Math.min(TALENT_MAX, Math.max(a.talent ?? 0, b.talent ?? 0) + 1)
+  return { speciesId: evolvedId, level, talent, evolved: evolvedId !== a.speciesId }
+}
+
 export function saveGame(s: GameState): void {
   try {
     localStorage.setItem(SAVE_KEY, JSON.stringify(s))
@@ -150,7 +162,7 @@ export function makeOwned(speciesId: string, level: number): OwnedMonster {
 
 /** active個体をバトル用Combatantに変換(現在HPを反映) */
 export function ownedToCombatant(o: OwnedMonster): Combatant {
-  const c = makeCombatant(species(o.speciesId), o.level)
+  const c = makeCombatant(species(o.speciesId), o.level, o.talent ?? 0)
   if (typeof o.hp === 'number') c.hp = Math.max(0, Math.min(c.maxHp, o.hp))
   return c
 }

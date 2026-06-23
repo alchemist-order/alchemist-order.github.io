@@ -6,7 +6,7 @@
 // 広大マップ＋カメラ追従。画面に映るのは一部だけで、移動でスクロールする。
 import type { TrainerData } from '../types'
 
-export type NpcKind = 'mentor' | 'mom' | 'inn' | 'sign' | 'villager' | 'shop'
+export type NpcKind = 'mentor' | 'mom' | 'inn' | 'sign' | 'villager' | 'shop' | 'alchemist'
 export interface Npc {
   x: number
   y: number
@@ -267,7 +267,10 @@ export const MAPS: Record<string, GameMap> = {
     indoor: true,
     grid: room(11, 9, 5),
     warps: [{ x: 5, y: 8, to: 'rapis', tx: 17, ty: 7 }],
-    npcs: [{ x: 5, y: 2, kind: 'mentor', name: '師ガレン' }],
+    npcs: [
+      { x: 5, y: 2, kind: 'mentor', name: '師ガレン' },
+      { x: 2, y: 5, kind: 'alchemist', name: '錬成師ミルカ', emoji: '🧑‍🔬' }, // 錬成釜のそば
+    ],
     props: [
       // 壁の装飾
       { x: 2, y: 0, kind: 'window' }, { x: 8, y: 0, kind: 'painting' }, { x: 6, y: 0, kind: 'clock' },

@@ -60,6 +60,7 @@ export interface OwnedMonster {
   level: number
   exp: number
   hp?: number // 現在HP(未設定=満タン)。バトル間で持続
+  talent?: number // 才能(錬成で上昇)。0〜10。全能力に+4%/段
 }
 
 // セーブされるゲーム全体の状態
