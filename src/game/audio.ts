@@ -197,7 +197,7 @@ function noise(dur: number, gain: number, delay: number, filter: BiquadFilterTyp
   src.stop(t0 + dur + 0.02)
 }
 
-export type Sfx = 'select' | 'cancel' | 'confirm' | 'hit' | 'crit' | 'heal' | 'faint' | 'catch' | 'badge' | 'encounter' | 'door'
+export type Sfx = 'select' | 'cancel' | 'confirm' | 'hit' | 'crit' | 'heal' | 'faint' | 'catch' | 'badge' | 'encounter' | 'door' | 'coin'
 
 /** 効果音を鳴らす(SFXオフ/未解禁なら無音) */
 export function sfx(kind: Sfx): void {
@@ -260,6 +260,11 @@ export function sfx(kind: Sfx): void {
       noise(0.08, 0.18, 0.025, 'bandpass', 850)
       sweep(145, 78, 0.34, 0.13, 'sawtooth', 0.08)
       noise(0.28, 0.08, 0.08, 'lowpass', 420)
+      break
+    case 'coin': // チャリン(硬貨)
+      tone(2100, 0.05, 'square', 0.16, 0)
+      tone(2800, 0.16, 'triangle', 0.16, 0.04)
+      tone(3300, 0.12, 'sine', 0.12, 0.08)
       break
   }
 }

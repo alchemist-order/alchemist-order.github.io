@@ -180,15 +180,9 @@ export const MAPS: Record<string, GameMap> = {
       { x: 17, y: 6, to: 'mentor_house', tx: 5, ty: 7 }, // 中央=師の家
       { x: 7, y: 8, to: 'home', tx: 5, ty: 7 }, // 左=わが家
       { x: 26, y: 9, to: 'inn', tx: 5, ty: 7 }, // 右=宿屋
+      { x: 21, y: 17, to: 'shop', tx: 4, ty: 5 }, // 道具屋(店内へ)
     ],
     npcs: [
-      {
-        x: 21,
-        y: 17,
-        kind: 'shop',
-        name: '道具屋のラル',
-        emoji: '🛒',
-      },
       {
         x: 24,
         y: 13,
@@ -365,6 +359,28 @@ export const MAPS: Record<string, GameMap> = {
       { x: 5, y: 5, kind: 'rug' },
     ],
     intro: '暖炉のぬくもりが心地よい広い宿屋。',
+  },
+  shop: {
+    id: 'shop',
+    name: '道具屋',
+    biome: 'town',
+    indoor: true,
+    grid: room(9, 7, 4),
+    warps: [{ x: 4, y: 6, to: 'rapis', tx: 21, ty: 18 }],
+    npcs: [{ x: 4, y: 2, kind: 'shop', name: '道具屋のラル', emoji: '🧑‍💼', sprite: 'npc_laru' }],
+    props: [
+      // 長机のカウンター(店主を挟む)
+      { x: 2, y: 2, kind: 'table', solid: true }, { x: 3, y: 2, kind: 'table', solid: true },
+      { x: 5, y: 2, kind: 'table', solid: true }, { x: 6, y: 2, kind: 'table', solid: true },
+      // カウンター奥の品物
+      { x: 1, y: 1, kind: 'shelf', solid: true }, { x: 2, y: 1, kind: 'barrel', solid: true },
+      { x: 4, y: 1, kind: 'pot', solid: true }, { x: 6, y: 1, kind: 'crate', solid: true }, { x: 7, y: 1, kind: 'shelf', solid: true },
+      // 装飾・店内の在庫
+      { x: 4, y: 0, kind: 'sign', name: '看板', lines: ['「道具屋ラル ―― 旅の必需品、そろえてます」'] },
+      { x: 1, y: 5, kind: 'barrel', solid: true }, { x: 7, y: 5, kind: 'crate', solid: true },
+      { x: 1, y: 4, kind: 'plant', solid: true },
+    ],
+    intro: '所狭しと道具が並ぶ店。長机の奥に店主が立っている。',
   },
   forest: {
     id: 'forest',

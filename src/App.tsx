@@ -80,7 +80,9 @@ export default function App() {
   useEffect(() => {
     const h = (e: MouseEvent) => {
       const t = e.target as HTMLElement | null
-      if (t?.closest?.('button')) audio.sfx('select')
+      if (!t?.closest) return
+      if (t.closest('.dpad-btn')) return // 移動ボタンは無音
+      if (t.closest('button')) audio.sfx('select')
     }
     window.addEventListener('click', h)
     return () => window.removeEventListener('click', h)
@@ -408,7 +410,11 @@ export default function App() {
                   className="title-btn"
                   style={{ padding: '6px 14px', fontSize: 14 }}
                   disabled={game.money < it.price}
-                  onClick={() => setGame((s) => (s.money >= it.price ? it.apply({ ...s, money: s.money - it.price }) : s))}
+                  onClick={() => {
+                    if (game.money < it.price) return
+                    audio.sfx('coin')
+                    setGame((s) => (s.money >= it.price ? it.apply({ ...s, money: s.money - it.price }) : s))
+                  }}
                 >
                   かう
                 </button>
