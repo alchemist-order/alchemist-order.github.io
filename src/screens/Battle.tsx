@@ -74,11 +74,12 @@ interface Props {
   config: BattleConfig
   state: GameState
   setState: (updater: (s: GameState) => GameState) => void
-  onExit: () => void
+  onExit: (won?: boolean) => void // won=この戦闘に勝利したか(塔の階層進行に使用)
 }
 
 export default function Battle({ active, config, state, setState, onExit }: Props) {
   const isTrainer = config.kind === 'trainer'
+  const isTower = config.kind === 'wild' && !!config.tower
   const teamRef = useRef<Combatant[]>(
     config.kind === 'trainer'
       ? config.trainer.team.map((t) => makeCombatant(species(t.speciesId), t.level))
@@ -518,15 +519,25 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
 
   // バトル終了時に現在HPを手持ちへ保存(敗北は満タンに回復して戻す)
   function exitBattle() {
-    setState((s) => ({
-      ...s,
-      collection: s.collection.map((o) => {
+    setState((s) => {
+      const collection = s.collection.map((o) => {
         if (phase === 'lost') return { ...o, hp: undefined } // 全滅→全回復して村へ
         if (o.uid === curUid) return { ...o, hp: player.hp }
         return o
-      }),
-    }))
-    onExit()
+      })
+      // 終了時のアクティブを、最後に出していた生存個体へ寄せる(塔の連戦・次エンカに引き継ぐ)
+      let activeUid = s.activeUid
+      if (phase !== 'lost') {
+        const cur = collection.find((o) => o.uid === curUid)
+        if (cur && (cur.hp == null || cur.hp > 0)) activeUid = curUid
+        else {
+          const living = collection.find((o) => o.hp == null || o.hp > 0)
+          if (living) activeUid = living.uid
+        }
+      }
+      return { ...s, collection, activeUid }
+    })
+    onExit(phase === 'won')
   }
 
   const remaining = isTrainer ? teamRef.current.length - enemyIndex : 0
@@ -606,7 +617,7 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
         <div className="cmd-box">
           {phase !== 'fighting' ? (
             <button className="cmd-btn wide" onClick={exitBattle}>
-              フィールドに もどる
+              {isTower ? (phase === 'won' ? '次の階へ ▶' : '結果を見る ▶') : 'フィールドに もどる'}
             </button>
           ) : menu === 'item' ? (
             <div className="cmd-grid">
@@ -660,12 +671,12 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
               <button className="cmd-btn" disabled={acting || switchTargets.length === 0} onClick={() => setMenu('switch')}>
                 いれかえ<span className="cmd-sub">仲間{switchTargets.length}</span>
               </button>
-              {config.kind === 'wild' && (
+              {config.kind === 'wild' && !config.tower && (
                 <button className="cmd-btn" disabled={acting || state.flasks <= 0} onClick={throwFlask}>
                   つかまえる<span className="cmd-sub">フラスコ{state.flasks}</span>
                 </button>
               )}
-              {config.kind === 'wild' && (
+              {config.kind === 'wild' && !config.tower && (
                 <button className="cmd-btn" disabled={acting} onClick={flee}>
                   にげる
                 </button>

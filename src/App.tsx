@@ -77,6 +77,7 @@ export default function App() {
   const [starterOpen, setStarterOpen] = useState(false)
   const [shopOpen, setShopOpen] = useState(false)
   const [worldsOpen, setWorldsOpen] = useState(false)
+  const [tower, setTower] = useState<{ floor: number; cleared: number } | null>(null)
   const [getMon, setGetMon] = useState<{ id: string; name: string; type: string; label?: string; after?: () => void } | null>(null)
   const [fusionOpen, setFusionOpen] = useState(false)
   const [fuseA, setFuseA] = useState<string | null>(null)
@@ -163,9 +164,33 @@ export default function App() {
   }
 
   // バトル終了→フィールド。トレーナーに勝っていれば戦後の台詞
-  const handleBattleExit = () => {
-    setScreen('field')
+  const handleBattleExit = (won?: boolean) => {
     const cfg = battleConfig
+    // 試練の塔: 勝てば次の階へ(再マウント)、倒れたら終了してスコア記録
+    if (tower && cfg?.kind === 'wild' && cfg.tower) {
+      if (won) {
+        const next = { floor: tower.floor + 1, cleared: tower.cleared + 1 }
+        setTower(next)
+        setBattleConfig(towerConfig(next.floor)) // screenはbattleのまま、keyで再マウント
+        return
+      }
+      const reached = tower.cleared // 制覇した階数=スコア
+      const prevBest = game.towerBest ?? 0
+      const best = Math.max(prevBest, reached)
+      setTower(null)
+      setScreen('field')
+      setGame((s) => ({ ...s, towerBest: Math.max(s.towerBest ?? 0, reached) }))
+      setDialogue({
+        speaker: '🗼 試練の塔',
+        lines: [
+          reached > 0 ? `今回の記録: ${reached}階 制覇！` : 'まさかの1階敗退……出直そう。',
+          reached > prevBest ? `🏆 自己ベスト更新！(${best}階)` : `自己ベスト: ${best}階`,
+          '編成・育成・道具の備えで、記録は伸ばせる。また挑もう。',
+        ],
+      })
+      return
+    }
+    setScreen('field')
     if (cfg?.kind === 'trainer' && cfg.trainer.postBattle?.length && game.defeatedTrainers.includes(cfg.trainer.id)) {
       setDialogue({ speaker: cfg.trainer.name, portrait: cfg.trainer.portrait, lines: cfg.trainer.postBattle })
     }
@@ -251,6 +276,25 @@ export default function App() {
     audio.sfx('door')
     setGame((s) => ({ ...s, pos: { mapId: w.mapId, x: w.tx, y: w.ty } }))
     setScreen('field')
+  }
+
+  // 試練の塔(スコアアタック): 階層ごとに敵レベルが上がる連戦。HPは継続、回復は道具のみ。
+  const towerConfig = (floor: number): BattleConfig => {
+    const lvl = Math.min(100, 4 + floor * 2)
+    return { kind: 'wild', tower: true, floor, min: lvl, max: lvl, biome: 'forest' }
+  }
+  const startTower = () => {
+    setWorldsOpen(false)
+    // 公平性のため満タンで開始し、生存個体を先頭に
+    setGame((s) => {
+      const healed = healParty(s)
+      const living = healed.collection.find((o) => o.hp == null || o.hp > 0)
+      return { ...healed, activeUid: living ? living.uid : healed.activeUid }
+    })
+    setTower({ floor: 1, cleared: 0 })
+    audio.sfx('encounter')
+    setBattleConfig(towerConfig(1))
+    setScreen('battle')
   }
 
   // 錬成(融合): ベースaを素材bで錬成
@@ -388,6 +432,7 @@ export default function App() {
   } else if (screen === 'battle' && battleConfig && active) {
     content = (
       <Battle
+        key={battleConfig.kind === 'wild' && battleConfig.tower ? `tower-${battleConfig.floor}` : 'battle'}
         active={active}
         config={battleConfig}
         state={game}
@@ -578,6 +623,15 @@ export default function App() {
                 </div>
               )
             })}
+            <div className="shop-row" style={{ borderTop: '1px solid rgba(212,175,90,0.28)', marginTop: 8, paddingTop: 12 }}>
+              <span className="shop-name">
+                🗼 試練の塔<span className="lead-tag" style={{ marginLeft: 6 }}>スコア</span>
+                <span className="cmd-sub">　連戦でどこまで登れるか挑戦。自己ベスト {game.towerBest ?? 0}階</span>
+              </span>
+              <button className="title-btn" style={{ padding: '6px 14px', fontSize: 14 }} onClick={startTower}>
+                挑戦
+              </button>
+            </div>
             <p className="cmd-sub" style={{ textAlign: 'center', marginTop: 10 }}>……さらなる世界は、これから開かれていく。</p>
           </div>
         </div>

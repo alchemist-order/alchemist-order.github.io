@@ -85,6 +85,7 @@ export interface GameState {
   achievements?: string[] // 解除済み実績id
   dexClaimed?: number[] // 受取済みの図鑑マイルストーン
   mats?: { talentStone: number; slotCharm: number } // プレミアム錬成素材
+  towerBest?: number // 試練の塔の自己ベスト到達階(スコアアタック)
 }
 
 // トレーナー(ジム支部長など)
@@ -100,5 +101,5 @@ export interface TrainerData {
 
 // バトル開始設定
 export type BattleConfig =
-  | { kind: 'wild'; pool?: string[]; min?: number; max?: number; biome?: string }
+  | { kind: 'wild'; pool?: string[]; min?: number; max?: number; biome?: string; tower?: boolean; floor?: number }
   | { kind: 'trainer'; trainer: TrainerData; biome?: string }
