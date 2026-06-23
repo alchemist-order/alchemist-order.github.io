@@ -279,6 +279,37 @@ export default function Field({ state, setState, onStartBattle, onTrainer, onChe
   const typeAt = (tx: number, ty: number): string =>
     ty < 0 || ty >= rows || tx < 0 || tx >= cols ? 'edge' : tileType(map.grid[ty][tx], indoor)
 
+  const forestCanopies =
+    map.biome === 'forest'
+      ? map.grid.flatMap((row, ry) =>
+          row.split('').flatMap((_, rx) => {
+            if (typeAt(rx, ry) !== 'tree') return []
+            const h = tileHash(rx, ry)
+            const neighbors = [
+              { dx: 0, dy: -1, type: typeAt(rx, ry - 1) },
+              { dx: 1, dy: 0, type: typeAt(rx + 1, ry) },
+              { dx: 0, dy: 1, type: typeAt(rx, ry + 1) },
+              { dx: -1, dy: 0, type: typeAt(rx - 1, ry) },
+            ]
+            const open = neighbors.filter((n) => n.type !== 'tree' && n.type !== 'edge')
+            if (open.length === 0 || h % 5 >= 3) return []
+            return [{ rx, ry, h, openX: open.reduce((sum, n) => sum + n.dx, 0), openY: open.reduce((sum, n) => sum + n.dy, 0) }]
+          }),
+        )
+      : []
+
+  const forestUndergrowth =
+    map.biome === 'forest'
+      ? map.grid.flatMap((row, ry) =>
+          row.split('').flatMap((_, rx) => {
+            const type = typeAt(rx, ry)
+            const h = tileHash(rx, ry)
+            const nearTrees = [typeAt(rx, ry - 1), typeAt(rx + 1, ry), typeAt(rx, ry + 1), typeAt(rx - 1, ry)].filter((t) => t === 'tree').length
+            return type !== 'tree' && nearTrees > 0 && h % 7 === 0 ? [{ rx, ry, h }] : []
+          }),
+        )
+      : []
+
   return (
     <div className="screen field">
       <div className="field-header">
@@ -288,7 +319,7 @@ export default function Field({ state, setState, onStartBattle, onTrainer, onChe
       {map.intro && <p className="field-intro">{map.intro}</p>}
 
       <div className="viewport" ref={vpRef}>
-        <div className={`vp-window${indoor ? ' indoor' : ''}`} style={{ width: viewW || '100%', height: viewH || 260 }}>
+        <div className={`vp-window biome-${map.biome}${indoor ? ' indoor' : ''}`} style={{ width: viewW || '100%', height: viewH || 260 }}>
           <div className="world" style={{ width: worldW, height: worldH, transform: `translate(${-camX}px, ${-camY}px)` }}>
             {map.grid.flatMap((row, ry) =>
               row.split('').map((ch, rx) => {
@@ -299,7 +330,12 @@ export default function Field({ state, setState, onStartBattle, onTrainer, onChe
                 const flip = vary && !auto && h & 1 ? 'scaleX(-1) ' : ''
                 const scale = type === 'tree' ? 'scale(1.08)' : ''
                 const transform = flip || scale ? `${flip}${scale}`.trim() : undefined
-                const bright = vary ? 0.95 + ((h >> 1) % 6) * 0.02 : 1
+                const bright =
+                  map.biome === 'forest' && type === 'tree'
+                    ? 0.48 + ((h >> 1) % 5) * 0.025
+                    : vary
+                      ? 0.95 + ((h >> 1) % 6) * 0.02
+                      : 1
                 const decal = decalFor(type, h)
                 // オートタイル: 外側の角に隣接地形を差し込んで丸める
                 const corners: { p: string; t: string }[] = []
@@ -333,11 +369,26 @@ export default function Field({ state, setState, onStartBattle, onTrainer, onChe
                 )
               }),
             )}
+            {forestUndergrowth.map(({ rx, ry, h }) => (
+              <img
+                key={`fu${rx}-${ry}`}
+                className="forest-undergrowth"
+                src={`${BASE}ui/forest_undergrowth.png`}
+                alt=""
+                style={{
+                  left: (rx - 0.3) * TILE,
+                  top: (ry + 0.34) * TILE,
+                  width: TILE * 1.6,
+                  height: TILE * 0.76,
+                  transform: h & 1 ? 'scaleX(-1)' : undefined,
+                }}
+              />
+            ))}
             {map.warps.map((w) => (
               <span
                 key={`w${w.x}-${w.y}`}
                 className="world-token warp-token"
-                style={{ left: w.x * TILE, top: w.y * TILE, width: TILE, height: TILE }}
+                style={{ left: w.x * TILE, top: w.y * TILE, width: TILE, height: TILE, zIndex: 100 + w.y * 10 }}
                 aria-hidden
               />
             ))}
@@ -345,33 +396,64 @@ export default function Field({ state, setState, onStartBattle, onTrainer, onChe
               <span
                 key={`b${i}`}
                 className="world-token building-token"
-                style={{ left: b.x * TILE, top: (b.y - 2) * TILE, width: b.w * TILE, height: (b.h + 2) * TILE }}
+                style={{ left: b.x * TILE, top: (b.y - 2) * TILE, width: b.w * TILE, height: (b.h + 2) * TILE, zIndex: 100 + (b.y + b.h) * 10 }}
               >
                 <Building kind={b.kind} w={b.w} tile={TILE} doorOpen={openingDoor === `${b.x}-${b.y}`} />
               </span>
             ))}
             {map.props?.map((p, i) => (
-              <span key={`p${i}`} className={`world-token prop-token${p.kind === 'rug' ? ' prop-flat' : ''}`} style={{ left: p.x * TILE, top: p.y * TILE, width: TILE, height: TILE }}>
+              <span
+                key={`p${i}`}
+                className={`world-token prop-token${p.kind === 'rug' ? ' prop-flat' : ''}`}
+                style={{ left: p.x * TILE, top: p.y * TILE, width: TILE, height: TILE, zIndex: p.kind === 'rug' ? 3 : 105 + p.y * 10 }}
+              >
                 <PropToken kind={p.kind} emoji={p.emoji} size={TILE * (PROP_SCALE[p.kind] ?? 1)} />
               </span>
             ))}
             {map.chests?.map((c) => (
-              <span key={`c${c.id}`} className="world-token prop-token" style={{ left: c.x * TILE, top: c.y * TILE, width: TILE, height: TILE }}>
+              <span key={`c${c.id}`} className="world-token prop-token" style={{ left: c.x * TILE, top: c.y * TILE, width: TILE, height: TILE, zIndex: 105 + c.y * 10 }}>
                 <ChestToken open={hasFlag(state, `chest_${c.id}`)} size={TILE * 0.92} />
               </span>
             ))}
             {map.npcs?.map((n) => (
-              <span key={`n${n.x}-${n.y}`} className="world-token person-token" style={{ left: n.x * TILE, top: n.y * TILE, width: TILE, height: TILE }}>
-                <NpcToken kind={n.kind} emoji={n.emoji} sprite={n.sprite} size={TILE * 1.3} />
+              <span key={`n${n.x}-${n.y}`} className="world-token person-token" style={{ left: n.x * TILE, top: n.y * TILE, width: TILE, height: TILE, zIndex: 107 + n.y * 10 }}>
+                <NpcToken kind={n.kind} emoji={n.emoji} sprite={n.sprite} size={TILE * 1.55} />
               </span>
             ))}
             {map.leader && (
-              <span className="world-token person-token" style={{ left: map.leader.x * TILE, top: map.leader.y * TILE, width: TILE, height: TILE }}>
-                <LeaderToken trainerId={map.leader.trainerId} defeated={leaderDefeated} size={TILE * 1.5} />
+              <span className="world-token person-token" style={{ left: map.leader.x * TILE, top: map.leader.y * TILE, width: TILE, height: TILE, zIndex: 107 + map.leader.y * 10 }}>
+                <LeaderToken trainerId={map.leader.trainerId} defeated={leaderDefeated} size={TILE * 1.65} />
               </span>
             )}
-            <span className="world-token player-token person-token" style={{ left: x * TILE, top: y * TILE, width: TILE, height: TILE }}>
-              <PlayerToken dir={dir} step={step} size={TILE * 1.3} />
+            {forestCanopies.map(({ rx, ry, h, openX, openY }) => {
+              const variant = h % 3
+              const file = variant === 0 ? 'forest_canopy' : variant === 1 ? 'forest_tree_tall' : 'forest_tree_wide'
+              const width =
+                variant === 0 ? 2.02 + ((h >> 2) % 4) * 0.08 : variant === 1 ? 1.2 + ((h >> 2) % 3) * 0.07 : 2.15 + ((h >> 2) % 4) * 0.09
+              const height = variant === 0 ? width * 0.9 : variant === 1 ? width * 1.62 : width * 0.68
+              const offsetX = (((h >> 5) % 5) - 2) * 0.045 - openX * 0.22
+              const offsetY = (((h >> 8) % 5) - 2) * 0.025 - openY * 0.14
+              return (
+                <img
+                  key={`fc${rx}-${ry}`}
+                  className="forest-canopy"
+                  src={`${BASE}ui/${file}.png`}
+                  alt=""
+                  style={{
+                    left: (rx + 0.5 - width / 2 + offsetX) * TILE,
+                    top: (ry + 1 - height + offsetY) * TILE,
+                    width: TILE * width,
+                    height: TILE * height,
+                    zIndex: 108 + ry * 10,
+                    opacity: 0.9 + (h % 4) * 0.025,
+                    filter: `saturate(${0.8 + (h % 3) * 0.04}) brightness(${0.76 + ((h >> 3) % 4) * 0.035}) drop-shadow(0 8px 7px rgba(8,18,8,.58))`,
+                    transform: h & 1 ? 'scaleX(-1)' : undefined,
+                  }}
+                />
+              )
+            })}
+            <span className="world-token player-token person-token" style={{ left: x * TILE, top: y * TILE, width: TILE, height: TILE, zIndex: 107 + y * 10 }}>
+              <PlayerToken dir={dir} step={step} size={TILE * 1.6} />
             </span>
           </div>
         </div>
