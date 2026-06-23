@@ -166,21 +166,35 @@ export function findRecipe(aId: string, bId: string): Recipe | undefined {
   return RECIPES.find((r) => (r.base === aId && r.material === bId) || (r.base === bId && r.material === aId))
 }
 
+// 汎用レア配合: 同タイプの最終形(stage3)を2体錬成すると、そのタイプの伝説種が生まれる
+const LEGEND_BY_TYPE: Record<string, string> = { 火: 'ignaros', 水: 'abystia', 風: 'tempestroc', 地: 'terrabehemoth', 聖: 'sol', 冥: 'luna' }
+const LEGEND_MOVE_NAME: Record<string, string> = { 火: '原初の業火', 水: '原初の大海', 風: '原初の嵐', 地: '原初の大地', 聖: '原初の聖光', 冥: '原初の闇' }
+
 /** 錬成結果。隠し配合なら伝説種＋専用技。stone=才能+1追加, charm=遺伝枠+1 */
 export function fuseResult(
   a: OwnedMonster,
   b: OwnedMonster,
   opts?: { stone?: boolean; charm?: boolean },
 ): { speciesId: string; level: number; talent: number; evolved: boolean; inherited: Move[]; rare: boolean } {
-  const recipe = findRecipe(a.speciesId, b.speciesId)
-  const sp = species(a.speciesId)
-  const evolvedId = recipe ? recipe.result : sp.to && DEX.some((d) => d.id === sp.to) ? (sp.to as string) : a.speciesId
+  const spA = species(a.speciesId)
+  const spB = species(b.speciesId)
+  const explicit = findRecipe(a.speciesId, b.speciesId)
+  let rareResult: string | null = null
+  let rareMove: Move | null = null
+  if (explicit) {
+    rareResult = explicit.result
+    rareMove = explicit.move
+  } else if (spA.stage === 3 && spB.stage === 3 && spA.type === spB.type && LEGEND_BY_TYPE[spA.type]) {
+    rareResult = LEGEND_BY_TYPE[spA.type]
+    rareMove = rmove(`leg_${spA.type}`, LEGEND_MOVE_NAME[spA.type], spA.type, 110)
+  }
+  const evolvedId = rareResult ?? (spA.to && DEX.some((d) => d.id === spA.to) ? (spA.to as string) : a.speciesId)
   const level = Math.max(5, Math.min(60, Math.round((a.level + b.level) / 2) + 3))
   const talent = Math.min(TALENT_MAX, Math.max(a.talent ?? 0, b.talent ?? 0) + 1 + (opts?.stone ? 1 : 0))
   const cap = MAX_INHERITED + (opts?.charm ? 1 : 0)
   const resultNatural = getMoveset(species(evolvedId), level)
   const inherited: Move[] = []
-  if (recipe) inherited.push(recipe.move) // 専用技は必ず先頭で確保
+  if (rareMove) inherited.push(rareMove) // 専用技は必ず先頭で確保
   const pool = [signatureMove(species(b.speciesId)), ...(a.inheritedMoves ?? []), ...(b.inheritedMoves ?? [])]
   for (const mv of pool) {
     if (inherited.length >= cap) break
@@ -188,7 +202,7 @@ export function fuseResult(
     if (resultNatural.some((m) => m.id === mv.id)) continue
     inherited.push(mv)
   }
-  return { speciesId: evolvedId, level, talent, evolved: evolvedId !== a.speciesId, inherited, rare: !!recipe }
+  return { speciesId: evolvedId, level, talent, evolved: evolvedId !== a.speciesId, inherited, rare: !!rareResult }
 }
 
 /** 所有個体の実際の技セット(習得技＋遺伝技、id重複除く) */
