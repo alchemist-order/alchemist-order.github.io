@@ -1,7 +1,7 @@
-import { useEffect, useLayoutEffect, useRef, useState } from 'react'
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { BattleConfig, GameState } from '../types'
 import { ENCOUNTER_RATE, MAPS, TRAINERS, isWall } from '../game/maps'
-import type { Chest, Npc } from '../game/maps'
+import type { Ambient, Chest, Npc } from '../game/maps'
 import { hasFlag } from '../game/state'
 import { sfx } from '../game/audio'
 import { Building, ChestToken, LeaderToken, NpcToken, PlayerToken, PropToken, type Dir } from '../ui'
@@ -47,6 +47,48 @@ const PROP_SCALE: Record<string, number> = {
 }
 
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n))
+
+const AMBIENT_EMOJI: Record<string, string> = {
+  bird: '🐦',
+  butterfly: '🦋',
+  firefly: '✨',
+  cat: '🐈',
+  gull: '🕊️',
+  fish: '🐟',
+  leaf: '🍃',
+  wisp: '✦',
+}
+
+const ambientHash = (text: string): number => {
+  let h = 2166136261
+  for (let i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i)
+    h = Math.imul(h, 16777619)
+  }
+  return h >>> 0
+}
+const ambientRand = (seed: number, salt: number): number => {
+  let n = (seed + Math.imul(salt + 1, 0x9e3779b9)) >>> 0
+  n ^= n << 13
+  n ^= n >>> 17
+  n ^= n << 5
+  return ((n >>> 0) % 10000) / 10000
+}
+
+function AmbientToken({ ambient, size }: { ambient: Ambient; size: number }) {
+  const [failed, setFailed] = useState(false)
+  const emoji = ambient.emoji ?? AMBIENT_EMOJI[ambient.kind] ?? '·'
+  if (failed) return <span className="ambient-emoji" style={{ fontSize: size * 0.8 }}>{emoji}</span>
+  return (
+    <img
+      className="ambient-img"
+      src={`${BASE}ui/ambient_${ambient.kind}.png`}
+      alt=""
+      style={{ width: size, height: size, objectFit: 'contain' }}
+      onError={() => setFailed(true)}
+    />
+  )
+}
 
 // オートタイル対象(縁を丸める自然地形)
 const AUTOTILE = new Set(['grass', 'water'])
@@ -310,6 +352,52 @@ export default function Field({ state, setState, onStartBattle, onTrainer, onChe
         )
       : []
 
+  const ambientInstances = useMemo(
+    () =>
+      (map.ambient ?? []).flatMap((a, ai) => {
+        const count = Math.max(0, Math.floor(a.count ?? 1))
+        return Array.from({ length: count }, (_, i) => {
+          const seed = ambientHash(`${map.id}:${a.kind}:${a.style}:${ai}:${i}`)
+          const rx = ambientRand(seed, 1)
+          const ry = ambientRand(seed, 2)
+          const areaW = Math.max(0.2, a.area.w)
+          const areaH = Math.max(0.2, a.area.h)
+          const px = a.style === 'fly' ? -0.12 : rx
+          const py = 0.14 + ry * 0.72
+          return {
+            ambient: a,
+            key: `a${ai}-${i}`,
+            seed,
+            x: (a.area.x + px * areaW) * TILE,
+            y: (a.area.y + py * areaH) * TILE,
+            tileY: a.area.y + py * areaH,
+            size:
+              TILE *
+              (a.style === 'fly'
+                ? 0.62 + ambientRand(seed, 8) * 0.18
+                : a.style === 'flit'
+                  ? 0.42 + ambientRand(seed, 8) * 0.15
+                  : 0.55 + ambientRand(seed, 8) * 0.18),
+            dx:
+              a.style === 'fly'
+                ? (areaW + 0.25) * TILE
+                : (ambientRand(seed, 3) * 2 - 1) * Math.min(areaW * TILE * 0.42, TILE * 2.6),
+            dy:
+              a.style === 'fly'
+                ? (ambientRand(seed, 4) * 2 - 1) * Math.min(areaH * TILE * 0.18, TILE * 0.75)
+                : (ambientRand(seed, 4) * 2 - 1) * Math.min(areaH * TILE * 0.35, TILE * 1.6),
+            duration:
+              (a.style === 'fly' ? 10 : a.style === 'flit' ? 3.8 : 7.5) /
+              Math.max(0.25, a.speed ?? 1) *
+              (0.82 + ambientRand(seed, 5) * 0.42),
+            delay: -ambientRand(seed, 6) * 9,
+            flip: ambientRand(seed, 7) > 0.5,
+          }
+        })
+      }),
+    [map, TILE],
+  )
+
   return (
     <div className="screen field">
       <div className="field-header">
@@ -413,6 +501,28 @@ export default function Field({ state, setState, onStartBattle, onTrainer, onChe
             {map.chests?.map((c) => (
               <span key={`c${c.id}`} className="world-token prop-token" style={{ left: c.x * TILE, top: c.y * TILE, width: TILE, height: TILE, zIndex: 105 + c.y * 10 }}>
                 <ChestToken open={hasFlag(state, `chest_${c.id}`)} size={TILE * 0.92} />
+              </span>
+            ))}
+            {ambientInstances.map((a) => (
+              <span
+                key={a.key}
+                className={`world-token ambient-token ambient-${a.ambient.style}`}
+                style={
+                  {
+                    left: a.x,
+                    top: a.y,
+                    width: a.size,
+                    height: a.size,
+                    zIndex: 104 + Math.floor(a.tileY) * 10,
+                    '--ambient-dx': `${a.dx}px`,
+                    '--ambient-dy': `${a.dy}px`,
+                    '--ambient-duration': `${a.duration}s`,
+                    '--ambient-delay': `${a.delay}s`,
+                    '--ambient-flip': a.flip ? -1 : 1,
+                  } as React.CSSProperties
+                }
+              >
+                <AmbientToken ambient={a.ambient} size={a.size} />
               </span>
             ))}
             {map.npcs?.map((n) => (

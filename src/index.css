@@ -1080,6 +1080,55 @@ button:disabled {
 .prop-token .prop-sprite { filter: drop-shadow(0 2px 3px rgba(0,0,0,0.45)); }
 .prop-token > span { filter: drop-shadow(0 2px 2px rgba(0,0,0,0.4)); }
 .prop-token.prop-flat { z-index: 2; align-items: center; }
+.ambient-token {
+  z-index: 4;
+  align-items: center;
+  transform-origin: 50% 60%;
+  animation-duration: var(--ambient-duration, 7s);
+  animation-delay: var(--ambient-delay, 0s);
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+  will-change: transform;
+}
+.ambient-token::after { content: none !important; }
+.ambient-img {
+  display: block;
+  image-rendering: pixelated;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.38));
+  transform: scaleX(var(--ambient-flip, 1));
+}
+.ambient-emoji {
+  display: block;
+  line-height: 1;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.38));
+  transform: scaleX(var(--ambient-flip, 1));
+}
+.ambient-roam { animation-name: ambient-roam; }
+.ambient-fly {
+  animation-name: ambient-fly;
+  animation-timing-function: linear;
+}
+.ambient-flit { animation-name: ambient-flit; }
+@keyframes ambient-roam {
+  0%, 100% { transform: translate(0, 0); }
+  48% { transform: translate(var(--ambient-dx, 18px), var(--ambient-dy, 8px)); }
+  58% { transform: translate(calc(var(--ambient-dx, 18px) * .72), calc(var(--ambient-dy, 8px) * .42)); }
+}
+@keyframes ambient-fly {
+  0% { transform: translate(0, 0); }
+  100% { transform: translate(var(--ambient-dx, 180px), var(--ambient-dy, 0px)); }
+}
+@keyframes ambient-flit {
+  0%, 100% { transform: translate(0, 0) rotate(-2deg); }
+  35% { transform: translate(calc(var(--ambient-dx, 8px) * .35), calc(var(--ambient-dy, -12px) - 8px)) rotate(3deg); }
+  70% { transform: translate(calc(var(--ambient-dx, 8px) * -.25), calc(var(--ambient-dy, -12px) * .35)) rotate(-3deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ambient-token {
+    animation: none !important;
+    transform: none !important;
+  }
+}
 /* 建物(立体イラスト/CSSハウス) */
 .building-token { z-index: 5; }
 .building-token::after { content: none !important; }
