@@ -1,6 +1,6 @@
 # フィールド ドット絵 統一規格（16bit 昔風・全員サイズ統一）
 
-**対象＝フィールドの歩きキャラ全員**（主人公／村人NPC／支部長／四賢／ライバル／ボス）。
+**対象＝フィールドの歩きキャラ全員**（主人公／村人NPC／守護者／四賢／ライバル／ボス）。
 **絵柄の基準は「森の番人 シルヴァ」=`public/ui/gym_forest.png`**（16bit昔風・きれいすぎない）。
 ※バトル/図鑑の幻獣スプライトは従来の水彩のまま（混ぜない）。
 
@@ -74,11 +74,11 @@ satchel, gender-neutral, brown short hair.
 | `npc_kaito` | ライバル カイト | confident teen boy, reddish-brown hair, cocky grin, travel outfit, one sleeve rolled |
 | `npc_portal` | 転送門（装置） | NOT a person: a glowing arcane warp gate — stone arch + swirling blue-violet portal energy + runes（同フレーム・足元=台座） |
 
-## 3. 支部長・四賢・ボス（同規格で順次）
+## 3. 守護者・四賢・ボス（同規格で順次）
 基準の `gym_forest`(=済) に**サイズ・絵柄を合わせて**残りを統一。容姿は `CHARACTERS.md` 準拠。
 | ファイル | 対象 |
 |---|---|
-| `gym_port` `gym_volcano` `gym_peak` `gym_volt` `gym_works` `gym_tomb` `gym_astra` | 支部長8（forest以外）※既存があれば統一フレームで描き直し |
+| `gym_port` `gym_volcano` `gym_peak` `gym_volt` `gym_works` `gym_tomb` `gym_astra` | 守護者8（forest以外）※既存があれば統一フレームで描き直し |
 | `sage_*` ×4、`magnus`、`sinel` | 四賢・ラスボス・シネル |
 
 前文は §2 と同じ（`<STYLE> <FRAMING> Single standing character, facing the viewer, one frame. Subject: …`）。
@@ -89,5 +89,5 @@ satchel, gender-neutral, brown short hair.
 1. **主人公4方向**（統一フレームで描き直し）＝まず基準を作る
 2. **村人・施設NPC**（§2）を統一フレームで（既存npc_morris/tina/mentor/mom/inn/sailor/kaito も描き直し）
 3. 転送門`npc_portal`・記録係`npc_records`
-4. 支部長（forest以外）→ 四賢・ボス
+4. 守護者（forest以外）→ 四賢・ボス
 > 差し替えはファイル名据え置きで自動反映。`gym_forest`の“サイズ感”に全員を合わせるのが合言葉。

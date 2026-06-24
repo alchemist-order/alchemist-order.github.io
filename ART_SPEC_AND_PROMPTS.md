@@ -53,11 +53,11 @@ Subject:
 | 道具屋ラル | a friendly merchant, leather apron, bandolier of potion vials, coin pouch |
 | 錬成師ミルカ | a young alchemist with brass goggles on her forehead, rune-trimmed coat, holding a glowing flask |
 | 船乗り | a weathered sailor, striped shirt, knit cap, rolled sleeves |
-| 支部長シルヴァ | a calm woman, moss-green hooded robe with leaf/vine motifs, a budding wooden staff |
-| 支部長マレア | a sun-tanned woman sea-captain, tricorn hat, windswept coat, anchor-motif prosthetic arm |
+| 守護者シルヴァ | a calm woman, moss-green hooded robe with leaf/vine motifs, a budding wooden staff |
+| 守護者マレア | a sun-tanned woman sea-captain, tricorn hat, windswept coat, anchor-motif prosthetic arm |
 | ライバル カイト | a confident teen boy, reddish-brown hair, cocky grin, travel outfit, one sleeve rolled |
 
-> 残り6支部長/四賢/マグヌス等も同じ前文＋[CHARACTERS.md]の容姿で同様に。
+> 残り6守護者/四賢/マグヌス等も同じ前文＋[CHARACTERS.md]の容姿で同様に。
 
 ---
 

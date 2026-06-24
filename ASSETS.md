@@ -15,7 +15,7 @@
 | **バトル背景** | 戦闘画面の背景 | 地形ごと 8〜10 | JPG/PNG・横長(3:2) | `public/bg/battle/<地形>.jpg` | ★P1 |
 | **タイトル/キービジュアル** | タイトル画面＋X共有OGP | 1 | JPG・16:9(1200×630) | `public/bg/title.jpg` | ★P1 |
 | **フィールドマップ絵** | 探索画面の地面（タイル or 一枚絵） | マップごと | PNG | `public/bg/map/<mapId>.png` | P2 |
-| **トレーナー/NPC立ち絵** | ジム支部長・宿敵など | 8＋数体 | 透過PNG・全身 or バストアップ | `public/portraits/<id>.png` | P2 |
+| **トレーナー/NPC立ち絵** | ジム守護者・宿敵など | 8＋数体 | 透過PNG・全身 or バストアップ | `public/portraits/<id>.png` | P2 |
 | **プレイヤー** | フィールドのコマ／顔 | 1〜2 | 透過PNG | `public/portraits/player.png` | P2 |
 | **記章（ジムバッジ）** | 獲得記章のアイコン | 8 | 透過PNG・正方形(小) | `public/ui/badges/<番号>.png` | P3 |
 | **属性アイコン** | タイプ表示（現状は文字ピル） | 9 | 透過PNG・正方形(小) | `public/ui/types/<属性>.png` | P3 |
@@ -72,7 +72,7 @@ Render each scene I describe in exactly this style.
 - `bg/map/forest.png`（緑霧の森） — `Top-down (bird's-eye) view of a misty forest clearing as a game map. A large oval grassy clearing in the CENTER (open and walkable), densely surrounded by big trees along ALL edges. A small open glade at the TOP-CENTER, and a dirt path opening at the BOTTOM-CENTER. Soft fog, dappled light. No characters, no text, no grid.`
 - `bg/map/rapis.png`（始まりの村ラピス） — `Top-down (bird's-eye) view of a small Renaissance alchemist village square as a game map. An open cobblestone-and-grass square in the CENTER (walkable), a few stone houses with chimneys along the TOP edge, low stone walls/fences around the BORDER, and a road opening at the BOTTOM-CENTER. Warm daylight. No characters, no text, no grid.`
 
-→ 保存して教えてくれれば、`<mapId>.png` に整えて配置（PNG変換含む）し、本番反映する。コマ（🧝主人公・🧙‍♀️支部長・🚪出口）は私が絵の上に重ねる位置を調整する。
+→ 保存して教えてくれれば、`<mapId>.png` に整えて配置（PNG変換含む）し、本番反映する。コマ（🧝主人公・🧙‍♀️守護者・🚪出口）は私が絵の上に重ねる位置を調整する。
 
 ## 室内マップ（家・宿屋の内装・俯瞰）
 `public/bg/map/<id>.png` に置くと床タイル表示から一枚絵に差替わる。背景マスター指示を先に貼る。中央=歩ける床／上=NPC位置／下中央=出入口。正方形でOK。
@@ -102,10 +102,10 @@ style matching a fantasy bestiary, warm and characterful expression,
 transparent background, no text.
 ```
 
-## 敵トレーナー（支部長・宿敵・ボス）
+## 敵トレーナー（守護者・宿敵・ボス）
 プレイヤー同様、**フィールド用＝ドット絵／会話・バトル用＝水彩立ち絵**の2種。水彩立ち絵は前述の【キャラ用マスター指示】を貼ってから生成する。
 
-### 森の支部長 シルヴァ（gym_forest）
+### 森の守護者 シルヴァ（gym_forest）
 設定：緑霧の森を統べる植物使いの錬獣師。地/毒系（スポアリン/マンドラゴ/アルラウネ）を操る。落ち着いた女性。
 - ドット絵（🧙‍♀️置き換え）→ `public/ui/gym_forest.png`
   ```
@@ -149,7 +149,7 @@ waist-up portrait, transparent background, no text.
 - `bg/map/port.png`（俯瞰・港町）— `Top-down view of a Renaissance seaside harbor town, open cobblestone plaza center, fishing boats and docks at the bottom, stone houses and a lighthouse along the top, nets and barrels, watercolor, no characters/text/grid.`
 - `bg/map/coast_road.png`（俯瞰・海沿いの道）— `Top-down view of a coastal path, grassy center walkable, sea and rocks on one side, cliffs on the other, watercolor, no characters/text/grid.`
 - `bg/battle/sea.jpg`（戦闘背景）— `A windswept harbor coastline, waves and old docks, overcast painterly sky, watercolor.`
-- 支部長マレア: ドット `ui/gym_port.png`（`a bold female sea-captain in a tricorn hat and weathered coat, 16-bit pixel art, front view, transparent, no text`）／水彩 `portraits/gym_port.png`（キャラ用マスター先貼り: `Marea, a bold tanned female harbor gym leader, tricorn hat, weathered blue coat, confident grin, waist-up portrait, transparent, no text`）
+- 守護者マレア: ドット `ui/gym_port.png`（`a bold female sea-captain in a tricorn hat and weathered coat, 16-bit pixel art, front view, transparent, no text`）／水彩 `portraits/gym_port.png`（キャラ用マスター先貼り: `Marea, a bold tanned female harbor gym leader, tricorn hat, weathered blue coat, confident grin, waist-up portrait, transparent, no text`）
 
 ## 命名・配置 規約
 - バトル背景: `public/bg/battle/<地形キー>.jpg`（forest/plains/town/cave/sea/peak/graveyard/furnace）
@@ -164,5 +164,5 @@ waist-up portrait, transparent background, no text.
 ## おすすめ着手順
 1. **バトル背景 `forest` と `town`（または `plains`）** … いま使う2マップ分。即・最も見栄えが変わる。
 2. **タイトル／OGP `title.jpg`** … 共有時の第一印象。
-3. ジム支部長 `gym_forest` の立ち絵 → トレーナー戦が締まる。
+3. ジム守護者 `gym_forest` の立ち絵 → トレーナー戦が締まる。
 4. 以降、地形背景を全8種・記章・アイコン…と拡張。

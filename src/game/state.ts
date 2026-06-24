@@ -299,7 +299,7 @@ export function currentObjective(g: GameState): { icon: string; text: string } |
     return { icon: '🏠', text: '本拠地ラピス村へ戻り、師ガレンを訪ねよう' }
   }
   // 相棒あり・最初のステージ未攻略 → 転送門〜森ボスへ誘導
-  if (g.pos.mapId === 'forest') return { icon: '⚔️', text: '高草で仲間を増やし鍛え、最奥の支部長シルヴァに挑もう' }
+  if (g.pos.mapId === 'forest') return { icon: '⚔️', text: '高草で仲間を増やし鍛え、最奥の守護者シルヴァに挑もう' }
   if (g.pos.mapId === 'rapis') return { icon: '🌀', text: '中央広場の転送門(🌀)に触れて「緑霧の森」へワープしよう' }
   return { icon: '🌀', text: '本拠地へ戻り、転送門から緑霧の森へ向かおう' }
 }

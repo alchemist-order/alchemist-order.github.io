@@ -81,8 +81,8 @@ export interface World {
   desc: string
 }
 export const WORLDS: World[] = [
-  { id: 'forest', name: '緑霧の森', icon: '🌲', mapId: 'forest', tx: 17, ty: 39, boss: 'gym_forest', unlock: null, desc: '霧立ちこめる迷いの森。支部長シルヴァが待つ、最初の世界。' },
-  { id: 'sea', name: '潮鳴りの海', icon: '🌊', mapId: 'coast_road', tx: 2, ty: 6, boss: 'gym_port', unlock: '新緑の記章', desc: '潮騒の道から港町へ。支部長マレアが灰の渦を睨む。' },
+  { id: 'forest', name: '緑霧の森', icon: '🌲', mapId: 'forest', tx: 17, ty: 39, boss: 'gym_forest', unlock: null, desc: '霧立ちこめる迷いの森。守護者シルヴァが待つ、最初の世界。' },
+  { id: 'sea', name: '潮鳴りの海', icon: '🌊', mapId: 'coast_road', tx: 2, ty: 6, boss: 'gym_port', unlock: '新緑の記章', desc: '潮騒の道から港町へ。守護者マレアが灰の渦を睨む。' },
 ]
 
 // ── マップ生成ヘルパー(座標ズレ防止) ──
@@ -141,7 +141,7 @@ function buildRapis(): string[] {
   return g
 }
 
-// 緑霧の森(34x42) 密林を蛇行する長い迷路。南の入口から6本の横廊下を折り返しながら最奥の支部長へ。
+// 緑霧の森(34x42) 密林を蛇行する長い迷路。南の入口から6本の横廊下を折り返しながら最奥の守護者へ。
 // 横廊下に沿って草地6部屋(G=エンカウント)が口を開け、東端で潮騒の道へ抜ける。
 // 連結はサーペンタイン(一本道の折り返し)で担保。袋小路に宝箱。solid小物は草地内のみ(通路は塞がない)。
 function buildForest(): string[] {
@@ -161,7 +161,7 @@ function buildForest(): string[] {
   fill(g, 4, 9, 4, 15, '.') // 西端を上へ
   fill(g, 4, 9, 24, 9, '.') // 廊下6(東へ)
   fill(g, 16, 4, 16, 9, '.') // 中央を上へ→広間
-  fill(g, 12, 2, 21, 6, '.') // 支部長の広間(leader 17,3)
+  fill(g, 12, 2, 21, 6, '.') // 守護者の広間(leader 17,3)
   // ── 草地6部屋(各横廊下に口を開け接続。Gの行に通路行を含めて連結) ──
   fill(g, 7, 30, 12, 33, 'G') // 草地A(廊下2)
   fill(g, 20, 33, 26, 36, 'G') // 草地B(廊下2)
@@ -185,7 +185,7 @@ function buildCoast(): string[] {
   return g
 }
 
-// 潮鳴りの港町(24x16) 石畳の港町。北に支部長、南東に停泊する船(水)
+// 潮鳴りの港町(24x16) 石畳の港町。北に守護者、南東に停泊する船(水)
 function buildPort(): string[] {
   const g = grid(24, 16, ',')
   frame(g, '#')
@@ -466,7 +466,7 @@ export const MAPS: Record<string, GameMap> = {
     },
     props: [
       // 道しるべ(入口)
-      { x: 18, y: 38, kind: 'sign', name: '道しるべ', lines: ['「奥へ進むほど 道は折り返し 入り組む。支部長は 最奥の広間に。」', '「南へ戻れば 本拠地ラピス村へ 帰れる。」'] },
+      { x: 18, y: 38, kind: 'sign', name: '道しるべ', lines: ['「奥へ進むほど 道は折り返し 入り組む。守護者は 最奥の広間に。」', '「南へ戻れば 本拠地ラピス村へ 帰れる。」'] },
       // 草地A(7-12,30-33) 廊下は row33
       { x: 8, y: 31, kind: 'mushroom' }, { x: 10, y: 30, kind: 'flower' }, { x: 11, y: 31, kind: 'rock', solid: true },
       // 草地B(20-26,33-36) 廊下は row33
@@ -479,7 +479,7 @@ export const MAPS: Record<string, GameMap> = {
       { x: 26, y: 14, kind: 'mushroom' }, { x: 28, y: 13, kind: 'flower' }, { x: 27, y: 14, kind: 'rock', solid: true },
       // 草地F(8-14,9-12) 廊下は row9
       { x: 10, y: 11, kind: 'mushroom' }, { x: 13, y: 11, kind: 'flower' },
-      // 支部長の広間(12-21,2-6) leader 17,3
+      // 守護者の広間(12-21,2-6) leader 17,3
       { x: 13, y: 5, kind: 'plant', solid: true }, { x: 20, y: 5, kind: 'plant', solid: true },
       { x: 14, y: 2, kind: 'flower' }, { x: 19, y: 2, kind: 'flower' },
       // 通路沿いの装飾(非ソリッド・折り返しの角)
@@ -541,7 +541,7 @@ export const MAPS: Record<string, GameMap> = {
         emoji: '🧑‍✈️',
         sprite: 'npc_sailor',
         portrait: 'sailor',
-        lines: ['沖に"灰の渦"が出てな……船もまともに出せやしねえ。', '支部長のマレアの姉さんが、なんとかしようと睨みを利かせてるよ。'],
+        lines: ['沖に"灰の渦"が出てな……船もまともに出せやしねえ。', '守護者のマレアの姉さんが、なんとかしようと睨みを利かせてるよ。'],
       },
     ],
     buildings: [
@@ -565,14 +565,14 @@ export const MAPS: Record<string, GameMap> = {
       { x: 2, y: 3, kind: 'plant', solid: true }, { x: 22, y: 3, kind: 'plant', solid: true },
       { x: 2, y: 11, kind: 'plant', solid: true }, { x: 22, y: 11, kind: 'plant', solid: true },
     ],
-    intro: '船が行き交う潮鳴りの港町。海風の向こう、支部長マレアが待つ。',
+    intro: '船が行き交う潮鳴りの港町。海風の向こう、守護者マレアが待つ。',
   },
 }
 
 export const TRAINERS: Record<string, TrainerData> = {
   gym_forest: {
     id: 'gym_forest',
-    name: '森の支部長 シルヴァ',
+    name: '森の守護者 シルヴァ',
     team: [
       { speciesId: 'sporin', level: 9 },
       { speciesId: 'mandrago', level: 10 },
@@ -584,12 +584,12 @@ export const TRAINERS: Record<string, TrainerData> = {
     postBattle: [
       '見事。あなたの幻獣は、よく育てられているわ。……時間をかけて、ね。',
       '新緑の記章を受け取って。',
-      '灰の源は、北から流れてくる。まずは海へ――港の支部長マレアを訪ねなさい。',
+      '灰の源は、北から流れてくる。まずは海へ――港の守護者マレアを訪ねなさい。',
     ],
   },
   gym_port: {
     id: 'gym_port',
-    name: '港の支部長 マレア',
+    name: '港の守護者 マレア',
     team: [
       { speciesId: 'shelk', level: 16 },
       { speciesId: 'aquab', level: 17 },

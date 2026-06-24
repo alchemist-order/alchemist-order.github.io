@@ -153,7 +153,7 @@ export default function App() {
     setScreen('battle')
   }
 
-  // 支部長に接触: 戦前の台詞→バトル
+  // 守護者に接触: 戦前の台詞→バトル
   const onTrainer = (trainer: TrainerData, biome: string) => {
     if (trainer.preBattle?.length) {
       setDialogue({
@@ -217,7 +217,11 @@ export default function App() {
         setDialogue({
           speaker: '師ガレン',
           portrait: 'mentor',
-          lines: ['各地のオーダー支部で、八つの記章を集めよ。それが一人前の証だ。', '……灰化が広がっている。急くな。だが、目を逸らすな。'],
+          lines: [
+            '各地には、アルケミスト・オーダーが認めた《守護者》がいる。彼らは土地と記章を守り、挑む者の力を試す。',
+            '八つの記章を集めた者だけが、オーダーの中枢へ進む資格を得る――その奥に、いま大陸を蝕む"灰化"の元凶がいる。',
+            'まずは緑霧の森の守護者シルヴァに挑みなさい。急くな。だが、目を逸らすな。',
+          ],
         })
       }
     } else if (npc.kind === 'mom') {
@@ -626,7 +630,7 @@ export default function App() {
               <span className="mon-name">🌀 転送門 — 世界を選ぶ</span>
               <button className="modal-close" onClick={() => setWorldsOpen(false)}>×</button>
             </div>
-            <p className="dex-text" style={{ marginTop: 0 }}>跳びたい世界を選ぼう。支部長を倒すと、新たな世界が開かれる。</p>
+            <p className="dex-text" style={{ marginTop: 0 }}>跳びたい世界を選ぼう。守護者を倒すと、新たな世界が開かれる。</p>
             {WORLDS.map((w) => {
               const unlocked = !w.unlock || game.badges.includes(w.unlock)
               const cleared = game.defeatedTrainers.includes(w.boss)

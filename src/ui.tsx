@@ -139,7 +139,7 @@ export function PlayerToken({ dir = 'down', step = 0, size = 34 }: { dir?: Dir; 
   )
 }
 
-// 支部長など敵トレーナーの歩きキャラ。public/ui/<trainerId>.png があれば画像、無ければ🧙‍♀️。
+// 守護者など敵トレーナーの歩きキャラ。public/ui/<trainerId>.png があれば画像、無ければ🧙‍♀️。
 const leaderImgState: Record<string, boolean> = {}
 export function LeaderToken({ trainerId, defeated, size = 46 }: { trainerId: string; defeated?: boolean; size?: number }) {
   const [failed, setFailed] = useState(!!leaderImgState[trainerId])

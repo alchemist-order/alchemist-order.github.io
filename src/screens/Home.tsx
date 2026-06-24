@@ -345,7 +345,7 @@ export default function Home({ state, setState, setActive, onField, onDex, initi
               { ico: '🎖', name: '記章', val: `${state.badges.length} / 8` },
               { ico: '🗼', name: '試練の塔 自己ベスト', val: `${state.towerBest ?? 0} 階` },
               { ico: '⚔', name: '通算勝利数', val: `${state.wins} 勝` },
-              { ico: '🏛', name: '撃破した支部長', val: `${state.defeatedTrainers.length} 人` },
+              { ico: '🏛', name: '撃破した守護者', val: `${state.defeatedTrainers.length} 人` },
               { ico: '💰', name: '所持金', val: `${state.money} ゲル` },
               { ico: '🔥', name: '連続ログイン', val: `${state.loginStreak ?? 1} 日` },
               { ico: '🧬', name: '所持幻獣', val: `${state.collection.length} 体（パーティ ${partyMons.length}）` },

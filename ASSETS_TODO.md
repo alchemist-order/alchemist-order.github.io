@@ -11,8 +11,8 @@
 
 ## ✅ もう揃っているもの（生成不要）
 - 幻獣スプライト **001–100 全部**（＋292,294,296,297,298,299,300）
-- 支部長フィールド絵 `ui/gym_*`（8体）、四賢 `ui/sage_*`、`ui/magnus`/`sinel`
-- 立ち絵 `portraits/`：支部長8・四賢4・magnus・sinel・mentor・mom・inn・morris・tina・sailor・kaito・player
+- 守護者フィールド絵 `ui/gym_*`（8体）、四賢 `ui/sage_*`、`ui/magnus`/`sinel`
+- 立ち絵 `portraits/`：守護者8・四賢4・magnus・sinel・mentor・mom・inn・morris・tina・sailor・kaito・player
 - 建物 `ui/building_*`(4)、小物 `ui/prop_*`(全種)、森 `ui/forest_*`(4)、宝箱、アイテム、ロゴ
 - プレイヤー歩行 `ui/player_*`（down/up/right × a/b）
 - タイル `tiles/*`(10)、タイトル `bg/title.jpg`、森バトル背景 `bg/battle/forest.jpg`
@@ -68,7 +68,7 @@
 ---
 
 ## ☆ Tier 3：任意・将来（今すぐは不要）
-- **既存フィールドドットの16bit描き直し**（統一感UP）：`ui/player_*`、`ui/npc_mentor/mom/inn/morris/tina/sailor/kaito`、`ui/gym_port`〜（gym_forest以外の支部長フィールド絵）。ファイル名据え置きで差し替え。仕様＝`PIXEL_SPRITE_SPEC.md`。
+- **既存フィールドドットの16bit描き直し**（統一感UP）：`ui/player_*`、`ui/npc_mentor/mom/inn/morris/tina/sailor/kaito`、`ui/gym_port`〜（gym_forest以外の守護者フィールド絵）。ファイル名据え置きで差し替え。仕様＝`PIXEL_SPRITE_SPEC.md`。
 - **将来世界のバトル背景**＝水彩 `bg/battle/`：`volcano` `peak`(嵐嶺) `volt`(雷) `works`(錬成) `tomb`(冥) `astra`(聖) など（GAME_STRUCTUREの8地域分）。
 - **街/室内アセット**（Codexの街・室内描画刷新に合わせて）：`ART_PROMPTS_TOWN_INTERIOR.md` 参照（地面/壁/家具/街灯/井戸 等）。
 - **ボスのバトル大スプライト**＝水彩：マグヌス→`public/sprites/301.png`、アビス・キメラ→`302.png`（図鑑外・プロンプトは `MONSTER_ART_PROMPTS.md` のボス節）。※`ui/magnus.png`はフィールド用で別。

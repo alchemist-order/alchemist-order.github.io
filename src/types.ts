@@ -90,7 +90,7 @@ export interface GameState {
   playerName?: string // プレイヤー名(将来の共通ランキングの識別子)
 }
 
-// トレーナー(ジム支部長など)
+// トレーナー(ジム守護者など)
 export interface TrainerData {
   id: string
   name: string

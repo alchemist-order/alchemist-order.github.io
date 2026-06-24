@@ -105,7 +105,7 @@ classic 16-bit JRPG fanfare reimagined for full orchestra, quick and snappy, ins
 | キー | 用途 |
 |------|------|
 | `title.mp3` | タイトル/オープニング |
-| `boss.mp3` | ボス戦（ラスボス/支部長エース） |
+| `boss.mp3` | ボス戦（ラスボス/守護者エース） |
 | `battle.mp3` | 通常戦闘 |
 | `town.mp3` | 始まりの村ラピス（町） |
 | `forest.mp3` | 緑霧の森（探索） |
