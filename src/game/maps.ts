@@ -41,6 +41,19 @@ export interface Prop {
   emoji?: string
 }
 
+// ── アンビエント(装飾の動く要素) ── ※描画はField側(Codex)。ゲームロジックには非干渉・当たり判定なし。
+// Codexの実装契約: area(タイル矩形)内に count 体を出し、style に従って動かす。
+//   roam = 地上をゆっくり徘徊(area内をランダム/往復) / fly = areaを横断して飛ぶ(ループ) / flit = その場でふわふわ漂う
+//   表示は ui/ambient_<kind>.png があれば画像、無ければ emoji。speed は相対(小さいほど遅い)。prefers-reduced-motion で停止が親切。
+export interface Ambient {
+  kind: string // 'bird' | 'butterfly' | 'cat' | 'gull' など(Codexが絵に対応付け)
+  emoji?: string // 画像が無い時のフォールバック表示
+  style: 'roam' | 'fly' | 'flit'
+  area: { x: number; y: number; w: number; h: number } // 出現・移動範囲(タイル)
+  count?: number // 同種の数(既定1)
+  speed?: number // 相対速度(既定1)
+}
+
 // 宝箱。開けると item を amount 個入手。開封状態は flag 'chest_<id>' で保存
 export interface Chest {
   x: number
@@ -63,6 +76,7 @@ export interface GameMap {
   props?: Prop[]
   buildings?: { x: number; y: number; w: number; h: number; kind: string }[] // 立体の家(footprintは'H'で進入不可)
   chests?: Chest[]
+  ambient?: Ambient[] // 装飾の動く要素(Field側で描画・Codex)
   indoor?: boolean // 室内(床・壁の見た目)
   intro?: string
 }
@@ -342,6 +356,11 @@ export const MAPS: Record<string, GameMap> = {
       { x: 2, y: 20, id: 'rapis_hidden', item: 'flask', amount: 2 }, // 民家Eの裏の隠し宝箱
       { x: 31, y: 24, id: 'rapis_corner2', item: 'heal2', amount: 1 }, // 南東の隅の隠し宝箱
     ],
+    ambient: [
+      { kind: 'bird', emoji: '🐦', style: 'fly', area: { x: 1, y: 1, w: 32, h: 9 }, count: 3, speed: 1.2 }, // 上空を横切る小鳥
+      { kind: 'butterfly', emoji: '🦋', style: 'flit', area: { x: 11, y: 13, w: 8, h: 6 }, count: 2 }, // 噴水広場の蝶
+      { kind: 'cat', emoji: '🐈', style: 'roam', area: { x: 26, y: 19, w: 5, h: 4 }, count: 1, speed: 0.6 }, // 南東を歩く野良猫(看板猫ミケとは別)
+    ],
     intro: '錬金工房が並ぶ静かな村。ここがあなたの本拠地。中央広場の転送門から、各地の世界へ旅立とう。',
   },
   mentor_house: {
@@ -519,6 +538,11 @@ export const MAPS: Record<string, GameMap> = {
       { x: 29, y: 13, id: 'forest_r4', item: 'money', amount: 300 }, // 草地E(東の出口そば)
       { x: 11, y: 10, id: 'forest_top', item: 'heal', amount: 3 }, // 草地F(最奥手前)
     ],
+    ambient: [
+      { kind: 'butterfly', emoji: '🦋', style: 'flit', area: { x: 4, y: 9, w: 26, h: 30 }, count: 4 }, // 森を漂う蝶
+      { kind: 'bird', emoji: '🐦', style: 'fly', area: { x: 1, y: 2, w: 32, h: 10 }, count: 2, speed: 1.1 }, // 梢を渡る鳥
+      { kind: 'firefly', emoji: '✨', style: 'flit', area: { x: 7, y: 30, w: 20, h: 8 }, count: 3, speed: 0.5 }, // 林床の光(蛍/胞子)
+    ],
     intro: '霧が立ちこめる森。高草には野生の幻獣がひそむ。奥に錬獣師の気配……。',
   },
   coast_road: {
@@ -547,6 +571,9 @@ export const MAPS: Record<string, GameMap> = {
       { x: 19, y: 10, kind: 'shell' }, { x: 4, y: 9, kind: 'shell' },
       { x: 6, y: 9, kind: 'rock', solid: true }, { x: 16, y: 9, kind: 'rock', solid: true },
       { x: 13, y: 9, kind: 'barrel', solid: true }, { x: 14, y: 9, kind: 'crate', solid: true },
+    ],
+    ambient: [
+      { kind: 'gull', emoji: '🕊️', style: 'fly', area: { x: 1, y: 1, w: 20, h: 5 }, count: 4, speed: 1.3 }, // 海上を舞うカモメ
     ],
     intro: '潮の香りが満ちる海沿いの道。葦のしげみに水辺の幻獣が現れる。',
   },
