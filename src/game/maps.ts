@@ -334,11 +334,13 @@ export const MAPS: Record<string, GameMap> = {
       { x: 10, y: 20, kind: 'sign', emoji: '🌾', name: 'かかし', lines: ['畑のかかし。なぜか 錬獣師のローブを 着せられている。', '……どこかの 子供の イタズラだろうか。'] },
       { x: 16, y: 12, kind: 'sign', name: '張り紙', lines: ['「ねこ さがしています。みつけたら 噴水前まで。 ―ミケの飼い主」', '（……張り紙の すぐ横で、当の猫が のんびり 寝ている。）'] },
       { x: 12, y: 20, kind: 'barrel', solid: true, name: '古い樽', lines: ['樽の中を のぞいてみた。……空っぽだ。', 'いや、底に 古いゲル硬貨が 1枚 こびりついている。（もったいないので そのままにした）'] },
+      { x: 5, y: 4, kind: 'sign', name: '古い石碑', lines: ['苔むした石碑。「ラピス建村 ―― 賢者ここに 幻獣と憩いし地」', '……最後の一行は 削られていて 読めない。'] },
     ],
     chests: [
       { x: 31, y: 22, id: 'rapis_corner', item: 'heal', amount: 2 }, // 村の隅
       { x: 3, y: 5, id: 'rapis_garden', item: 'money', amount: 150 }, // 家の脇
       { x: 2, y: 20, id: 'rapis_hidden', item: 'flask', amount: 2 }, // 民家Eの裏の隠し宝箱
+      { x: 31, y: 24, id: 'rapis_corner2', item: 'heal2', amount: 1 }, // 南東の隅の隠し宝箱
     ],
     intro: '錬金工房が並ぶ静かな村。ここがあなたの本拠地。中央広場の転送門から、各地の世界へ旅立とう。',
   },
@@ -359,7 +361,7 @@ export const MAPS: Record<string, GameMap> = {
       // 蔵書(左右の本棚)
       { x: 1, y: 1, kind: 'bookshelf', solid: true, name: '蔵書', lines: ['錬金術の古い写本がぎっしりだ。読めない記号が並んでいる。'] },
       { x: 2, y: 1, kind: 'bookshelf', solid: true, name: '蔵書', lines: ['「賢者の石」について記された頁に、栞がはさまれている……。'] },
-      { x: 8, y: 1, kind: 'bookshelf', solid: true }, { x: 9, y: 1, kind: 'bookshelf', solid: true },
+      { x: 8, y: 1, kind: 'bookshelf', solid: true, name: '蔵書', lines: ['幻獣図鑑の初版。曰く「幻獣の強さは、共に過ごした時間に比例する」。'] }, { x: 9, y: 1, kind: 'bookshelf', solid: true, name: '蔵書', lines: ['錬成の手引き。「同じ種でも、才能(レア度)の高い個体ほど良い結果になる」とある。'] },
       // 錬成工房(左)
       { x: 1, y: 6, kind: 'cauldron', solid: true, name: '錬成釜', lines: ['師の錬成釜。底に、虹色の残滓がこびりついている。'] },
       { x: 2, y: 6, kind: 'pot', solid: true },
@@ -385,18 +387,19 @@ export const MAPS: Record<string, GameMap> = {
     npcs: [{ x: 3, y: 2, kind: 'mom', name: 'おかあさん' }],
     props: [
       // 壁
-      { x: 2, y: 0, kind: 'window' }, { x: 6, y: 0, kind: 'painting' }, { x: 4, y: 0, kind: 'clock' },
+      { x: 2, y: 0, kind: 'window', name: '窓', lines: ['窓の外に、村の朝。鳥が一羽、屋根から飛び立っていった。'] }, { x: 6, y: 0, kind: 'painting', name: '絵', lines: ['家族の肖像画。幼い自分が、母に手をひかれて笑っている。'] }, { x: 4, y: 0, kind: 'clock' },
       // 台所(左)
-      { x: 1, y: 1, kind: 'stove', solid: true }, { x: 2, y: 1, kind: 'shelf', solid: true, name: '食器棚' },
+      { x: 1, y: 1, kind: 'stove', solid: true, name: 'かまど', lines: ['母の鍋から いい匂い。「味見は あとでね」と 言われた気がした。'] }, { x: 2, y: 1, kind: 'shelf', solid: true, name: '食器棚', lines: ['お気に入りのスープ皿。欠けた縁も、なんだか愛おしい。'] },
       { x: 1, y: 2, kind: 'pot', solid: true }, { x: 1, y: 4, kind: 'vase', solid: true },
       // 食卓(中央)
       { x: 4, y: 4, kind: 'table', solid: true }, { x: 3, y: 4, kind: 'chair', solid: true }, { x: 4, y: 5, kind: 'chair', solid: true },
       // 暖炉のある居間(右)
-      { x: 7, y: 3, kind: 'fireplace', solid: true, name: '暖炉', lines: ['ぱちぱちと薪がはぜている。あたたかい。'] },
+      { x: 7, y: 3, kind: 'fireplace', solid: true, name: '暖炉', lines: ['ぱちぱちと薪がはぜている。あたたかい。', '薪箱の底で、何かが きらりと光った……。'] },
       { x: 6, y: 4, kind: 'rug' }, { x: 7, y: 5, kind: 'plant', solid: true },
       // 玄関マット
       { x: 5, y: 6, kind: 'rug' },
     ],
+    chests: [{ x: 6, y: 3, id: 'home_hearth', item: 'money', amount: 80 }], // 暖炉そばの薪箱(発見)
     intro: 'あたたかな わが家。奥の階段を上ると自分の部屋がある。',
   },
   home2f: {
@@ -408,17 +411,18 @@ export const MAPS: Record<string, GameMap> = {
     warps: [{ x: 5, y: 7, to: 'home', tx: 7, ty: 2 }], // 階段(下)
     props: [
       // 壁
-      { x: 5, y: 0, kind: 'window' }, { x: 3, y: 0, kind: 'painting' }, { x: 7, y: 0, kind: 'clock' },
+      { x: 5, y: 0, kind: 'window', name: '窓', lines: ['朝の光がまぶしい。空の向こうに、まだ見ぬ世界が広がっている。'] }, { x: 3, y: 0, kind: 'painting' }, { x: 7, y: 0, kind: 'clock' },
       // 寝床(左)
-      { x: 1, y: 1, kind: 'bed', solid: true, name: 'ベッド', lines: ['よく眠った。……今日から、旅が始まる。'] },
+      { x: 1, y: 1, kind: 'bed', solid: true, name: 'ベッド', lines: ['よく眠った。……今日から、旅が始まる。', 'ベッドの下に、子供の頃 隠した宝箱が ある気がする。'] },
       { x: 2, y: 2, kind: 'rug' }, { x: 1, y: 5, kind: 'plant', solid: true },
       // 学習机(右)
-      { x: 7, y: 1, kind: 'bookshelf', solid: true, name: '本棚', lines: ['古い幻獣図鑑。いつか、自分の見つけた幻獣を ここに書き足すんだ。'] },
+      { x: 7, y: 1, kind: 'bookshelf', solid: true, name: '本棚', lines: ['古い幻獣図鑑。いつか、自分の見つけた幻獣を ここに書き足すんだ。', '巻末の落書き――幼い自分が描いた"最強のモンスター"。今見ると、ちょっと恥ずかしい。'] },
       { x: 6, y: 2, kind: 'table', solid: true }, { x: 6, y: 3, kind: 'chair', solid: true },
       { x: 7, y: 5, kind: 'vase', solid: true },
       // 中央
       { x: 4, y: 4, kind: 'rug' },
     ],
+    chests: [{ x: 1, y: 2, id: 'home2f_keepsake', item: 'flask', amount: 2 }], // ベッド下の隠し宝箱(子供の頃の宝物)
     intro: '自分の部屋。窓から朝の光が差し込んでいる。',
   },
   inn: {
@@ -433,14 +437,14 @@ export const MAPS: Record<string, GameMap> = {
       // 壁
       { x: 3, y: 0, kind: 'window' }, { x: 7, y: 0, kind: 'window' }, { x: 5, y: 0, kind: 'clock' },
       // 客室のベッド(上の四隅)
-      { x: 1, y: 1, kind: 'bed', solid: true }, { x: 2, y: 1, kind: 'bed', solid: true },
+      { x: 1, y: 1, kind: 'bed', solid: true }, { x: 2, y: 1, kind: 'bed', solid: true, name: '客室のベッド', lines: ['ふかふかのベッド。受付で頼めば、幻獣ともども ぐっすり休めるそうだ。'] },
       { x: 8, y: 1, kind: 'bed', solid: true }, { x: 9, y: 1, kind: 'bed', solid: true },
       // 受付カウンター(右下・主人を机で囲む。手前(8,7)から話しかける)
       { x: 7, y: 5, kind: 'table', solid: true }, { x: 8, y: 5, kind: 'table', solid: true }, { x: 9, y: 5, kind: 'table', solid: true },
       { x: 7, y: 6, kind: 'table', solid: true }, { x: 9, y: 6, kind: 'shelf', solid: true, name: '宿帳棚' },
       // 暖炉のある休憩スペース(左下)
       { x: 1, y: 6, kind: 'fireplace', solid: true, name: '暖炉', lines: ['旅人たちが暖を取っている。'] },
-      { x: 2, y: 6, kind: 'rug' }, { x: 1, y: 3, kind: 'shelf', solid: true, name: '酒棚' }, { x: 1, y: 4, kind: 'barrel', solid: true },
+      { x: 2, y: 6, kind: 'rug' }, { x: 1, y: 3, kind: 'shelf', solid: true, name: '酒棚', lines: ['各地の地酒がずらり。「灰の渦が晴れたら、また港の酒が入るんだがね」と主人。'] }, { x: 1, y: 4, kind: 'barrel', solid: true },
       { x: 3, y: 5, kind: 'plant', solid: true }, { x: 5, y: 5, kind: 'rug' },
     ],
     intro: '暖炉のぬくもりが心地よい広い宿屋。受付は右奥。',
