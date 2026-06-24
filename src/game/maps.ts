@@ -456,10 +456,10 @@ export const MAPS: Record<string, GameMap> = {
     ],
     leader: { x: 17, y: 3, trainerId: 'gym_forest' },
     encounter: {
-      // 既定の固有幻獣 ＋ 森に合う生成幻獣(地/毒/風の1段階目)を厳選12体。草・植物=地、毛虫/蜂系=毒/風。火/雷は後の世界へ
+      // 固有8(アート完成・森向き) ＋ 生成種は地/毒/風から2体だけ＝計10種に厳選。火/雷は後の世界へ
       pool: [
         'portabupa', 'venomite', 'sporin', 'hobgobalt', 'tsunousa', 'falcone', 'briezel', 'pibit',
-        ...wildOfTypes(['地', '毒', '風'], 1, { genOnly: true }).slice(0, 12),
+        ...wildOfTypes(['地', '毒', '風'], 1, { genOnly: true }).slice(0, 2),
       ],
       min: 4,
       max: 8,
