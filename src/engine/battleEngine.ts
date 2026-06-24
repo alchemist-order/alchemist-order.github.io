@@ -18,6 +18,7 @@ export function makeCombatant(data: MonsterData, level: number, talent = 0): Com
   return {
     data,
     level,
+    talent,
     maxHp,
     hp: maxHp,
     atk: Math.round(statAt(atk, level) * m),

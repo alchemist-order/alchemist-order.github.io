@@ -16,6 +16,8 @@ import {
   expReward,
   getParty,
   grantExp,
+  rarityOf,
+  rollTalent,
   species,
   today,
   withCaught,
@@ -63,7 +65,7 @@ function makeWild(playerLevel: number, config: Extract<BattleConfig, { kind: 'wi
     config.min != null && config.max != null
       ? randInt(config.min, config.max)
       : clamp(playerLevel + Math.floor(Math.random() * 4) - 2, 2, 100)
-  return makeCombatant(species(id), level)
+  return makeCombatant(species(id), level, rollTalent()) // 個体差をロール(良個体は約5%)
 }
 
 type Phase = 'fighting' | 'won' | 'lost' | 'caught' | 'fled'
@@ -104,7 +106,7 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
   const [curUid, setCurUid] = useState(active.uid)
   const [mustSwitch, setMustSwitch] = useState(false)
   const [acting, setActing] = useState(false)
-  const [caught, setCaught] = useState<{ id: string; name: string; type: string } | null>(null)
+  const [caught, setCaught] = useState<{ id: string; name: string; type: string; talent?: number } | null>(null)
 
   // 手持ちの生存メンバー(現在出ている個体を除く)
   const mk = (o: OwnedMonster): Combatant => {
@@ -476,6 +478,7 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
         speciesId: enemy.data.id,
         level: enemy.level,
         exp: 0,
+        talent: enemy.talent ?? 0, // 野生個体の質を引き継ぐ(レア個体はそのまま捕獲)
       }
       setState((s) => {
         const pty = getParty(s)
@@ -485,7 +488,7 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
       audio.sfx('catch')
       const toParty = getParty(state).length < PARTY_MAX
       pushLog(`やった！ 野生の ${enemy.data.name}を 捕まえた！`, toParty ? '🔮 図鑑に 登録された。' : '🔮 図鑑に 登録された。(パーティが満員のため 預かり所へ)')
-      setCaught({ id: enemy.data.id, name: enemy.data.name, type: enemy.data.type })
+      setCaught({ id: enemy.data.id, name: enemy.data.name, type: enemy.data.type, talent: enemy.talent ?? 0 })
       setPhase('caught')
     } else {
       pushLog('ああっ！ 幻獣が フラスコから 出てしまった！')
@@ -566,6 +569,10 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
       <div className="ip-role">{who === 'e' ? '敵' : 'みかた'}</div>
       <div className="ip-head">
         <span className="ip-name">{c.data.name}</span>
+        {(() => {
+          const rar = rarityOf(c.talent)
+          return rar ? <span style={{ color: rar.color, fontSize: 12, fontWeight: 700, letterSpacing: -1 }} title={rar.name}>{rar.stars}</span> : null
+        })()}
         <span className="ip-lv">Lv.{c.level}</span>
       </div>
       <div className="ip-badges">
@@ -724,7 +731,7 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
       </div>
 
       {caught && (
-        <GetMonsterOverlay id={caught.id} name={caught.name} type={caught.type} onClose={() => setCaught(null)} />
+        <GetMonsterOverlay id={caught.id} name={caught.name} type={caught.type} talent={caught.talent} onClose={() => setCaught(null)} />
       )}
     </div>
   )

@@ -20,6 +20,25 @@ const MAX_LEVEL = 100
 
 export const PARTY_MAX = 6 // 戦うパーティの上限。残りは預かりボックス
 
+// ── 個体差・レア度 ──
+// talent(0-10)=個体の質。全能力+4%/段。野生でロール、配合で上昇。
+const rInt = (lo: number, hi: number) => lo + Math.floor(Math.random() * (hi - lo + 1))
+/** 野生個体の才能をロール。良個体(★★以上=talent6+)は約5%。 */
+export function rollTalent(): number {
+  const r = Math.random()
+  if (r < 0.8) return rInt(0, 2) // ノーマル 80%
+  if (r < 0.95) return rInt(3, 5) // ★ 上物 15%
+  if (r < 0.99) return rInt(6, 7) // ★★ レア 4%
+  return rInt(8, 10) // ★★★ 超レア 1%
+}
+/** talent からレア度表示(なし=ノーマル)。 */
+export function rarityOf(talent = 0): { stars: string; name: string; color: string } | null {
+  if (talent >= 8) return { stars: '★★★', name: '超レア', color: '#e2c23b' }
+  if (talent >= 6) return { stars: '★★', name: 'レア', color: '#c79be8' }
+  if (talent >= 3) return { stars: '★', name: '上物', color: '#6fb3e2' }
+  return null
+}
+
 // 記章の数から称号を導出(プロフィール表示用)
 export function playerTitle(s: GameState): string {
   const n = s.badges.length

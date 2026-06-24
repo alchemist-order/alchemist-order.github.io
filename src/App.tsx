@@ -9,6 +9,7 @@ import {
   applyDailyLogin,
   currentObjective,
   getParty,
+  rollTalent,
   fuseResult,
   hasFlag,
   healParty,
@@ -82,7 +83,7 @@ export default function App() {
   const [worldsOpen, setWorldsOpen] = useState(false)
   const [tower, setTower] = useState<{ floor: number; cleared: number } | null>(null)
   const [homeTab, setHomeTab] = useState<'party' | 'items' | 'note' | 'record'>('party')
-  const [getMon, setGetMon] = useState<{ id: string; name: string; type: string; label?: string; after?: () => void } | null>(null)
+  const [getMon, setGetMon] = useState<{ id: string; name: string; type: string; label?: string; talent?: number; after?: () => void } | null>(null)
   const [fusionOpen, setFusionOpen] = useState(false)
   const [fuseA, setFuseA] = useState<string | null>(null)
   const [fuseB, setFuseB] = useState<string | null>(null)
@@ -354,7 +355,7 @@ export default function App() {
     setFuseStone(false)
     setFuseCharm(false)
     const sp = species(r.speciesId)
-    setGetMon({ id: r.speciesId, name: sp.name, type: sp.type, label: r.rare ? `✦レア錬成！ ${sp.name}が誕生！ 才能★${r.talent}` : `が 錬成された！ 才能★${r.talent}` })
+    setGetMon({ id: r.speciesId, name: sp.name, type: sp.type, talent: r.talent, label: r.rare ? `✦レア錬成！ ${sp.name}が誕生！` : 'が 錬成された！' })
   }
 
   // 宝箱を開ける(開封済みは flag で保存)
@@ -384,7 +385,7 @@ export default function App() {
   }
 
   const pickStarter = (id: string) => {
-    const owned = makeOwned(id, STARTER_LEVEL)
+    const owned = { ...makeOwned(id, STARTER_LEVEL), talent: rollTalent() } // 御三家も個体差あり
     setGame((s) => {
       let next: GameState = { ...s, collection: [owned], party: [owned.uid], activeUid: owned.uid, flasks: STARTER_FLASKS }
       next = withCaught(withSeen(next, id), id)
@@ -397,6 +398,7 @@ export default function App() {
       id,
       name: m.name,
       type: m.type,
+      talent: owned.talent,
       label: 'を 相棒にした！',
       after: () =>
         setDialogue({
@@ -569,6 +571,7 @@ export default function App() {
           name={getMon.name}
           type={getMon.type}
           label={getMon.label}
+          talent={getMon.talent}
           onClose={() => {
             const after = getMon.after
             setGetMon(null)

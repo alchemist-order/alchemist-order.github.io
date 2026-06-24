@@ -18,7 +18,7 @@ import {
 } from '../game/state'
 import { statAt } from '../engine/battleEngine'
 import * as audio from '../game/audio'
-import { ItemIcon, Sprite, TypeBadge } from '../ui'
+import { ItemIcon, RarityBadge, Sprite, TypeBadge } from '../ui'
 
 interface Props {
   state: GameState
@@ -102,6 +102,7 @@ export default function Home({ state, setState, setActive, onField, onDex, initi
           <div className="pr-info">
             <div className="pr-head">
               <span className="pr-name">{st.sp.name}</span>
+              <RarityBadge talent={o.talent} size={11} />
               {o.uid === active.uid && <span className="lead-tag">先頭</span>}
               <span className="pr-lv">Lv.{o.level}</span>
             </div>
@@ -225,7 +226,8 @@ export default function Home({ state, setState, setActive, onField, onDex, initi
               <span className="mon-name">
                 {sp.name}
                 {isActive && <span className="lead-tag">先頭</span>}
-                {sel.talent ? <span className="lead-tag" style={{ background: '#9a6cd0', color: '#fff' }}>才能★{sel.talent}</span> : null}
+                <RarityBadge talent={sel.talent} />
+                {sel.talent ? <span className="cmd-sub" style={{ marginLeft: 4 }}>才能{sel.talent}</span> : null}
               </span>
               <span className="mon-lv">Lv.{sel.level}</span>
             </div>
@@ -432,8 +434,8 @@ export default function Home({ state, setState, setActive, onField, onDex, initi
           <div style={{ fontSize: 22, fontWeight: 700, color: '#f3e6c4', textAlign: 'center' }}>
             {sp.name}
             <span style={{ fontSize: 15, opacity: 0.8, marginLeft: 8 }}>Lv.{sel.level}</span>
-            {sel.talent ? <span style={{ fontSize: 14, marginLeft: 8, color: '#c79be8' }}>才能★{sel.talent}</span> : null}
           </div>
+          {sel.talent ? <div><RarityBadge talent={sel.talent} size={16} /><span style={{ fontSize: 13, color: '#b8a888', marginLeft: 6 }}>才能{sel.talent}・全能力+{sel.talent * 4}%</span></div> : null}
           <div className="badges">
             <TypeBadge t={sp.type} />
             {sp.type2 && <TypeBadge t={sp.type2} />}

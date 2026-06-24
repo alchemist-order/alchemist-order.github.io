@@ -1,6 +1,18 @@
 import { useEffect, useState } from 'react'
 import type { Combatant, StatusKind } from './types'
 import { spriteFileNo, spriteOf } from './game/sprites'
+import { rarityOf } from './game/state'
+
+// レア度バッジ(talentから。ノーマルはnull)
+export function RarityBadge({ talent, size = 13 }: { talent?: number; size?: number }) {
+  const r = rarityOf(talent ?? 0)
+  if (!r) return null
+  return (
+    <span style={{ color: r.color, fontWeight: 700, fontSize: size, letterSpacing: -1, textShadow: '0 1px 2px rgba(0,0,0,.4)' }} title={r.name}>
+      {r.stars}<span style={{ fontSize: size * 0.78, marginLeft: 2, letterSpacing: 0 }}>{r.name}</span>
+    </span>
+  )
+}
 
 // 画像が無いidを記録し、再リクエストを避ける(セッション内)
 const missingSprites = new Set<string>()
@@ -339,12 +351,14 @@ export function GetMonsterOverlay({
   name,
   type,
   label = 'を 仲間にした！',
+  talent,
   onClose,
 }: {
   id: string
   type: string
   name: string
   label?: string
+  talent?: number
   onClose: () => void
 }) {
   return (
@@ -359,6 +373,7 @@ export function GetMonsterOverlay({
           {name}
           <span>{label}</span>
         </div>
+        {rarityOf(talent ?? 0) && <div style={{ marginBottom: 4 }}><RarityBadge talent={talent} size={16} /></div>}
         <TypeBadge t={type} />
         <button className="title-btn primary get-ok" onClick={onClose}>
           やった！
