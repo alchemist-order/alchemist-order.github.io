@@ -85,9 +85,40 @@ satchel, gender-neutral, brown short hair.
 
 ---
 
-## 4. 優先順
+## 4. アンビエント（動く装飾）= `ui/ambient_<kind>.png`
+マップを賑やかにする小さな動く装飾（鳥・蝶・蛍・猫・カモメ等）。`map.ambient` で配置済み、無ければ emoji 表示。
+**※これはキャラ枠（縦長3:4）ではない。** Codexの描画は `width=height=size・objectFit:contain` の**正方形アイコン**。当たり判定なし・プレイヤーより奥。
+
+**アンビエント専用フレーム（§0.5の代わりにこれ）**
+```
+AMBIENT FRAMING:
+- Canvas: SMALL SQUARE, 64x64 px, transparent background. One tiny creature, centered, with a little margin.
+- 16-bit pixel art (same chunky style/palette as §0). Very few colors, bold readable silhouette at small size.
+- NO ground, NO shadow plate, NO frame, NO text.
+- Flyers (bird/gull): SIDE profile facing RIGHT, wings spread mid-flap (engine flips horizontally for variety).
+- Ground critters (cat): SIDE profile facing right, mid-step.
+- Symmetric motes (butterfly/firefly/wisp): top-down/symmetric so rotation/float looks natural.
+```
+前文：`<STYLE> <AMBIENT FRAMING> Subject:`
+| ファイル | kind | Subject |
+|---|---|---|
+| `ambient_bird` | bird | a tiny brown songbird in flight, wings spread, side view facing right |
+| `ambient_gull` | gull | a small white seagull gliding, wings spread, side view facing right |
+| `ambient_butterfly` | butterfly | a small butterfly with pale blue/orange wings, top-down symmetric, wings up |
+| `ambient_firefly` | firefly | a tiny glowing mote of warm yellow-green light with a faint halo (almost a dot) |
+| `ambient_cat` | cat | a tiny chibi stray cat, side view, mid-step, tail up |
+| `ambient_leaf` | leaf | a single small green leaf drifting (top-down) ※任意 |
+| `ambient_wisp` | wisp | a faint pale-blue will-o-wisp mote with a soft glow ※任意 |
+| `ambient_fish` | fish | a small fish breaking the water surface, side view ※任意(水辺用) |
+
+> 現在の配置：村=bird/butterfly/cat、森=butterfly/bird/firefly、潮騒の道=gull。まず **bird / butterfly / cat / firefly / gull の5種**を用意すれば全マップが画像化される。
+
+---
+
+## 5. 優先順
 1. **主人公4方向**（統一フレームで描き直し）＝まず基準を作る
 2. **村人・施設NPC**（§2）を統一フレームで（既存npc_morris/tina/mentor/mom/inn/sailor/kaito も描き直し）
 3. 転送門`npc_portal`・記録係`npc_records`
 4. 守護者（forest以外）→ 四賢・ボス
+5. **アンビエント5種**（§4：bird/butterfly/cat/firefly/gull）で“生きてる町”を画像化
 > 差し替えはファイル名据え置きで自動反映。`gym_forest`の“サイズ感”に全員を合わせるのが合言葉。
