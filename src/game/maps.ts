@@ -297,12 +297,12 @@ export const MAPS: Record<string, GameMap> = {
       { x: 16, y: 4, w: 3, h: 2, kind: 'mentor' }, // 師の家(中央)
       { x: 25, y: 7, w: 3, h: 2, kind: 'inn' }, // 宿屋(右)
       { x: 20, y: 15, w: 3, h: 2, kind: 'shop' }, // 道具屋
-      // モブ民家(背景・入れない)
+      // モブ民家(背景・入れない)。3バリアントに振り分けて単調さ回避
       { x: 3, y: 4, w: 2, h: 1, kind: 'townhouse' },
-      { x: 11, y: 4, w: 2, h: 1, kind: 'townhouse' },
-      { x: 21, y: 3, w: 2, h: 1, kind: 'townhouse' },
+      { x: 11, y: 4, w: 2, h: 1, kind: 'townhouse2' },
+      { x: 21, y: 3, w: 2, h: 1, kind: 'townhouse3' },
       { x: 29, y: 3, w: 2, h: 1, kind: 'townhouse' },
-      { x: 3, y: 19, w: 2, h: 1, kind: 'townhouse' },
+      { x: 3, y: 19, w: 2, h: 1, kind: 'townhouse2' },
     ],
     props: [
       // ── 噴水広場(中央) ──
