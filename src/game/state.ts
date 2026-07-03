@@ -227,8 +227,8 @@ export function findRecipe(aId: string, bId: string): Recipe | undefined {
 }
 
 // 汎用レア配合: 同タイプの最終形(stage3)を2体錬成すると、そのタイプの伝説種が生まれる
-const LEGEND_BY_TYPE: Record<string, string> = { 火: 'ignaros', 水: 'abystia', 風: 'tempestroc', 地: 'terrabehemoth', 聖: 'sol', 冥: 'luna' }
-const LEGEND_MOVE_NAME: Record<string, string> = { 火: '原初の業火', 水: '原初の大海', 風: '原初の嵐', 地: '原初の大地', 聖: '原初の聖光', 冥: '原初の闇' }
+export const LEGEND_BY_TYPE: Record<string, string> = { 火: 'ignaros', 水: 'abystia', 風: 'tempestroc', 地: 'terrabehemoth', 聖: 'sol', 冥: 'luna' }
+export const LEGEND_MOVE_NAME: Record<string, string> = { 火: '原初の業火', 水: '原初の大海', 風: '原初の嵐', 地: '原初の大地', 聖: '原初の聖光', 冥: '原初の闇' }
 
 /** 錬成結果。隠し配合なら伝説種＋専用技。stone=才能+1追加, charm=遺伝枠+1 */
 export function fuseResult(

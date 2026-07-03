@@ -19,7 +19,7 @@ export const ABILITIES: Record<string, Ability> = {
   levitate: { id: 'levitate', name: '浮遊', desc: '地タイプの技を受けない。' },
 }
 // タイプ → 既定特性(個別未指定の300種をこれで自動カバー)
-const ABILITY_BY_TYPE: Record<string, string> = {
+export const ABILITY_BY_TYPE: Record<string, string> = {
   火: 'blaze', 水: 'regen', 地: 'sturdy', 風: 'swift', 雷: 'guts',
   毒: 'toxictouch', 聖: 'ward', 冥: 'levitate', 錬成: 'swift',
 }
