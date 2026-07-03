@@ -628,7 +628,7 @@ export const TRAINERS: Record<string, TrainerData> = {
     team: [
       { speciesId: 'sporin', level: 10 },
       { speciesId: 'mandrago', level: 12, talent: 3, moves: ['earth_t', 'earth_r', 'pois_x', 'earth_b'] },
-      { speciesId: 'alraune', level: 14, talent: 6, heldItem: 'lifering', moves: ['earth_a', 'earth_t', 'pois_x', 'sig'] },
+      { speciesId: 'alraune', level: 13, talent: 1, heldItem: 'lifering', moves: ['earth_a', 'earth_t', 'pois_x', 'sig'] },
     ],
     badge: '新緑の記章',
     portrait: 'gym_forest',
