@@ -61,6 +61,10 @@ function makeWild(playerLevel: number, config: Extract<BattleConfig, { kind: 'wi
       }
     }
   }
+  // ヌシ幻獣(パッケージD): 種/レベル/個体値を固定出現させる
+  if (config.forcedSpeciesId) {
+    return makeCombatant(species(config.forcedSpeciesId), config.forcedLevel ?? playerLevel, config.forcedTalent ?? 0)
+  }
   const pool = config.pool?.length
     ? config.pool
     : DEX.filter((d) => d.role !== 'legendary' && d.stage <= 2).map((d) => d.id)
@@ -729,7 +733,7 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
       }
       return { ...s, collection, activeUid }
     })
-    onExit(phase === 'won')
+    onExit(phase === 'won' || phase === 'caught') // 捕獲もヌシ解放等の「勝利扱い」に含める(パッケージD)
   }
 
   const remaining = isTrainer ? teamRef.current.length - enemyIndex : 0

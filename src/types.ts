@@ -125,5 +125,18 @@ export interface TrainerData {
 
 // バトル開始設定
 export type BattleConfig =
-  | { kind: 'wild'; pool?: string[]; min?: number; max?: number; biome?: string; tower?: boolean; floor?: number }
+  | {
+      kind: 'wild'
+      pool?: string[]
+      min?: number
+      max?: number
+      biome?: string
+      tower?: boolean
+      floor?: number
+      // ── ヌシ幻獣(パッケージD): 種/レベル/個体値を固定出現させる ──
+      forcedSpeciesId?: string
+      forcedLevel?: number
+      forcedTalent?: number
+      nushiId?: string // 勝利/捕獲で解放するヌシのid(flag=`nushi_<id>`)
+    }
   | { kind: 'trainer'; trainer: TrainerData; biome?: string }

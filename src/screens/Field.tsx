@@ -1,10 +1,10 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { BattleConfig, GameState } from '../types'
 import { ENCOUNTER_RATE, MAPS, TRAINERS, isWall, isLedgeBlocked } from '../game/maps'
-import type { Ambient, Chest, Npc } from '../game/maps'
-import { hasFlag } from '../game/state'
+import type { Ambient, Chest, Npc, NushiSpot, RuneSwitch } from '../game/maps'
+import { hasFlag, species } from '../game/state'
 import { sfx } from '../game/audio'
-import { Building, ChestToken, LeaderToken, NpcToken, PlayerToken, PropToken, type Dir } from '../ui'
+import { Building, ChestToken, LeaderToken, NpcToken, PlayerToken, PropToken, Sprite, type Dir } from '../ui'
 import '../field-zones.css'
 
 interface Props {
@@ -13,6 +13,8 @@ interface Props {
   onStartBattle: (config: BattleConfig) => void
   onTrainer: (trainer: (typeof TRAINERS)[string], biome: string) => void
   onChest: (chest: Chest) => void
+  onNushi: (nushi: NushiSpot, biome: string) => void
+  onSwitch: (sw: RuneSwitch) => void
   onMenu: () => void
   onTalk: (npc: Npc) => void
   onBlockedExit: (msg: string) => void
@@ -36,11 +38,12 @@ function tileType(ch: string, indoor: boolean): string {
   if (ch === 'C') return 'cliff'
   if (ch === 'S') return 'stairs'
   if (ch === 'L') return 'ledge'
+  if (ch === 'X') return 'gate'
   return indoor ? 'floor' : 'path'
 }
 
 // public/tiles/<type>.png があれば差し替え。1度だけ存在確認(セッション内キャッシュ)
-const TILE_NAMES = ['path', 'floor', 'lawn', 'grass', 'tree', 'wall', 'house', 'water', 'sand', 'flower', 'plaza', 'dirt', 'cliff', 'stairs', 'ledge']
+const TILE_NAMES = ['path', 'floor', 'lawn', 'grass', 'tree', 'wall', 'house', 'water', 'sand', 'flower', 'plaza', 'dirt', 'cliff', 'stairs', 'ledge', 'gate']
 const tileAvail: Record<string, boolean> = {}
 let tileProbed = false
 
@@ -110,7 +113,7 @@ const tileHash = (x: number, y: number) => ((x * 73856093) ^ (y * 19349663)) >>>
 const decalFor = (type: string, h: number): string | null =>
   type === 'grass' && h % 5 === 0 ? 'g' : type === 'lawn' && h % 6 === 0 ? 'l' : type === 'path' && h % 9 === 0 ? 'p' : null
 
-export default function Field({ state, setState, onStartBattle, onTrainer, onChest, onMenu, onTalk, onBlockedExit }: Props) {
+export default function Field({ state, setState, onStartBattle, onTrainer, onChest, onNushi, onSwitch, onMenu, onTalk, onBlockedExit }: Props) {
   const map = MAPS[state.pos.mapId]
   const { x, y } = state.pos
   const cols = map.grid[0].length
@@ -196,6 +199,14 @@ export default function Field({ state, setState, onStartBattle, onTrainer, onChe
       return
     }
 
+    // ヌシ幻獣(パッケージD): 未解決の間は宝箱ルートを塞ぐ。撃破/捕獲(flag=nushi_<id>)後は通行可能
+    const nushi = m.nushi?.find((n) => n.x === nx && n.y === ny)
+    if (nushi && !hasFlag(state, `nushi_${nushi.id}`)) {
+      stopHold()
+      onNushi(nushi, m.biome)
+      return
+    }
+
     const npc = m.npcs?.find((n) => n.x === nx && n.y === ny)
     if (npc) {
       stopHold()
@@ -210,6 +221,14 @@ export default function Field({ state, setState, onStartBattle, onTrainer, onChe
       return
     }
 
+    // ルーンスイッチ(パッケージD): 調べるとflagが立ち、対応するGateが解放される
+    const sw = m.switches?.find((s) => s.x === nx && s.y === ny)
+    if (sw) {
+      stopHold()
+      onSwitch(sw)
+      return
+    }
+
     const prop = m.props?.find((p) => p.x === nx && p.y === ny)
     if (prop?.lines) {
       stopHold()
@@ -217,6 +236,14 @@ export default function Field({ state, setState, onStartBattle, onTrainer, onChe
       return
     }
     if (prop?.solid) return
+
+    // フラグゲート(パッケージD): flagが立つまでisWall同様に進入不可
+    const gate = m.gates?.find((gt) => gt.x === nx && gt.y === ny)
+    if (gate && !hasFlag(state, gate.flag)) {
+      stopHold()
+      onBlockedExit(gate.lockedMsg ?? '見えない力に 道が 塞がれている……')
+      return
+    }
 
     const ch = m.grid[ny][nx]
     if (isWall(ch)) return
@@ -266,7 +293,13 @@ export default function Field({ state, setState, onStartBattle, onTrainer, onChe
 
     if (ch === 'G' && m.encounter && Math.random() < ENCOUNTER_RATE) {
       stopHold()
-      onStartBattle({ kind: 'wild', pool: m.encounter.pool, min: m.encounter.min, max: m.encounter.max, biome: m.biome })
+      // 区画別エンカウント(パッケージD): 現在地が zones に該当すればそちらを優先(奥ほど強化+最奥レア枠)
+      const zone = m.zones?.find((z) => nx >= z.x0 && nx <= z.x1 && ny >= z.y0 && ny <= z.y1)
+      const useRare = !!zone?.rarePool?.length && Math.random() < (zone.rareChance ?? 0)
+      const pool = useRare ? zone!.rarePool! : (zone?.pool ?? m.encounter.pool)
+      const min = zone?.min ?? m.encounter.min
+      const max = zone?.max ?? m.encounter.max
+      onStartBattle({ kind: 'wild', pool, min, max, biome: m.biome })
     }
   }
 
@@ -543,6 +576,31 @@ export default function Field({ state, setState, onStartBattle, onTrainer, onChe
                 <LeaderToken trainerId={map.leader.trainerId} defeated={leaderDefeated} size={TILE * 1.25} />
               </span>
             )}
+            {map.nushi
+              ?.filter((n) => !hasFlag(state, `nushi_${n.id}`))
+              .map((n) => {
+                const sp = species(n.speciesId)
+                const size = TILE * 1.6
+                return (
+                  <span
+                    key={`nushi-${n.id}`}
+                    className="world-token person-token nushi-token"
+                    style={{ left: n.x * TILE - (size - TILE) / 2, top: n.y * TILE - (size - TILE), width: size, height: size, zIndex: 107 + n.y * 10 }}
+                  >
+                    <span className="nushi-aura" aria-hidden />
+                    <Sprite id={sp.id} type={sp.type} size={size} bare />
+                  </span>
+                )
+              })}
+            {map.switches?.map((sw) => (
+              <span
+                key={`sw-${sw.id}`}
+                className={`world-token prop-token switch-token${hasFlag(state, sw.flag) ? ' switch-token-on' : ''}`}
+                style={{ left: sw.x * TILE, top: sw.y * TILE, width: TILE, height: TILE, zIndex: 105 + sw.y * 10 }}
+              >
+                <PropToken kind="rune" emoji="🔮" size={TILE * 0.9} />
+              </span>
+            ))}
             {forestCanopies.map(({ rx, ry, h, openX, openY }) => {
               const variant = h % 3
               const file = variant === 0 ? 'forest_canopy' : variant === 1 ? 'forest_tree_tall' : 'forest_tree_wide'

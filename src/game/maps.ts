@@ -5,6 +5,7 @@
 //   'F'=花(歩行可・装飾)  '~'=砂浜(歩行可)
 //   'P'=石畳広場(歩行可・ゾーン装飾)  'D'=土路地(歩行可・ゾーン装飾)
 //   'S'=階段(歩行可・崖の両面通行)  'L'=レッジ(歩行可・南向きにのみ降りられる一方通行の崖端。isLedgeBlockedで判定)
+//   'X'=ゲート(見た目のみ・歩行可の見た目だが実際の通行判定はGameMap.gatesのflag判定で別途ブロック)
 // 広大マップ＋カメラ追従。画面に映るのは一部だけで、移動でスクロールする。
 import type { TrainerData } from '../types'
 import monstersJson from '../../data/monsters.json'
@@ -18,6 +19,11 @@ function wildOfTypes(types: string[], maxStage = 1, opts: { genOnly?: boolean } 
       d.stage <= maxStage && // 野生は若い個体(序盤は1段階目)
       (types.includes(d.type) || (d.type2 != null && types.includes(d.type2))),
   ).map((d) => d.id)
+}
+// 指定タイプの「進化後(stage2)のみ」を集める(区画別エンカウントの最奥レア枠用)
+function evolvedOfTypes(types: string[], opts: { genOnly?: boolean } = {}): string[] {
+  const stage1 = new Set(wildOfTypes(types, 1, opts))
+  return wildOfTypes(types, 2, opts).filter((id) => !stage1.has(id))
 }
 
 export type NpcKind = 'mentor' | 'mom' | 'inn' | 'sign' | 'villager' | 'shop' | 'alchemist' | 'portal' | 'storage' | 'records'
@@ -65,6 +71,46 @@ export interface Chest {
   amount: number
 }
 
+// ── ダンジョン攻略化(パッケージD) ──
+// 区画別エンカウントゾーン。座標が矩形に入っていれば m.encounter の既定を上書きする。
+// rarePool+rareChanceで「最奥レア枠」(低確率で進化後個体等が混じる)を表現。
+export interface EncounterZone {
+  x0: number
+  y0: number
+  x1: number
+  y1: number
+  pool: string[]
+  min: number
+  max: number
+  rarePool?: string[]
+  rareChance?: number // 0〜1
+}
+// ルーンスイッチ。調べると flag が立ち、対応する Gate が解放される(一本道の解消)
+export interface RuneSwitch {
+  x: number
+  y: number
+  id: string
+  flag: string
+  name?: string
+  lines?: string[]
+}
+// フラグゲート。flag が立つまで isWall 同様に進入不可(方向を問わない双方向ゲート)
+export interface Gate {
+  x: number
+  y: number
+  flag: string
+  lockedMsg?: string
+}
+// ヌシ幻獣。宝箱ルートを塞ぐ大型の野生個体。撃破/捕獲(flag=`nushi_<id>`)で解放され、以後は通行可能
+export interface NushiSpot {
+  x: number
+  y: number
+  id: string
+  speciesId: string
+  level: number
+  talent: number // 捕獲時の個体値を固定(★★以上を保証)
+}
+
 export interface GameMap {
   id: string
   name: string
@@ -74,6 +120,10 @@ export interface GameMap {
   warps: { x: number; y: number; to: string; tx: number; ty: number; gate?: string }[]
   leader?: { x: number; y: number; trainerId: string }
   encounter?: { pool: string[]; min: number; max: number }
+  zones?: EncounterZone[] // パッケージD: 区画別エンカウント(未指定エリアはencounterへフォールバック)
+  switches?: RuneSwitch[] // パッケージD: ルーンスイッチ
+  gates?: Gate[] // パッケージD: フラグゲート
+  nushi?: NushiSpot[] // パッケージD: ヌシ幻獣
   npcs?: Npc[]
   props?: Prop[]
   buildings?: { x: number; y: number; w: number; h: number; kind: string }[] // 立体の家(footprintは'H'で進入不可)
@@ -211,6 +261,13 @@ function buildForest(): string[] {
   fill(g, 8, 9, 14, 12, 'G') // 草地F(廊下6)
   // ── 袋小路(宝箱用) ──
   fill(g, 1, 33, 4, 36, '.') // 北西寄りの袋小路(廊下2の西端から)
+  // ── ヌシの間(パッケージD): 廊下3(y27)から南へ分岐する隠し部屋。ヌシを倒す/捕まえるまで奥へ進めない ──
+  fill(g, 17, 28, 17, 29, '.') // 入口の通路(ヌシは29の位置で塞ぐ)
+  fill(g, 15, 30, 19, 31, '.') // ヌシの間
+  // ── 近道ゲート(パッケージD): x25の縦通路で廊下2(y33)⇔廊下4(y21)を直結。
+  //    ルーンスイッチ(ヌシの間の奥)で解放するまでゲートが塞ぐ。既存の一本道サーペンタインを迂回できる ──
+  fill(g, 25, 21, 25, 33, '.')
+  set(g, 25, 24, 'X') // ゲート(見た目のみ。通行判定はgates配列のフラグ判定)
   return g
 }
 
@@ -533,6 +590,39 @@ export const MAPS: Record<string, GameMap> = {
       min: 4,
       max: 8,
     },
+    // ── 区画別エンカウント(パッケージD): 草地A→Fの奥ほどレベル帯を引き上げ、最奥Fにのみレア枠 ──
+    zones: [
+      { x0: 7, y0: 30, x1: 12, y1: 33, pool: ['portabupa', 'venomite', 'sporin', 'hobgobalt'], min: 4, max: 6 }, // 草地A
+      { x0: 20, y0: 33, x1: 26, y1: 36, pool: ['portabupa', 'venomite', 'sporin', 'hobgobalt'], min: 4, max: 6 }, // 草地B
+      { x0: 8, y0: 24, x1: 14, y1: 27, pool: ['portabupa', 'venomite', 'sporin', 'hobgobalt', 'tsunousa', 'falcone'], min: 6, max: 9 }, // 草地C
+      {
+        x0: 18, y0: 18, x1: 24, y1: 21,
+        pool: ['tsunousa', 'falcone', 'briezel', 'pibit', ...wildOfTypes(['地', '毒', '風'], 1, { genOnly: true }).slice(0, 2)],
+        min: 8, max: 11,
+      }, // 草地D
+      {
+        x0: 24, y0: 12, x1: 30, y1: 16,
+        pool: ['tsunousa', 'falcone', 'briezel', 'pibit', ...wildOfTypes(['地', '毒', '風'], 1, { genOnly: true })],
+        min: 10, max: 13,
+      }, // 草地E
+      {
+        x0: 8, y0: 9, x1: 14, y1: 12,
+        pool: ['tsunousa', 'falcone', 'briezel', 'pibit', ...wildOfTypes(['地', '毒', '風'], 1, { genOnly: true })],
+        min: 11, max: 14,
+        rarePool: evolvedOfTypes(['地', '毒', '風'], { genOnly: true }), // 最奥レア枠(進化後個体が混じる)
+        rareChance: 0.15,
+      }, // 草地F(最奥)
+    ],
+    // ── ヌシ幻獣(パッケージD): 廊下3の隠し部屋を塞ぐ野生マンドラゴ。撃破/捕獲で解放 ──
+    nushi: [{ x: 17, y: 29, id: 'forest_mandrago', speciesId: 'mandrago', level: 13, talent: 6 }],
+    // ── ルーンスイッチ→ゲート(パッケージD): ヌシの間の奥で見つかる近道の鍵 ──
+    switches: [
+      {
+        x: 17, y: 31, id: 'forest_shortcut', flag: 'switch_forest_shortcut', name: 'ルーンの台座',
+        lines: ['古びたルーンの台座に触れた。', '……ゴゴゴ、と遠くで重い扉が動く音がした。', '「近道が開通したようだ」'],
+      },
+    ],
+    gates: [{ x: 25, y: 24, flag: 'switch_forest_shortcut', lockedMsg: '見えない力に 道が 塞がれている……。どこかで 封印を解く鍵を 見つけよう。' }],
     props: [
       // 道しるべ(入口)
       { x: 18, y: 38, kind: 'sign', name: '道しるべ', lines: ['「奥へ進むほど 道は折り返し 入り組む。守護者は 最奥の広間に。」', '「南へ戻れば 本拠地ラピス村へ 帰れる。」'] },
@@ -556,12 +646,18 @@ export const MAPS: Record<string, GameMap> = {
       { x: 29, y: 18, kind: 'mushroom' }, { x: 5, y: 12, kind: 'flower' }, { x: 17, y: 40, kind: 'mushroom' },
       // 北西の袋小路(1-4,33-36)
       { x: 3, y: 34, kind: 'mushroom' },
+      // ヌシの間への入口(廊下3の分岐)
+      { x: 16, y: 27, kind: 'sign', name: '爪痕のある立て札', lines: ['地面に 大きな爪痕。', '「この先、並外れて大きな 気配がする……油断するな」'] },
+      { x: 16, y: 30, kind: 'mushroom' }, { x: 18, y: 30, kind: 'flower' },
+      // 近道ゲートの手前(草地D寄り)
+      { x: 25, y: 20, kind: 'sign', name: '古い道しるべ', lines: ['苔むした道しるべ。矢印の先は 崩れた石で 塞がれている。'] },
     ],
     chests: [
       { x: 2, y: 35, id: 'forest_nw', item: 'heal2', amount: 1 }, // 北西の袋小路
       { x: 25, y: 35, id: 'forest_se', item: 'flask', amount: 2 }, // 草地B
       { x: 29, y: 13, id: 'forest_r4', item: 'money', amount: 300 }, // 草地E(東の出口そば)
       { x: 11, y: 10, id: 'forest_top', item: 'heal', amount: 3 }, // 草地F(最奥手前)
+      { x: 19, y: 31, id: 'forest_nushi', item: 'heal2', amount: 2 }, // ヌシの間(パッケージD)
     ],
     ambient: [
       { kind: 'butterfly', emoji: '🦋', style: 'flit', area: { x: 4, y: 9, w: 26, h: 30 }, count: 4 }, // 森を漂う蝶

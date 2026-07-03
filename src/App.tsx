@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { BattleConfig, GameState, TrainerData } from './types'
-import type { Chest, Npc } from './game/maps'
+import type { Chest, Npc, NushiSpot, RuneSwitch } from './game/maps'
 import { WORLDS } from './game/maps'
 import {
   FUSION_COST,
@@ -203,6 +203,12 @@ export default function App() {
     if (cfg?.kind === 'trainer' && cfg.trainer.postBattle?.length && game.defeatedTrainers.includes(cfg.trainer.id)) {
       setDialogue({ speaker: cfg.trainer.name, portrait: cfg.trainer.portrait, lines: cfg.trainer.postBattle })
     }
+    // ヌシ幻獣(パッケージD): 撃破/捕獲(won)で解放。逃走/敗北では再挑戦可能なままにする
+    if (cfg?.kind === 'wild' && cfg.nushiId && won) {
+      const flag = `nushi_${cfg.nushiId}`
+      setGame((s) => (hasFlag(s, flag) ? s : withFlag(s, flag)))
+      setDialogue({ lines: ['大きな気配が消えた。', '……道が 開けたようだ。'] })
+    }
   }
 
   // NPCに話しかけたとき
@@ -388,6 +394,33 @@ export default function App() {
     setDialogue({ lines: ['たからばこを 開けた！', `${label} を 手に入れた！`] })
   }
 
+  // ヌシ幻獣に接触(パッケージD): 前口上→固定個体との強制バトル
+  const onNushi = (nushi: NushiSpot, biome: string) => {
+    setDialogue({
+      lines: ['……並外れて大きな 気配。', 'この道を通すつもりは ないようだ。'],
+      after: () =>
+        startBattle({
+          kind: 'wild',
+          biome,
+          forcedSpeciesId: nushi.speciesId,
+          forcedLevel: nushi.level,
+          forcedTalent: nushi.talent,
+          nushiId: nushi.id,
+        }),
+    })
+  }
+
+  // ルーンスイッチに触れる(パッケージD): 1度きりでflagを立て、対応するGateを解放
+  const onSwitch = (sw: RuneSwitch) => {
+    if (hasFlag(game, sw.flag)) {
+      setDialogue({ lines: ['……ルーンの光は もう静かだ。役目は 終えたらしい。'] })
+      return
+    }
+    setGame((s) => withFlag(s, sw.flag))
+    audio.sfx('door')
+    setDialogue({ speaker: sw.name, lines: sw.lines ?? ['ルーンのスイッチに触れた。', '……遠くで、重い扉が開く音がした。'] })
+  }
+
   const pickStarter = (id: string) => {
     const owned = { ...makeOwned(id, STARTER_LEVEL), talent: rollTalent() } // 御三家も個体差あり
     setGame((s) => {
@@ -485,6 +518,8 @@ export default function App() {
         onStartBattle={startBattle}
         onTrainer={onTrainer}
         onChest={onChest}
+        onNushi={onNushi}
+        onSwitch={onSwitch}
         onMenu={() => { setHomeTab('party'); setScreen('home') }}
         onTalk={onTalk}
         onBlockedExit={onBlockedExit}

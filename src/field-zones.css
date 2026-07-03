@@ -36,3 +36,34 @@
   background-image: linear-gradient(180deg, #8a7355 0%, #8a7355 55%, #6b5843 55%, #6b5843 100%);
   box-shadow: inset 0 -6px 6px rgba(0, 0, 0, 0.3);
 }
+
+/* ゲート: flagが立つまで見えない力で塞がれた通路(パッケージD) */
+.t-gate {
+  background-color: #4a3a6b;
+  background-image: repeating-linear-gradient(45deg, rgba(180, 140, 255, 0.35) 0, rgba(180, 140, 255, 0.35) 3px, transparent 3px, transparent 10px), radial-gradient(circle at 50% 50%, #6a4fa0, #3c2d5e);
+  box-shadow: inset 0 0 10px 2px rgba(200, 160, 255, 0.4);
+}
+
+/* ── ヌシ幻獣(パッケージD): 大型個体+常時ループの赤オーラ ── */
+.nushi-token { position: relative; }
+@keyframes dfx-nushi-aura { 0%, 100% { opacity: 0.55; transform: scale(1) } 50% { opacity: 0.85; transform: scale(1.08) } }
+.nushi-aura {
+  position: absolute; inset: 6% 6% 2% 6%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(230, 60, 50, 0.55), rgba(200, 30, 30, 0.25) 55%, transparent 75%);
+  box-shadow: 0 0 24px 8px rgba(220, 50, 40, 0.45);
+  animation: dfx-nushi-aura 1.6s ease-in-out infinite;
+  z-index: -1;
+}
+@media (prefers-reduced-motion: reduce) {
+  .nushi-aura { animation: none }
+}
+
+/* ルーンスイッチ: 未使用は明滅、使用済みは常時弱発光 */
+.switch-token { filter: drop-shadow(0 0 6px rgba(150, 120, 255, 0.7)); }
+@keyframes dfx-switch-idle { 0%, 100% { opacity: 0.7 } 50% { opacity: 1 } }
+.switch-token:not(.switch-token-on) { animation: dfx-switch-idle 1.2s ease-in-out infinite; }
+.switch-token-on { filter: drop-shadow(0 0 4px rgba(150, 120, 255, 0.4)); opacity: 0.75; }
+@media (prefers-reduced-motion: reduce) {
+  .switch-token { animation: none }
+}
