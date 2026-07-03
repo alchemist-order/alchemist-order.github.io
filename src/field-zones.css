@@ -1,0 +1,38 @@
+/* 街の空間化(パッケージC)。index.css(Codex領域)とは分離して衝突回避。
+   Field.tsxのtileType()が生成する .t-<type> をここで定義(plaza/dirt/cliff/stairs/ledge)。
+   PNG(public/tiles/<type>.png)が用意されればField.tsx側で自動的にそちらへ差し替わる。 */
+
+/* 石畳広場: 中央区画(噴水+転送門)。継ぎ目のある石畳を表現 */
+.t-plaza {
+  background-color: #9aa0a6;
+  background-image:
+    linear-gradient(0deg, rgba(0, 0, 0, 0.08) 0, transparent 6%, transparent 94%, rgba(0, 0, 0, 0.08) 100%),
+    linear-gradient(90deg, rgba(0, 0, 0, 0.08) 0, transparent 6%, transparent 94%, rgba(0, 0, 0, 0.08) 100%),
+    radial-gradient(circle at 30% 30%, #a8aeb4, #8f959b);
+}
+
+/* 土路地: 北の住宅区の未舗装路 */
+.t-dirt {
+  background-color: #a98a5c;
+  background-image: radial-gradient(circle at 35% 30%, #b6976a, #9c7c4e 70%), repeating-linear-gradient(115deg, rgba(0, 0, 0, 0.04) 0, rgba(0, 0, 0, 0.04) 2px, transparent 2px, transparent 10px);
+}
+
+/* 崖: 進入不可の岩肌(壁と紛れないよう土色寄りの縞) */
+.t-cliff {
+  background-color: #6b5843;
+  background-image: repeating-linear-gradient(180deg, #6b5843 0, #6b5843 5px, #5a4a38 5px, #5a4a38 10px);
+  box-shadow: inset 0 6px 6px rgba(0, 0, 0, 0.35);
+}
+
+/* 階段: 崖を貫く両面通行の通路 */
+.t-stairs {
+  background-color: #8a7355;
+  background-image: repeating-linear-gradient(0deg, #9c8564 0, #9c8564 4px, #7d6849 4px, #7d6849 8px);
+}
+
+/* レッジ: 南向きにのみ飛び降りられる崖の縁(縞の向きで一方通行を示唆) */
+.t-ledge {
+  background-color: #7d6849;
+  background-image: linear-gradient(180deg, #8a7355 0%, #8a7355 55%, #6b5843 55%, #6b5843 100%);
+  box-shadow: inset 0 -6px 6px rgba(0, 0, 0, 0.3);
+}

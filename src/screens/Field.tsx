@@ -1,10 +1,11 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import type { BattleConfig, GameState } from '../types'
-import { ENCOUNTER_RATE, MAPS, TRAINERS, isWall } from '../game/maps'
+import { ENCOUNTER_RATE, MAPS, TRAINERS, isWall, isLedgeBlocked } from '../game/maps'
 import type { Ambient, Chest, Npc } from '../game/maps'
 import { hasFlag } from '../game/state'
 import { sfx } from '../game/audio'
 import { Building, ChestToken, LeaderToken, NpcToken, PlayerToken, PropToken, type Dir } from '../ui'
+import '../field-zones.css'
 
 interface Props {
   state: GameState
@@ -30,11 +31,16 @@ function tileType(ch: string, indoor: boolean): string {
   if (ch === ',') return 'lawn'
   if (ch === 'F') return 'flower'
   if (ch === '~') return 'sand'
+  if (ch === 'P') return 'plaza'
+  if (ch === 'D') return 'dirt'
+  if (ch === 'C') return 'cliff'
+  if (ch === 'S') return 'stairs'
+  if (ch === 'L') return 'ledge'
   return indoor ? 'floor' : 'path'
 }
 
 // public/tiles/<type>.png があれば差し替え。1度だけ存在確認(セッション内キャッシュ)
-const TILE_NAMES = ['path', 'floor', 'lawn', 'grass', 'tree', 'wall', 'house', 'water', 'sand', 'flower']
+const TILE_NAMES = ['path', 'floor', 'lawn', 'grass', 'tree', 'wall', 'house', 'water', 'sand', 'flower', 'plaza', 'dirt', 'cliff', 'stairs', 'ledge']
 const tileAvail: Record<string, boolean> = {}
 let tileProbed = false
 
@@ -214,6 +220,7 @@ export default function Field({ state, setState, onStartBattle, onTrainer, onChe
 
     const ch = m.grid[ny][nx]
     if (isWall(ch)) return
+    if (isLedgeBlocked(ch, dy)) return // 崖のレッジ: 南向き(飛び降り)以外は塞ぐ
 
     const warp = m.warps.find((w) => w.x === nx && w.y === ny)
     if (warp) {
@@ -321,8 +328,9 @@ export default function Field({ state, setState, onStartBattle, onTrainer, onChe
   const typeAt = (tx: number, ty: number): string =>
     ty < 0 || ty >= rows || tx < 0 || tx >= cols ? 'edge' : tileType(map.grid[ty][tx], indoor)
 
+  // 樹冠オーバーレイ(forest_canopy再利用): 森だけでなく、村の外周木列にも適用(パッケージC)
   const forestCanopies =
-    map.biome === 'forest'
+    map.biome === 'forest' || map.biome === 'town'
       ? map.grid.flatMap((row, ry) =>
           row.split('').flatMap((_, rx) => {
             if (typeAt(rx, ry) !== 'tree') return []
