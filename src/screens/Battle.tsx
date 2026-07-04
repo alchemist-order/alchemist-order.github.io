@@ -149,6 +149,8 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
   const [acting, setActing] = useState(false)
   const [caught, setCaught] = useState<{ id: string; name: string; type: string; talent?: number } | null>(null)
   const [speed, setSpeed] = useState(getBattleSpeed())
+  // 捕獲演出(第2次品質スプリント): 敵が吸い込まれ→フラスコが揺れ→確定 or 脱出
+  const [capture, setCapture] = useState<null | 'suck' | 'shake' | 'caught' | 'break'>(null)
 
   // 手持ちの生存メンバー(現在出ている個体を除く)
   const mk = (o: OwnedMonster): Combatant => {
@@ -676,10 +678,24 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
     busy.current = true
     setActing(true)
     setState((s) => ({ ...s, flasks: s.flasks - 1 }))
-    pushLog('封獣フラスコを なげた！ ……', 'クルクル……')
-    await sleep(900)
+    pushLog('封獣フラスコを なげた！')
+    // 演出: 敵が吸い込まれる→フラスコが揺れる(揺れごとにポン、と音)
+    const success = brng.chance(catchChance(enemy))
+    setCapture('suck')
+    await sleep(520)
+    setCapture('shake')
+    pushLog('クルクル……')
+    const shakes = success ? 3 : brng.int(1, 2) // 成功は3回粘る、失敗は途中で出る
+    for (let i = 0; i < shakes; i++) {
+      audio.sfx('select')
+      await sleep(460)
+    }
 
-    if (brng.chance(catchChance(enemy))) {
+    if (success) {
+      setCapture('caught')
+      audio.sfx('catch')
+      await sleep(600)
+      setCapture(null)
       const caught: OwnedMonster = {
         uid: `m${Date.now().toString(36)}_c`,
         speciesId: enemy.data.id,
@@ -692,14 +708,16 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
         const np = pty.length < PARTY_MAX ? [...pty, caught.uid] : pty // 空きがあればパーティへ、無ければ預かり
         return withCaught({ ...s, collection: [...s.collection, caught], party: np }, enemy.data.id)
       })
-      audio.sfx('catch')
       const toParty = getParty(state).length < PARTY_MAX
       pushLog(`やった！ 野生の ${enemy.data.name}を 捕まえた！`, toParty ? '🔮 図鑑に 登録された。' : '🔮 図鑑に 登録された。(パーティが満員のため 預かり所へ)')
       setCaught({ id: enemy.data.id, name: enemy.data.name, type: enemy.data.type, talent: enemy.talent ?? 0 })
       setPhase('caught')
     } else {
+      setCapture('break')
+      audio.sfx('cancel')
       pushLog('ああっ！ 幻獣が フラスコから 出てしまった！')
-      await sleep(400)
+      await sleep(500)
+      setCapture(null)
       await enemyTurn({ ...player })
     }
     busy.current = false
@@ -811,6 +829,8 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
 
   const combatant = (c: Combatant, who: Side) => {
     const auraCls = c.hp > 0 && c.status ? STATUS_AURA[c.status] : null
+    const cap = who === 'e' ? capture : null // 捕獲演出は敵側のみ
+    const spriteCapCls = cap === 'suck' || cap === 'shake' || cap === 'caught' ? 'sprite-captured' : cap === 'break' ? 'sprite-broke' : ''
     return (
     <div
       className={`combatant ${who === 'e' ? 'enemy-side' : 'player-side'} ${fx.hit === who ? (fx.strong ? 'fx-hit fx-hit-strong' : 'fx-hit') : ''} ${
@@ -824,7 +844,11 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
       )}
       {auraCls && <span className={`status-aura ${auraCls}`} aria-hidden />}
       {burst?.side === who && <span key={`fx${burst.key}`} className={`move-fx fx-${burst.type}`} aria-hidden />}
-      <Sprite id={c.data.id} type={c.data.type} size={who === 'e' ? 146 : 166} bare flip={who === 'e'} />
+      <div className={spriteCapCls}>
+        <Sprite id={c.data.id} type={c.data.type} size={who === 'e' ? 146 : 166} bare flip={who === 'e'} />
+      </div>
+      {cap && <span className={`capture-flask cap-${cap}`} aria-hidden>🔮</span>}
+      {cap === 'caught' && <span className="capture-stars" aria-hidden>✦✦✦</span>}
       <div className="ground-shadow" />
     </div>
     )

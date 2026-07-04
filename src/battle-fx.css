@@ -82,6 +82,32 @@
 .eff-tag.eff-bad { color: #9aa0a6; } /* △ いまひとつ */
 .eff-tag.eff-no { color: #e2563b; } /* ✕ 効果がない */
 
+/* ── 捕獲演出(第2次品質スプリント) ── */
+/* 敵スプライト: 吸い込まれて消える / 脱出で戻る */
+@keyframes bfx-suck { 0% { transform: scale(1); opacity: 1 } 100% { transform: scale(0.12) translateY(18%); opacity: 0 } }
+.sprite-captured { animation: bfx-suck 0.5s ease-in forwards; transform-origin: 50% 70%; }
+@keyframes bfx-broke { 0% { transform: scale(0.12); opacity: 0 } 60% { opacity: 1 } 100% { transform: scale(1); opacity: 1 } }
+.sprite-broke { animation: bfx-broke 0.45s ease-out forwards; transform-origin: 50% 70%; }
+
+/* フラスコ本体: 投げ込み→揺れ→確定/破裂 */
+.capture-flask { position: absolute; left: 50%; top: 42%; font-size: 34px; line-height: 1; z-index: 8; transform: translate(-50%, -50%); pointer-events: none; }
+@keyframes bfx-flask-in { 0% { transform: translate(-50%, -220%) scale(0.4) rotate(-90deg); opacity: 0 } 100% { transform: translate(-50%, -50%) scale(1) rotate(0) } }
+.capture-flask.cap-suck { animation: bfx-flask-in 0.5s ease-out; }
+@keyframes bfx-flask-shake { 0%, 100% { transform: translate(-50%, -50%) rotate(0) } 25% { transform: translate(-62%, -50%) rotate(-18deg) } 75% { transform: translate(-38%, -50%) rotate(18deg) } }
+.capture-flask.cap-shake { animation: bfx-flask-shake 0.46s ease-in-out infinite; }
+@keyframes bfx-flask-caught { 0% { transform: translate(-50%, -50%) scale(1) } 40% { transform: translate(-50%, -50%) scale(1.3) } 100% { transform: translate(-50%, -50%) scale(1) } filter: drop-shadow(0 0 12px gold) }
+.capture-flask.cap-caught { animation: bfx-flask-caught 0.6s ease-out; filter: drop-shadow(0 0 10px rgba(255, 220, 90, 0.9)); }
+@keyframes bfx-flask-break { 0% { transform: translate(-50%, -50%) scale(1); opacity: 1 } 100% { transform: translate(-50%, -50%) scale(1.6); opacity: 0 } }
+.capture-flask.cap-break { animation: bfx-flask-break 0.4s ease-out forwards; }
+
+/* 確定時の星 */
+@keyframes bfx-cap-stars { 0% { transform: translate(-50%, -50%) scale(0.3); opacity: 0 } 40% { opacity: 1 } 100% { transform: translate(-50%, -110%) scale(1.1); opacity: 0 } }
+.capture-stars { position: absolute; left: 50%; top: 40%; z-index: 9; color: #ffe15a; font-size: 18px; letter-spacing: 4px; transform: translate(-50%, -50%); animation: bfx-cap-stars 0.6s ease-out; pointer-events: none; text-shadow: 0 0 8px rgba(255, 220, 90, 0.8); }
+
+@media (prefers-reduced-motion: reduce) {
+  .sprite-captured, .sprite-broke, .capture-flask, .capture-stars { animation-duration: 0.01s !important }
+}
+
 /* ── 倍速トグルボタン(バトル画面右上等) ── */
 .speed-toggle {
   font-weight: 700;
