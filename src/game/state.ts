@@ -359,6 +359,11 @@ export function currentObjective(g: GameState): { icon: string; text: string } |
     if (g.pos.mapId === 'rapis') return { icon: '🏠', text: '中央上の「師ガレンの家」へ。最初の相棒をもらおう' }
     return { icon: '🏠', text: '本拠地ラピス村へ戻り、師ガレンを訪ねよう' }
   }
+  // 初錬成の導線(第2次品質スプリント): 2体以上そろい錬成未経験で村にいる時、
+  // 署名機構=錬成の存在に気づかせる。森誘導より前に一度だけ(村滞在時のみ・強制ではない)。
+  if (g.pos.mapId === 'rapis' && g.collection.length >= 2 && !hasFlag(g, 'fused_once')) {
+    return { icon: '⚗️', text: '幻獣が2体に。師の家の錬成師ミルカに話しかけ「錬成」を試せる' }
+  }
   // 相棒あり・最初のステージ未攻略 → 転送門〜森ボスへ誘導
   if (g.pos.mapId === 'forest') return { icon: '⚔️', text: '高草で仲間を増やし鍛え、最奥の守護者シルヴァに挑もう' }
   if (g.pos.mapId === 'rapis') return { icon: '🌀', text: '中央広場の転送門(🌀)に触れて「緑霧の森」へワープしよう' }

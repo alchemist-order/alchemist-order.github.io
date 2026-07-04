@@ -12,12 +12,14 @@ import monstersJson from '../../data/monsters.json'
 
 // 図鑑から、指定タイプ・進化段階の幻獣idを集める(野生出現プール生成用)
 const ALL_DEX = monstersJson.dex as { id: string; type: string; type2?: string; stage: number; dex: number }[]
-function wildOfTypes(types: string[], maxStage = 1, opts: { genOnly?: boolean } = {}): string[] {
+function wildOfTypes(types: string[], maxStage = 1, opts: { genOnly?: boolean; exclude?: string[] } = {}): string[] {
   return ALL_DEX.filter(
     (d) =>
       (!opts.genOnly || d.dex >= 101) && // 生成幻獣(dex101-300)に限定するか
       d.stage <= maxStage && // 野生は若い個体(序盤は1段階目)
-      (types.includes(d.type) || (d.type2 != null && types.includes(d.type2))),
+      (types.includes(d.type) || (d.type2 != null && types.includes(d.type2))) &&
+      // exclude指定タイプを主/副いずれかに含む種は除外(序盤フェアネス: 地持ちを入口ゾーンから排除する等)
+      !(opts.exclude && (opts.exclude.includes(d.type) || (d.type2 != null && opts.exclude.includes(d.type2)))),
   ).map((d) => d.id)
 }
 // 指定タイプの「進化後(stage2)のみ」を集める(区画別エンカウントの最奥レア枠用)
@@ -592,9 +594,12 @@ export const MAPS: Record<string, GameMap> = {
     },
     // ── 区画別エンカウント(パッケージD): 草地A→Fの奥ほどレベル帯を引き上げ、最奥Fにのみレア枠 ──
     zones: [
-      { x0: 7, y0: 30, x1: 12, y1: 33, pool: ['portabupa', 'venomite', 'sporin', 'hobgobalt'], min: 4, max: 6 }, // 草地A
-      { x0: 20, y0: 33, x1: 26, y1: 36, pool: ['portabupa', 'venomite', 'sporin', 'hobgobalt'], min: 4, max: 6 }, // 草地B
-      { x0: 8, y0: 24, x1: 14, y1: 27, pool: ['portabupa', 'venomite', 'sporin', 'hobgobalt', 'tsunousa', 'falcone'], min: 6, max: 9 }, // 草地C
+      // 序盤フェアネス(第2次品質スプリント): 入口A/Bは地タイプを排除し毒/風純正中心に。
+      // 火→毒2.0/風→毒2.0/風は被弾も風→風0.5で軽く、どの御三家にも有利対面が生まれる。
+      // 地持ち(sporin/hobgobalt=地技で火を2倍に殴る主犯)はC以降へ後送り。
+      { x0: 7, y0: 30, x1: 12, y1: 33, pool: ['portabupa', 'venomite', 'pibit', ...wildOfTypes(['毒', '風'], 1, { genOnly: true, exclude: ['地'] }).slice(0, 2)], min: 4, max: 6 }, // 草地A
+      { x0: 20, y0: 33, x1: 26, y1: 36, pool: ['portabupa', 'venomite', 'briezel', ...wildOfTypes(['毒', '風'], 1, { genOnly: true, exclude: ['地'] }).slice(2, 4)], min: 4, max: 6 }, // 草地B
+      { x0: 8, y0: 24, x1: 14, y1: 27, pool: ['portabupa', 'venomite', 'sporin', 'hobgobalt', 'tsunousa', 'falcone'], min: 6, max: 9 }, // 草地C(地タイプはここから)
       {
         x0: 18, y0: 18, x1: 24, y1: 21,
         pool: ['tsunousa', 'falcone', 'briezel', 'pibit', ...wildOfTypes(['地', '毒', '風'], 1, { genOnly: true }).slice(0, 2)],
@@ -764,9 +769,11 @@ export const TRAINERS: Record<string, TrainerData> = {
     id: 'gym_port',
     name: '港の守護者 マレア',
     team: [
+      // 第2次品質スプリント: エースは初版talent6 Lv21=全プレイヤーLvで詰み(シルヴァ初版と同じ)と
+      // シミュ検出。GAME_STRUCTURE想定(エースLv18)へ是正しtalent6→1。
       { speciesId: 'shelk', level: 17 },
       { speciesId: 'aquab', level: 18, talent: 3, moves: ['water_r', 'water_t', 'water_x', 'water_b'] },
-      { speciesId: 'marinel', level: 21, talent: 6, heldItem: 'oranberry', moves: ['water_a', 'water_r', 'water_x', 'sig'] },
+      { speciesId: 'marinel', level: 18, talent: 0, heldItem: 'oranberry', moves: ['water_a', 'water_r', 'water_x', 'sig'] },
     ],
     badge: '蒼潮の記章',
     portrait: 'gym_port',

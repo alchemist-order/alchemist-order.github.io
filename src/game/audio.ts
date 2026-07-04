@@ -58,14 +58,30 @@ export function unlock(): void {
   if (!muted && bgm && bgmKey) bgm.play().catch(() => {})
 }
 
-/** 勝利ジングル(一度きり)。BGMを止めて鳴らす。次の playBgm で再開される */
+/** 勝利ジングル(一度きり)。BGMを止めて鳴らす。次の playBgm で再開される。
+ *  audio/victory.mp3 があればそれを、無ければWebAudio合成のファンファーレを鳴らす
+ *  (第2次品質スプリント: 音源未配置でも「勝った瞬間の無音」を解消)。 */
 export function playVictory(): void {
   if (bgm) bgm.pause()
   bgmKey = null
   if (muted || !unlocked) return
+  let done = false // ファイル再生成功 or 合成音発火のどちらか一度だけ
+  const fallback = () => { if (done) return; done = true; synthVictory() }
   const v = new Audio(`${BASE}audio/victory.mp3`)
   v.volume = bgmVol
-  v.play().catch(() => {})
+  v.play().then(() => { done = true }).catch(fallback)
+  window.setTimeout(fallback, 300) // ファイルが再生開始できなければ合成音
+}
+
+// WebAudio合成の勝利ファンファーレ(C5-E5-G5-C6 の上昇アルペジオ→締めの和音)
+function synthVictory(): void {
+  const ctx = ensureCtx()
+  if (!ctx || muted) return
+  const arp = [523.25, 659.25, 783.99, 1046.5]
+  arp.forEach((f, i) => tone(f, 0.17, 'square', 0.26, i * 0.1, 8))
+  tone(1046.5, 0.55, 'triangle', 0.3, 0.42, 6)
+  tone(659.25, 0.55, 'triangle', 0.2, 0.42, 6)
+  tone(783.99, 0.55, 'triangle', 0.2, 0.42, 6)
 }
 
 export function isMuted(): boolean {

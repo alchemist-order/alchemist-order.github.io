@@ -30,17 +30,21 @@ const zones = forest.zones.map((z, i) => ({
 zones.forEach((z) => { z.typicalTiles = Math.round((z.minTiles + z.maxTiles) / 2) })
 
 // ─────────────────────────── プレイヤーAI/エネミーAI(簡易) ───────────────────────────
+// 技選択は相性込みの期待値で選ぶ(実プレイヤーは有利技を選ぶ。sim_balance.mjsと同基準)。
+// 相性を無視すると火が地相手に等倍の物理技でなく不利な火技を撃ち続け、wipe率を過大評価する。
 function foeTypesOf(c) { return [c.data.type, c.data.type2].filter(Boolean) }
-function expectedValue(defender, move) {
+function expectedValue(attacker, defender, move) {
   if (move.power <= 0) return -1
+  const eff = effectiveness(move.type, foeTypesOf(defender))
+  const stab = move.type === attacker.data.type || move.type === attacker.data.type2 ? 1.5 : 1
   const hits = move.multi ? (move.multi[0] + move.multi[1]) / 2 : 1
-  return move.acc * move.power * hits
+  return move.acc * move.power * hits * eff * stab
 }
-function bestAttack(moves, foe) {
+function bestAttack(attacker, moves, foe) {
   const atks = moves.filter((m) => m.power > 0)
   if (!atks.length) return moves[0]
-  let best = atks[0], bv = expectedValue(foe, best)
-  for (const m of atks.slice(1)) { const v = expectedValue(foe, m); if (v > bv) { best = m; bv = v } }
+  let best = atks[0], bv = expectedValue(attacker, foe, best)
+  for (const m of atks.slice(1)) { const v = expectedValue(attacker, foe, m); if (v > bv) { best = m; bv = v } }
   return best
 }
 function randInt(lo, hi) { return lo + Math.floor(Math.random() * (hi - lo + 1)) }
@@ -54,8 +58,8 @@ function randInt(lo, hi) { return lo + Math.floor(Math.random() * (hi - lo + 1))
 function runBattle(p, pMoves, e, eMoves, itemsLeft) {
   for (let turn = 0; turn < 40; turn++) {
     if (p.hp / p.maxHp < 0.3 && itemsLeft <= 0) return 'fled'
-    const pMove = bestAttack(pMoves, e)
-    const eMove = bestAttack(eMoves, p)
+    const pMove = bestAttack(p, pMoves, e)
+    const eMove = bestAttack(e, eMoves, p)
     const pFirst = effectiveSpeed(p) >= effectiveSpeed(e)
     const order = pFirst ? [[p, e, pMove], [e, p, eMove]] : [[e, p, eMove], [p, e, pMove]]
     for (const [actor, defender, move] of order) {
@@ -80,7 +84,7 @@ function runBattle(p, pMoves, e, eMoves, itemsLeft) {
 
 // ─────────────────────────── 1体のプレイヤー状態を持ち歩くラン ───────────────────────────
 const STARTER_LEVEL = 8
-const STARTER_HEAL_ITEMS = 3 // 母の贈り物(mom_gift)。上傷薬は未所持(序盤の現実的な手持ち)
+const STARTER_HEAL_ITEMS = 5 // 母の贈り物(mom_gift)。第2次品質スプリントで3→5に増量。上傷薬は未所持(序盤の現実的な手持ち)
 const STARTERS = ['ignif', 'aquab', 'cogrif']
 
 function newPlayer(forcedStarter) {

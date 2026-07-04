@@ -68,3 +68,29 @@
 @media (prefers-reduced-motion: reduce) {
   .move-fx, .status-aura, .combatant.fx-hit-strong, .combatant.fainted .sprite-bare, .sa-sleep::after { animation: none !important }
 }
+
+/* ── 技ボタンの相性ヒント(第2次品質スプリント) ── */
+.eff-tag {
+  display: inline-block;
+  margin-left: 5px;
+  font-weight: 800;
+  font-size: 0.95em;
+  line-height: 1;
+  vertical-align: middle;
+}
+.eff-tag.eff-good { color: #4fd18b; text-shadow: 0 0 6px rgba(79, 209, 139, 0.6); } /* ◎ ばつぐん */
+.eff-tag.eff-bad { color: #9aa0a6; } /* △ いまひとつ */
+.eff-tag.eff-no { color: #e2563b; } /* ✕ 効果がない */
+
+/* ── 倍速トグルボタン(バトル画面右上等) ── */
+.speed-toggle {
+  font-weight: 700;
+  font-size: 12px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 90, 0.5);
+  background: rgba(20, 16, 10, 0.6);
+  color: #e2c23b;
+  cursor: pointer;
+}
+.speed-toggle.on { background: rgba(226, 194, 59, 0.22); }

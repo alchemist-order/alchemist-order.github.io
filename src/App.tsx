@@ -18,6 +18,7 @@ import {
   loadGame,
   makeOwned,
   newGame,
+  rarityOf,
   saveGame,
   setLeader,
   species,
@@ -245,11 +246,11 @@ export default function App() {
           portrait: 'mom',
           lines: [
             'あら、起きたのね。……ふふ、いい顔。もう"その日"だって、わかってるみたい。',
-            'これを持っていって。傷薬を三つ。あなたの幻獣が傷ついたら、使ってあげるのよ。',
+            'これを持っていって。傷薬を五つ。あなたの幻獣が傷ついたら、使ってあげるのよ。',
             'いい？ 幻獣はね、道具じゃないの。いっしょに食べて、いっしょに眠る――家族なの。',
             '無理だけはしないで。……強くなって帰ってきてくれれば、母さんは それでいいの。',
           ],
-          after: () => setGame((s) => withFlag({ ...s, items: { ...s.items, heal: s.items.heal + 3 } }, 'mom_gift')),
+          after: () => setGame((s) => withFlag({ ...s, items: { ...s.items, heal: s.items.heal + 5 } }, 'mom_gift')),
         })
       } else {
         setDialogue({
@@ -374,6 +375,7 @@ export default function App() {
         mats: { talentStone: (s.mats?.talentStone ?? 0) - (stone ? 1 : 0), slotCharm: (s.mats?.slotCharm ?? 0) - (charm ? 1 : 0) },
       }
       ns = withCaught(withSeen(ns, r.speciesId), r.speciesId)
+      ns = withFlag(ns, 'fused_once') // 初錬成の導線バナーを消す(第2次品質スプリント)
       return ns
     })
     audio.sfx('coin')
@@ -449,18 +451,26 @@ export default function App() {
     setStarterOpen(false)
     const m = species(id)
     audio.sfx('catch')
+    // 御三家talent演出(第2次品質スプリント): レア個体を選ぶと師が一言添える(引き直し不可のまま)
+    const rar = rarityOf(owned.talent)
+    const firstLine =
+      (owned.talent ?? 0) >= 6
+        ? '……ほう。稀に見る、澄んだ目をした個体だ。おまえ、持っているな。'
+        : (owned.talent ?? 0) >= 3
+          ? '……いい目だ。筋のいい個体を選んだな。その子が、おまえの最初の相棒。'
+          : '……いい目だ。その子が、おまえの最初の相棒。名前を呼ぶより先に、体温を覚えてやりなさい。'
     setGetMon({
       id,
       name: m.name,
       type: m.type,
       talent: owned.talent,
-      label: 'を 相棒にした！',
+      label: rar ? `を 相棒にした！（${rar.stars} ${rar.name}）` : 'を 相棒にした！',
       after: () =>
         setDialogue({
           speaker: '師ガレン',
           portrait: 'mentor',
           lines: [
-            '……いい目だ。その子が、おまえの最初の相棒。名前を呼ぶより先に、体温を覚えてやりなさい。',
+            firstLine,
             '強さとは、勝つ数ではない。共に時を重ねた証だ。……それを忘れた者が、どうなったか。いずれ話す日も来よう。',
             '近頃、各地で幻獣が色を失う――《灰化》が広がっている。まずは緑霧の森の守護者シルヴァを訪ね、最初の記章を得なさい。',
             '中央広場の転送門が、おまえを森へ導く。……急くな。だが、目を逸らすな。',

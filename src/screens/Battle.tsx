@@ -30,7 +30,16 @@ import { ABILITIES, heldItemOf } from '../game/abilities'
 import * as audio from '../game/audio'
 import { BattlePortrait, GetMonsterOverlay, HpBar, Sprite, StatusBadge, TypeBadge } from '../ui'
 
-const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+// 倍速トグル(第2次品質スプリント): 全演出sleepにこの係数を掛ける。localStorageで永続。
+let battleSpeed = Number(localStorage.getItem('ao-battle-speed')) || 1
+export function setBattleSpeed(mult: number) {
+  battleSpeed = mult
+  localStorage.setItem('ao-battle-speed', String(mult))
+}
+export function getBattleSpeed() {
+  return battleSpeed
+}
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms / battleSpeed))
 const STAT_JP: Record<'atk' | 'def' | 'spd' | 'mag', string> = { atk: 'こうげき', def: 'ぼうぎょ', spd: 'すばやさ', mag: 'まりょく' }
 const STATUS_AURA: Record<string, string> = { やけど: 'sa-burn', どく: 'sa-psn', まひ: 'sa-para', ねむり: 'sa-sleep', こおり: 'sa-frz', 灰化: 'sa-ash' }
 const clamp = (n: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, n))
@@ -139,6 +148,7 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
   const [mustSwitch, setMustSwitch] = useState(false)
   const [acting, setActing] = useState(false)
   const [caught, setCaught] = useState<{ id: string; name: string; type: string; talent?: number } | null>(null)
+  const [speed, setSpeed] = useState(getBattleSpeed())
 
   // 手持ちの生存メンバー(現在出ている個体を除く)
   const mk = (o: OwnedMonster): Combatant => {
@@ -824,6 +834,14 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
     <div className="screen battle-screen">
       <div className={`battle-scene ${fx.flash ? 'flash' : ''}`} style={fieldStyle}>
         <div className="scene-intro" />
+        <button
+          className={`speed-toggle ${speed > 1 ? 'on' : ''}`}
+          style={{ position: 'absolute', top: 8, right: 8, zIndex: 20 }}
+          onClick={() => { const n = speed > 1 ? 1 : 2; setBattleSpeed(n); setSpeed(n) }}
+          title="戦闘演出の速さを切り替え"
+        >
+          {speed > 1 ? '⏩ 2倍速' : '▶ 等速'}
+        </button>
         {isTrainer && config.kind === 'trainer' && (
           <>
             <div className="trainer-tag">⚔ {config.trainer.name}・残り{remaining}体</div>
@@ -931,9 +949,16 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
                   const cur = ppOf(mv)
                   const lowPP = cur <= Math.ceil(maxPP(mv) * 0.25)
                   const guardBlocked = !!mv.guard && player.lastMoveId === mv.id // ガードは連続使用不可
+                  // 相性ヒント(第2次品質スプリント): 攻撃技に対し敵への効き目を◎/△/✕で可視化。
+                  // パッケージAで入れた相性の駆け引きを新規プレイヤーにも「見える」ようにする最安の一手。
+                  const eff = mv.power > 0 ? effectiveness(mv.type, [enemy.data.type, enemy.data.type2].filter(Boolean) as string[]) : 1
+                  const effTag = mv.power <= 0 ? null : eff === 0 ? { cls: 'eff-no', mark: '✕', label: '効果がない' } : eff >= 2 ? { cls: 'eff-good', mark: '◎', label: 'ばつぐん' } : eff < 1 ? { cls: 'eff-bad', mark: '△', label: 'いまひとつ' } : null
                   return (
-                    <button key={mv.id} className="cmd-btn move" disabled={acting || cur <= 0 || guardBlocked} onClick={() => takeTurn(mv)} title={guardBlocked ? '連続では 使えない' : mv.desc}>
-                      <span className="m-name">{mv.name}</span>
+                    <button key={mv.id} className="cmd-btn move" disabled={acting || cur <= 0 || guardBlocked} onClick={() => takeTurn(mv)} title={guardBlocked ? '連続では 使えない' : effTag ? `${mv.desc}（${effTag.label}）` : mv.desc}>
+                      <span className="m-name">
+                        {mv.name}
+                        {effTag && <span className={`eff-tag ${effTag.cls}`} aria-label={effTag.label}>{effTag.mark}</span>}
+                      </span>
                       <span className="m-meta">
                         <TypeBadge t={mv.type} />
                         {mv.category === 'status' ? (mv.guard ? '防御' : mv.heal ? '回復' : mv.buffs || mv.resetStages ? '能力' : '状態') : `威${mv.power}`}

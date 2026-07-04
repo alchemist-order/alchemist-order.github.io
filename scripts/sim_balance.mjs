@@ -274,10 +274,15 @@ function buildTeamFromTrainerEntry(entry) {
   return { c, moves }
 }
 
+// プレイヤー個体の進化を反映: baseからlevelに応じて進化形を辿る(御三家はLv16でstage2化)。
+// これを省くとLv18編成が「進化前のstage1をLv18で」使う非現実的な弱さになり勝率が過小評価される。
+function resolveEvolved(baseId, level) {
+  let sp = species(baseId)
+  while (sp.to && sp.at != null && level >= sp.at) sp = species(sp.to)
+  return sp.id
+}
+
 // maps.ts の実データを直接使用(重複定義してドリフトするのを防ぐ)
-const GYM_FOREST_TEAM = TRAINERS.gym_forest.team
-const PLAYER_LEVEL = 12
-const PLAYER_TEAM_IDS = ['ignif', 'aquab', 'cogrif'] // 御三家(火/水/風)。Lv12で入手可能な現実的な編成
 const PLAYER_ITEM_HEAL_FRAC = 0.4 // 上傷薬相当
 const PLAYER_ITEM_COUNT = 2 // §8「道具2個持込」
 
@@ -296,12 +301,13 @@ function bossChooseMove(self, moves, foe, isAceOpening) {
   return bestAttack(self, moves, foe)
 }
 
-/** 1回のジム戦(3vs3、party switching込み)。プレイヤーの勝敗を返す。 */
-function runGymBattle() {
-  const bossTeam = GYM_FOREST_TEAM.map(buildTeamFromTrainerEntry)
-  const playerTeam = PLAYER_TEAM_IDS.map((id) => {
-    const sp = species(id)
-    return { c: makeCombatant(sp, PLAYER_LEVEL, 0), moves: getMoveset(sp, PLAYER_LEVEL) }
+/** 1回のジム戦(3vs3、party switching込み)。プレイヤーの勝敗を返す。
+ *  cfg = { teamData, playerIds, playerLevel } */
+function runGymBattle(cfg) {
+  const bossTeam = cfg.teamData.map(buildTeamFromTrainerEntry)
+  const playerTeam = cfg.playerIds.map((id) => {
+    const sp = species(resolveEvolved(id, cfg.playerLevel)) // Lvに応じて進化形を使う
+    return { c: makeCombatant(sp, cfg.playerLevel, 0), moves: getMoveset(sp, cfg.playerLevel) }
   })
   let bIdx = 0, pIdx = 0
   let itemsLeft = PLAYER_ITEM_COUNT
@@ -356,10 +362,10 @@ function runGymBattle() {
   return { win: false, turns: MAX_TURNS * 3, timeout: true }
 }
 
-function runGymSim() {
+function runGymSim(cfg) {
   let wins = 0
   for (let i = 0; i < N_BOSS; i++) {
-    const r = runGymBattle()
+    const r = runGymBattle(cfg)
     if (r.win) wins++
   }
   return wins / N_BOSS
@@ -382,10 +388,25 @@ console.log(`  3ターン以上長引いた試合限定: 積みAI勝率 ${fmtPct
 for (const r of svs.perType) console.log(`    ${r.type}: ${fmtPct(r.stackWinRate)}`)
 console.log(`  判定: ${svs.longFight3plus.winRateStack > 0.5 ? 'OK(長期戦で積みが連打に勝る)' : 'NG: aura倍率(+2→検討)を強化 or guard/recoilノブ調整'}\n`)
 
-console.log('[3] 森の守護者シルヴァ 初見勝率(プレイヤーLv12・御三家編成・上傷薬×2持込, 目標50-60%)')
-const gymRate = runGymSim()
-console.log(`  勝率: ${fmtPct(gymRate)} (n=${N_BOSS})`)
-console.log(`  判定: ${gymRate >= 0.5 && gymRate <= 0.6 ? 'OK(目標域内)' : gymRate > 0.6 ? 'NG: 簡単すぎる(ボスtalent↑ or guard係数0.3→0.4 or aura強化)' : 'NG: 難しすぎる(ボスtalent↓ or recoil0.25→0.33で自傷増、道具フラクション見直し)'}\n`)
+function bossVerdict(rate) {
+  return rate >= 0.5 && rate <= 0.6 ? 'OK(目標50-60%域内)' : rate > 0.6 ? `NG: 簡単すぎる(${fmtPct(rate)}。ボスtalent↑/guard係数↑/aura強化)` : `NG: 難しすぎる(${fmtPct(rate)}。ボスtalent↓/Lv↓/もちもの外し)`
+}
+console.log('[3] 守護者 初見勝率(御三家編成・上傷薬×2持込, 目標50-60%)')
+const silvaRate = runGymSim({ teamData: TRAINERS.gym_forest.team, playerIds: ['ignif', 'aquab', 'cogrif'], playerLevel: 12 })
+console.log(`  森シルヴァ(Lv12): ${fmtPct(silvaRate)} — ${bossVerdict(silvaRate)}`)
+// マレア(港・第2世界)。港到達の現実的Lv=20前後(潮騒の道Lv9-13を抜けた後)。stage2進化済み想定
+const mareaRate = runGymSim({ teamData: TRAINERS.gym_port.team, playerIds: ['ignif', 'aquab', 'cogrif'], playerLevel: 20 })
+console.log(`  港マレア(Lv20): ${fmtPct(mareaRate)} — ${bossVerdict(mareaRate)}`)
+console.log('')
+
+// マレアはプレイヤーの港到達Lvに勝率が極端に敏感(Lv20で約30%→Lv22で約90%、進化直後stage2の
+// 成長カーブが急なため)。厳密な50-60%はシミュ単独では詰められないので、複数Lvで幅を表示する。
+console.log('  参考: 港マレアのプレイヤーLv感度')
+for (const plv of [18, 20, 22]) {
+  const r = runGymSim({ teamData: TRAINERS.gym_port.team, playerIds: ['ignif', 'aquab', 'cogrif'], playerLevel: plv })
+  console.log(`    P.Lv${plv}: ${fmtPct(r)}`)
+}
+console.log('')
 
 console.log('[4] タイプ全組合せ×3AI 総当たり勝率行列 を計算中… (81組合せ×9AI対×' + N_TYPE_MATRIX + '戦、先手バイアスはfairDuelで相殺)')
 const matrix = runTypeMatrix()
