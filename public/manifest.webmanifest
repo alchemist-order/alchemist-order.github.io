@@ -1,0 +1,17 @@
+{
+  "name": "錬金幻獣録 アルケミスト・オーダー",
+  "short_name": "錬金幻獣録",
+  "description": "錬金術で幻獣を錬成する近世西洋を舞台にしたブラウザ育成RPG。全100体の幻獣を集め、育て、進化させ、ジムに挑もう。",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#1c1812",
+  "theme_color": "#1c1812",
+  "lang": "ja",
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
