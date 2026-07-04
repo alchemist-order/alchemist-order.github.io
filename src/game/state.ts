@@ -32,6 +32,11 @@ export function rollTalent(rng: Rng = sys): number {
   if (r < 0.99) return rng.int(6, 7) // ★★ レア 4%
   return rng.int(8, 10) // ★★★ 超レア 1%
 }
+/** 変異種(色違い)判定。1/100。強さとは無関係の見た目レア。塔ではシード付きrng */
+export const MUTANT_RATE = 0.01
+export function rollMutant(rng: Rng = sys): boolean {
+  return rng.chance(MUTANT_RATE)
+}
 /** talent からレア度表示(なし=ノーマル)。 */
 export function rarityOf(talent = 0): { stars: string; name: string; color: string } | null {
   if (talent >= 8) return { stars: '★★★', name: '超レア', color: '#e2c23b' }

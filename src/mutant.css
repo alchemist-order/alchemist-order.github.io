@@ -1,0 +1,39 @@
+/* 変異種(色違い)の表現(O4)。index.css(Codex領域)とは分離。
+   Sprite/GetMonsterOverlay/Home/Dexで共通に使う。 */
+
+/* スプライト画像の色相回転(元の色に依らず"違う色"に見せる)＋淡い発光 */
+.sprite-mutant {
+  filter: hue-rotate(150deg) saturate(1.25) drop-shadow(0 0 5px rgba(120, 230, 255, 0.7));
+}
+
+/* bareスプライト枠に付くキラキラ(周回する光点) */
+.sprite-bare.has-mutant { position: relative; }
+@keyframes mfx-sparkle {
+  0% { transform: translate(0, 0) scale(0.6); opacity: 0 }
+  30% { opacity: 1 }
+  100% { transform: translate(var(--mx, 40%), var(--my, -30%)) scale(1); opacity: 0 }
+}
+.mutant-sparkle {
+  position: absolute; top: 20%; left: 30%; width: 20%; height: 20%;
+  pointer-events: none; z-index: 3;
+  background: radial-gradient(circle, #ffffff 0, #a8ecff 40%, transparent 70%);
+  animation: mfx-sparkle 1.6s ease-out infinite;
+}
+.mutant-sparkle::after {
+  content: ''; position: absolute; inset: 30% 30% 30% 30%;
+  background: radial-gradient(circle, #fff, transparent 70%);
+  animation: mfx-sparkle 1.6s ease-out infinite 0.8s;
+  --mx: -50%; --my: 40%;
+}
+
+/* 入手演出カードの変異強調 */
+.get-card-mutant { box-shadow: 0 0 24px 4px rgba(120, 230, 255, 0.5); }
+@keyframes mfx-tag { 0%, 100% { opacity: 0.85 } 50% { opacity: 1; text-shadow: 0 0 10px rgba(120, 230, 255, 0.9) } }
+.mutant-tag {
+  color: #7ce6ff; font-weight: 800; font-size: 15px; letter-spacing: 1px;
+  margin: 2px 0 6px; animation: mfx-tag 1.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mutant-sparkle, .mutant-sparkle::after, .mutant-tag { animation: none !important }
+}

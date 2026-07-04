@@ -256,6 +256,7 @@ export default function Home({ state, setState, setActive, onField, onDex, initi
             <div className="card-head">
               <span className="mon-name">
                 {sp.name}
+                {sel.mutant && <span title="変異種" style={{ marginLeft: 2 }}>✨</span>}
                 {isActive && <span className="lead-tag">先頭</span>}
                 <RarityBadge talent={sel.talent} />
                 {sel.talent ? <span className="cmd-sub" style={{ marginLeft: 4 }}>才能{sel.talent}</span> : null}
@@ -264,7 +265,7 @@ export default function Home({ state, setState, setActive, onField, onDex, initi
             </div>
             <div className="detail-top">
               <div className="detail-portrait" onClick={() => setZoom(true)} style={{ cursor: 'zoom-in' }} title="タップで大きく見る">
-                <Sprite id={sp.id} type={sp.type} size={120} />
+                <Sprite id={sp.id} type={sp.type} size={120} mutant={sel.mutant} />
                 <div className="badges">
                   <TypeBadge t={sp.type} />
                   {sp.type2 && <TypeBadge t={sp.type2} />}
@@ -562,7 +563,7 @@ export default function Home({ state, setState, setActive, onField, onDex, initi
             display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, padding: 16,
           }}
         >
-          <Sprite id={sp.id} type={sp.type} size={Math.min(300, Math.round(window.innerWidth * 0.74))} />
+          <Sprite id={sp.id} type={sp.type} size={Math.min(300, Math.round(window.innerWidth * 0.74))} mutant={sel.mutant} />
           <div style={{ fontSize: 22, fontWeight: 700, color: '#f3e6c4', textAlign: 'center' }}>
             {sp.name}
             <span style={{ fontSize: 15, opacity: 0.8, marginLeft: 8 }}>Lv.{sel.level}</span>

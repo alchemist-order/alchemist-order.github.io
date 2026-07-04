@@ -19,6 +19,7 @@ import {
   grantExp,
   rarityOf,
   rollTalent,
+  rollMutant,
   species,
   today,
   withCaught,
@@ -85,7 +86,9 @@ function makeWild(playerLevel: number, config: Extract<BattleConfig, { kind: 'wi
     config.min != null && config.max != null
       ? rng.int(config.min, config.max)
       : clamp(playerLevel + rng.int(-2, 1), 2, 100)
-  return makeCombatant(species(id), level, rollTalent(rng)) // 個体差をロール(良個体は約5%)
+  const c = makeCombatant(species(id), level, rollTalent(rng)) // 個体差をロール(良個体は約5%)
+  c.mutant = rollMutant(rng) // 変異種(1/100の色違い)
+  return c
 }
 
 type Phase = 'fighting' | 'won' | 'lost' | 'caught' | 'fled'
@@ -149,7 +152,7 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
   const [curUid, setCurUid] = useState(active.uid)
   const [mustSwitch, setMustSwitch] = useState(false)
   const [acting, setActing] = useState(false)
-  const [caught, setCaught] = useState<{ id: string; name: string; type: string; talent?: number } | null>(null)
+  const [caught, setCaught] = useState<{ id: string; name: string; type: string; talent?: number; mutant?: boolean } | null>(null)
   const [speed, setSpeed] = useState(getBattleSpeed())
   // 捕獲演出(第2次品質スプリント): 敵が吸い込まれ→フラスコが揺れ→確定 or 脱出
   const [capture, setCapture] = useState<null | 'suck' | 'shake' | 'caught' | 'break'>(null)
@@ -704,6 +707,7 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
         level: enemy.level,
         exp: 0,
         talent: enemy.talent ?? 0, // 野生個体の質を引き継ぐ(レア個体はそのまま捕獲)
+        mutant: enemy.mutant, // 変異種(色違い)も引き継ぐ
       }
       setState((s) => {
         const pty = getParty(s)
@@ -711,8 +715,8 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
         return withCaught({ ...s, collection: [...s.collection, caught], party: np }, enemy.data.id)
       })
       const toParty = getParty(state).length < PARTY_MAX
-      pushLog(`やった！ 野生の ${enemy.data.name}を 捕まえた！`, toParty ? '🔮 図鑑に 登録された。' : '🔮 図鑑に 登録された。(パーティが満員のため 預かり所へ)')
-      setCaught({ id: enemy.data.id, name: enemy.data.name, type: enemy.data.type, talent: enemy.talent ?? 0 })
+      pushLog(`やった！ 野生の ${enemy.mutant ? '✨変異種の ' : ''}${enemy.data.name}を 捕まえた！`, toParty ? '🔮 図鑑に 登録された。' : '🔮 図鑑に 登録された。(パーティが満員のため 預かり所へ)')
+      setCaught({ id: enemy.data.id, name: enemy.data.name, type: enemy.data.type, talent: enemy.talent ?? 0, mutant: enemy.mutant })
       setPhase('caught')
     } else {
       setCapture('break')
@@ -796,6 +800,7 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
       <div className="ip-role">{who === 'e' ? '敵' : 'みかた'}</div>
       <div className="ip-head">
         <span className="ip-name">{c.data.name}</span>
+        {c.mutant && <span style={{ fontSize: 12 }} title="変異種">✨</span>}
         {(() => {
           const rar = rarityOf(c.talent)
           return rar ? <span style={{ color: rar.color, fontSize: 12, fontWeight: 700, letterSpacing: -1 }} title={rar.name}>{rar.stars}</span> : null
@@ -847,7 +852,7 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
       {auraCls && <span className={`status-aura ${auraCls}`} aria-hidden />}
       {burst?.side === who && <span key={`fx${burst.key}`} className={`move-fx fx-${burst.type}`} aria-hidden />}
       <div className={spriteCapCls}>
-        <Sprite id={c.data.id} type={c.data.type} size={who === 'e' ? 146 : 166} bare flip={who === 'e'} />
+        <Sprite id={c.data.id} type={c.data.type} size={who === 'e' ? 146 : 166} bare flip={who === 'e'} mutant={c.mutant} />
       </div>
       {cap && <span className={`capture-flask cap-${cap}`} aria-hidden>🔮</span>}
       {cap === 'caught' && <span className="capture-stars" aria-hidden>✦✦✦</span>}
@@ -1003,7 +1008,7 @@ export default function Battle({ active, config, state, setState, onExit }: Prop
       </div>
 
       {caught && (
-        <GetMonsterOverlay id={caught.id} name={caught.name} type={caught.type} talent={caught.talent} onClose={() => setCaught(null)} />
+        <GetMonsterOverlay id={caught.id} name={caught.name} type={caught.type} talent={caught.talent} mutant={caught.mutant} onClose={() => setCaught(null)} />
       )}
     </div>
   )

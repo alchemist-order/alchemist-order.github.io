@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import type { Combatant, StatusKind } from './types'
 import { spriteFileNo, spriteOf } from './game/sprites'
 import { rarityOf } from './game/state'
+import './mutant.css'
 
 // レア度バッジ(talentから。ノーマルはnull)
 export function RarityBadge({ talent, size = 13 }: { talent?: number; size?: number }) {
@@ -53,12 +54,14 @@ export function Sprite({
   size = 56,
   bare = false,
   flip = false,
+  mutant = false,
 }: {
   id: string
   type: string
   size?: number
   bare?: boolean
   flip?: boolean
+  mutant?: boolean // 変異種=色違いフィルタ
 }) {
   const [failed, setFailed] = useState(missingSprites.has(id))
   const src = `${import.meta.env.BASE_URL}sprites/${spriteFileNo(id)}.png`
@@ -66,7 +69,7 @@ export function Sprite({
     spriteOf(id, type)
   ) : (
     <img
-      className="sprite-img"
+      className={`sprite-img${mutant ? ' sprite-mutant' : ''}`}
       src={src}
       alt=""
       loading="lazy"
@@ -78,7 +81,8 @@ export function Sprite({
   )
   if (bare) {
     return (
-      <div className="sprite-bare" style={{ width: size, height: size, fontSize: size * 0.85, transform: flip ? 'scaleX(-1)' : undefined }}>
+      <div className={`sprite-bare${mutant ? ' has-mutant' : ''}`} style={{ width: size, height: size, fontSize: size * 0.85, transform: flip ? 'scaleX(-1)' : undefined }}>
+        {mutant && <span className="mutant-sparkle" aria-hidden />}
         {content}
       </div>
     )
@@ -352,6 +356,7 @@ export function GetMonsterOverlay({
   type,
   label = 'を 仲間にした！',
   talent,
+  mutant = false,
   onClose,
 }: {
   id: string
@@ -359,16 +364,18 @@ export function GetMonsterOverlay({
   name: string
   label?: string
   talent?: number
+  mutant?: boolean
   onClose: () => void
 }) {
   return (
     <div className="get-overlay" onClick={onClose}>
       <div className="get-burst" />
-      <div className="get-card" onClick={(e) => e.stopPropagation()}>
+      <div className={`get-card${mutant ? ' get-card-mutant' : ''}`} onClick={(e) => e.stopPropagation()}>
         <div className="get-rays" />
         <div className="get-sprite">
-          <Sprite id={id} type={type} size={172} bare />
+          <Sprite id={id} type={type} size={172} bare mutant={mutant} />
         </div>
+        {mutant && <div className="mutant-tag">✨ 変異種 ✨</div>}
         <div className="get-name">
           {name}
           <span>{label}</span>
