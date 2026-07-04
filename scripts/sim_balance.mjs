@@ -406,6 +406,15 @@ for (const plv of [18, 20, 22]) {
   const r = runGymSim({ teamData: TRAINERS.gym_port.team, playerIds: ['ignif', 'aquab', 'cogrif'], playerLevel: plv })
   console.log(`    P.Lv${plv}: ${fmtPct(r)}`)
 }
+// 火山イグナート(第3世界)。火山到達の現実的Lv=23前後。全御三家で測る(スターター公平性の確認)
+const ignatRate = runGymSim({ teamData: TRAINERS.gym_fire.team, playerIds: ['ignif', 'aquab', 'cogrif'], playerLevel: 24 })
+console.log(`  火山イグナート(Lv24): ${fmtPct(ignatRate)} — ${bossVerdict(ignatRate)}`)
+// スターター別(火山は火→風2.0で風が不利になりがち。公平性の確認)
+console.log('  参考: イグナートのスターター別勝率(P.Lv24)')
+for (const st of ['ignif', 'aquab', 'cogrif']) {
+  const r = runGymSim({ teamData: TRAINERS.gym_fire.team, playerIds: [st], playerLevel: 24 })
+  console.log(`    ${st}単独: ${fmtPct(r)}`)
+}
 console.log('')
 
 console.log('[4] タイプ全組合せ×3AI 総当たり勝率行列 を計算中… (81組合せ×9AI対×' + N_TYPE_MATRIX + '戦、先手バイアスはfairDuelで相殺)')

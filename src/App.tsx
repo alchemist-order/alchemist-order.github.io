@@ -144,9 +144,10 @@ export default function App() {
   useEffect(() => {
     let key = 'title'
     if (phase === 'game') {
-      const townMaps = ['rapis', 'mentor_house', 'home', 'home2f', 'inn', 'port']
+      const townMaps = ['rapis', 'mentor_house', 'home', 'home2f', 'inn', 'port', 'volcano_town']
+      const dungeonMaps = ['forest', 'volcano_road'] // 専用BGM未配置のためダンジョンBGM(forest.mp3)を流用
       if (screen === 'battle') key = battleConfig?.kind === 'trainer' ? 'boss' : 'battle'
-      else key = townMaps.includes(game.pos.mapId) ? 'town' : game.pos.mapId === 'forest' ? 'forest' : 'field'
+      else key = townMaps.includes(game.pos.mapId) ? 'town' : dungeonMaps.includes(game.pos.mapId) ? 'forest' : 'field'
     }
     audio.playBgm(key)
   }, [phase, screen, battleConfig, game.pos.mapId])
@@ -417,7 +418,7 @@ export default function App() {
   // ヌシ幻獣に接触(パッケージD): 前口上→固定個体との強制バトル
   const onNushi = (nushi: NushiSpot, biome: string) => {
     setDialogue({
-      lines: ['……並外れて大きな 気配。', 'この道を通すつもりは ないようだ。'],
+      lines: nushi.lines ?? ['……並外れて大きな 気配。', 'この道を通すつもりは ないようだ。'],
       after: () =>
         startBattle({
           kind: 'wild',
@@ -425,6 +426,7 @@ export default function App() {
           forcedSpeciesId: nushi.speciesId,
           forcedLevel: nushi.level,
           forcedTalent: nushi.talent,
+          forcedStatus: nushi.status,
           nushiId: nushi.id,
         }),
     })

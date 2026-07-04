@@ -73,7 +73,9 @@ function makeWild(playerLevel: number, config: Extract<BattleConfig, { kind: 'wi
   }
   // ヌシ幻獣(パッケージD): 種/レベル/個体値を固定出現させる
   if (config.forcedSpeciesId) {
-    return makeCombatant(species(config.forcedSpeciesId), config.forcedLevel ?? playerLevel, config.forcedTalent ?? 0)
+    const c = makeCombatant(species(config.forcedSpeciesId), config.forcedLevel ?? playerLevel, config.forcedTalent ?? 0)
+    if (config.forcedStatus) { c.status = config.forcedStatus; c.statusTurns = config.forcedStatus === 'ねむり' ? 2 : 0 } // 灰化ヘルフレア等
+    return c
   }
   const pool = config.pool?.length
     ? config.pool

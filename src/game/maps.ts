@@ -1,13 +1,13 @@
 // フィールドマップとトレーナー定義
 // グリッド文字:
-//   '#'=木/壁(進入不可)  'H'=建物(進入不可)  'W'=水(進入不可)  'C'=崖(進入不可)
+//   '#'=木/壁(進入不可)  'H'=建物(進入不可)  'W'=水(進入不可)  'C'=崖(進入不可)  'M'=マグマ(進入不可)
 //   '.'=道/床(歩行可)    ','=芝生(歩行可・装飾)  'G'=高草(歩行可・エンカウント)
 //   'F'=花(歩行可・装飾)  '~'=砂浜(歩行可)
 //   'P'=石畳広場(歩行可・ゾーン装飾)  'D'=土路地(歩行可・ゾーン装飾)
 //   'S'=階段(歩行可・崖の両面通行)  'L'=レッジ(歩行可・南向きにのみ降りられる一方通行の崖端。isLedgeBlockedで判定)
 //   'X'=ゲート(見た目のみ・歩行可の見た目だが実際の通行判定はGameMap.gatesのflag判定で別途ブロック)
 // 広大マップ＋カメラ追従。画面に映るのは一部だけで、移動でスクロールする。
-import type { TrainerData } from '../types'
+import type { StatusKind, TrainerData } from '../types'
 import monstersJson from '../../data/monsters.json'
 
 // 図鑑から、指定タイプ・進化段階の幻獣idを集める(野生出現プール生成用)
@@ -111,6 +111,8 @@ export interface NushiSpot {
   speciesId: string
   level: number
   talent: number // 捕獲時の個体値を固定(★★以上を保証)
+  lines?: string[] // 接触時の前口上(省略時は共通文言)。F3で個別化
+  status?: StatusKind // 開始時の状態異常(灰化ヘルフレア等のストーリー演出用)
 }
 
 export interface GameMap {
@@ -151,6 +153,7 @@ export interface World {
 export const WORLDS: World[] = [
   { id: 'forest', name: '緑霧の森', icon: '🌲', mapId: 'forest', tx: 17, ty: 39, boss: 'gym_forest', unlock: null, desc: '霧立ちこめる迷いの森。守護者シルヴァが待つ、最初の世界。' },
   { id: 'sea', name: '潮鳴りの海', icon: '🌊', mapId: 'coast_road', tx: 2, ty: 6, boss: 'gym_port', unlock: '新緑の記章', desc: '潮騒の道から港町へ。守護者マレアが灰の渦を睨む。' },
+  { id: 'volcano', name: '紅蓮の火山郷', icon: '🌋', mapId: 'volcano_road', tx: 1, ty: 27, boss: 'gym_fire', unlock: '蒼潮の記章', desc: '灼熱の溶岩回廊の先、鍛冶の郷。守護者イグナートの炉が赤く燃える。' },
 ]
 
 // ── マップ生成ヘルパー(座標ズレ防止) ──
@@ -295,6 +298,54 @@ function buildPort(): string[] {
   fill(g, 16, 4, 18, 5, 'H')
   ;[[3, 10], [9, 11], [20, 6]].forEach(([x, y]) => set(g, x, y, 'F'))
   set(g, 1, 8, '.') // 西の出口
+  return g
+}
+
+// 溶岩回廊(28x30) 一面のマグマを通路が縫うサーペンタイン。西=帰還、北東=火山郷。
+// マグマ湖を飛び石で渡る中盤+ヌシの間+スイッチ→ゲートの近道(森と同じ文法)。
+function buildVolcanoRoad(): string[] {
+  const g = grid(28, 30, 'M') // 一面の溶岩
+  // ── サーペンタイン本道(下→上へ折り返し・すべて連結) ──
+  fill(g, 1, 27, 1, 28, '.') // 西端=帰還ワープ口
+  fill(g, 1, 27, 25, 27, '.') // 廊下1(入口横)
+  fill(g, 2, 21, 2, 27, '.') // 西端を上へ
+  fill(g, 2, 21, 25, 21, '.') // 廊下2
+  fill(g, 25, 15, 25, 21, '.') // 東端を上へ
+  fill(g, 2, 15, 25, 15, '.') // 廊下3
+  fill(g, 2, 9, 2, 15, '.') // 西端を上へ
+  fill(g, 2, 9, 25, 9, '.') // 廊下4(郷の手前)
+  fill(g, 25, 3, 25, 9, '.') // 東端を上へ
+  fill(g, 20, 3, 25, 3, '.') // 北東の出口通路(→火山郷)
+  // ── マグマ湖(廊下2の南側に装飾として。通路は分断しない) ──
+  fill(g, 10, 23, 18, 25, 'M') // 既にMだが明示(Z3畔の演出)
+  // ── ゾーン高草(各廊下に隣接させて口を開ける) ──
+  fill(g, 5, 24, 10, 26, 'G') // Z1(廊下1 row27 の上)
+  fill(g, 19, 24, 23, 26, 'G') // Z1b=湯けむりの岩場(水救済・別プール)
+  fill(g, 6, 18, 11, 20, 'G') // Z2(廊下2 row21 の上)
+  fill(g, 13, 16, 19, 18, 'G') // Z3(廊下3 row15 の下・マグマ湖畔)
+  fill(g, 8, 10, 15, 13, 'G') // Z4(廊下4 row9 の下)
+  fill(g, 6, 5, 14, 8, 'G') // Z5(廊下4 row9 の上・最奥)
+  // ── ヌシの間(廊下3から南へ1本道で入り、ヌシが通路を塞ぐ) ──
+  fill(g, 23, 16, 23, 17, '.') // 入口通路(廊下3 (23,15) から南)
+  fill(g, 20, 18, 24, 19, '.') // ヌシの間(宝箱・スイッチ)
+  set(g, 23, 16, '.') // ヌシはここ(16)で通路を塞ぐ
+  // ── 近道ゲート(廊下2 row21 ⇔ 廊下3 row15 を x12 の縦で直結。スイッチで開放) ──
+  fill(g, 12, 15, 12, 21, '.')
+  set(g, 12, 18, 'X') // ゲート
+  return g
+}
+
+// 紅蓮の火山郷(24x16) 石畳と溶岩の鍛冶の町。守護者イグナート・道具屋・宿・錬成炉。
+function buildVolcanoTown(): string[] {
+  const g = grid(24, 16, 'D') // 土の地面ベース
+  frame(g, '#')
+  fill(g, 1, 8, 22, 8, '.') // 大通り(横)
+  fill(g, 12, 2, 12, 13, '.') // 大通り(縦)
+  fill(g, 18, 11, 22, 13, 'M') // 南東の溶岩溜まり
+  fill(g, 4, 3, 6, 4, 'H') // 大鍛冶場(ジム)
+  fill(g, 16, 3, 18, 4, 'H') // 道具屋
+  fill(g, 8, 11, 10, 12, 'H') // 宿
+  set(g, 1, 8, '.') // 西の出口(→溶岩回廊)
   return g
 }
 
@@ -745,6 +796,96 @@ export const MAPS: Record<string, GameMap> = {
     ],
     intro: '船が行き交う潮鳴りの港町。海風の向こう、守護者マレアが待つ。',
   },
+  volcano_road: {
+    id: 'volcano_road',
+    name: '溶岩回廊',
+    biome: 'volcano',
+    grid: buildVolcanoRoad(),
+    warps: [
+      { x: 1, y: 28, to: 'rapis', tx: 17, ty: 22 }, // 西=本拠地へ帰還
+      { x: 20, y: 3, to: 'volcano_town', tx: 2, ty: 8 }, // 北東=火山郷へ
+    ],
+    encounter: {
+      // 基本プール(zones未該当エリア)。火canon+生成火、地を混ぜる
+      pool: ['emberio', 'candle', ...wildOfTypes(['火'], 1, { genOnly: true }).slice(0, 3), ...wildOfTypes(['地'], 1, { genOnly: true }).slice(0, 2)],
+      min: 18,
+      max: 22,
+    },
+    // 区画別エンカ(奥ほど強化・全ゾーンに地25-35%混ぜてスターター公平性を担保・最奥レア枠)
+    zones: [
+      { x0: 5, y0: 24, x1: 10, y1: 26, pool: ['emberio', 'candle', ...wildOfTypes(['火'], 1, { genOnly: true }).slice(0, 2), ...wildOfTypes(['地'], 1, { genOnly: true }).slice(0, 1)], min: 18, max: 21 }, // Z1
+      { x0: 19, y0: 24, x1: 23, y1: 26, pool: ['g284', ...wildOfTypes(['水'], 1, { genOnly: true }).slice(0, 3)], min: 16, max: 20 }, // Z1b 湯けむりの岩場(水救済)
+      { x0: 6, y0: 18, x1: 11, y1: 20, pool: ['emberio', 'candle', ...wildOfTypes(['火'], 1, { genOnly: true }).slice(0, 2), ...wildOfTypes(['地'], 1, { genOnly: true }).slice(0, 2)], min: 20, max: 23 }, // Z2
+      { x0: 13, y0: 16, x1: 19, y1: 18, pool: ['emberio', 'candle', 'lanternwisp', ...wildOfTypes(['火'], 1, { genOnly: true }).slice(0, 2), ...wildOfTypes(['地'], 1, { genOnly: true }).slice(0, 2)], min: 21, max: 24 }, // Z3 マグマ湖畔
+      { x0: 8, y0: 10, x1: 15, y1: 13, pool: ['blazeroar', 'flamand', ...wildOfTypes(['火'], 2, { genOnly: true }).slice(0, 2), ...wildOfTypes(['地'], 1, { genOnly: true }).slice(0, 2)], min: 22, max: 25 }, // Z4
+      {
+        x0: 6, y0: 5, x1: 14, y1: 8,
+        pool: ['blazeroar', 'flamand', 'lanternwisp', ...wildOfTypes(['火'], 2, { genOnly: true }).slice(0, 2), ...wildOfTypes(['地'], 2, { genOnly: true }).slice(0, 2)],
+        min: 23, max: 26,
+        rarePool: ['volcadon', 'ignisleo', 'hellflare'], // 最奥レア枠(火stage3)
+        rareChance: 0.15,
+      }, // Z5(最奥)
+    ],
+    nushi: [{
+      x: 23, y: 16, id: 'volcano_blazeroar', speciesId: 'blazeroar', level: 26, talent: 6,
+      lines: ['炉の熱に灼かれ、鍛えられ損ねた——荒くれのブレイズロア。', 'ゴォッと吼え、道を塞いでいる。'],
+    }],
+    switches: [{
+      x: 22, y: 19, id: 'volcano_shortcut', flag: 'switch_volcano_shortcut', name: '鍛冶ルーンの炉盤',
+      lines: ['炉に埋め込まれた古いルーン盤に触れた。', '……ゴゴゴ、と溶岩が退き、近道が口を開けた。'],
+    }],
+    gates: [{ x: 12, y: 18, flag: 'switch_volcano_shortcut', lockedMsg: '溶岩流が道を塞いでいる……。奥のルーン盤を探そう。' }],
+    props: [
+      { x: 21, y: 3, kind: 'sign', name: '道しるべ', lines: ['「この先、紅蓮の火山郷。守護者イグナートの鍛冶場あり。」', '「南西へ戻れば 本拠地ラピスへ。」'] },
+      { x: 22, y: 25, kind: 'sign', name: '湯けむりの立て札', lines: ['「湯けむりの岩場。水の幻獣が湧く。」', '「炎に手を焼いたら――熱には水だ。ここで仲間を探すといい。」'] },
+      { x: 4, y: 26, kind: 'rock', solid: true }, { x: 16, y: 24, kind: 'rock', solid: true },
+      { x: 22, y: 17, kind: 'sign', name: '爪痕の岩', lines: ['岩に 深い爪痕。', '「並外れて大きな 何かが この奥に……」'] },
+      // 北西の記章ゲート(第4世界=嵐嶺への予約。今は崩れた道)
+      { x: 3, y: 9, kind: 'sign', name: '崩れた道', lines: ['北へ続く道は 溶岩で崩れている。', '「烈火の記章を得た者にだけ、いずれ道は開かれる」と刻まれている。'] },
+    ],
+    chests: [
+      { x: 8, y: 25, id: 'volc_z1', item: 'heal', amount: 2 }, // Z1
+      { x: 15, y: 17, id: 'volc_z3', item: 'heal2', amount: 1 }, // Z3畔
+      { x: 21, y: 18, id: 'volc_nushi', item: 'heal2', amount: 1 }, // ヌシの間
+      { x: 10, y: 6, id: 'volc_z5', item: 'heal', amount: 1 }, // Z5最奥
+      { x: 24, y: 9, id: 'volc_east', item: 'money', amount: 400 }, // 廊下4東端
+    ],
+    ambient: [
+      { kind: 'firefly', emoji: '🔥', style: 'flit', area: { x: 2, y: 3, w: 24, h: 25 }, count: 5, speed: 0.6 }, // 舞う火の粉
+    ],
+    intro: '灼熱の溶岩回廊。飛び石でマグマ湖を渡り、奥の火山郷を目指す。熱に手を焼いたら湯けむりの岩場で水の幻獣を。',
+  },
+  volcano_town: {
+    id: 'volcano_town',
+    name: '紅蓮の火山郷',
+    biome: 'volcano',
+    grid: buildVolcanoTown(),
+    warps: [{ x: 1, y: 8, to: 'volcano_road', tx: 20, ty: 4 }], // 西=溶岩回廊へ
+    leader: { x: 5, y: 5, trainerId: 'gym_fire' },
+    npcs: [
+      { x: 9, y: 8, kind: 'villager', name: '鍛冶見習いの少年', emoji: '🧑‍🏭', lines: ['師匠はね、幻獣を"打つ"んじゃなくて"焼き戻す"んだ。', '強さは急いで作ると脆くなる、ってさ。時間をかけるのが一番なんだって。'] },
+      { x: 16, y: 9, kind: 'villager', name: '湯守の婆', emoji: '👵', lines: ['溶岩回廊で熱にやられたら、湯けむりの岩場をお探し。', '水の子らが湧いとるよ。炎には水――昔からの知恵さね。'] },
+      { x: 20, y: 8, kind: 'villager', name: '坑夫', emoji: '⛏️', lines: ['炉が襲われた夜、灰色のローブを見た。', 'あれは……この土地の人間じゃねえ。灰の匂いがした。'] },
+      { x: 14, y: 4, kind: 'sign', name: '案内板', lines: ['「紅蓮の火山郷 ―― 大鍛冶場(左)・道具屋(右)・宿(下)」'] },
+    ],
+    buildings: [
+      { x: 4, y: 3, w: 3, h: 2, kind: 'mentor' }, // 大鍛冶場(ジム・仮に既存建物絵を流用)
+      { x: 16, y: 3, w: 3, h: 2, kind: 'shop' }, // 道具屋
+      { x: 8, y: 11, w: 3, h: 2, kind: 'inn' }, // 宿
+    ],
+    props: [
+      { x: 12, y: 6, kind: 'cauldron', solid: true, name: '錬成炉', lines: ['赤々と燃える大錬成炉。この郷の心臓部だ。'] },
+      { x: 3, y: 8, kind: 'sign', name: '鍛冶場の看板', lines: ['「大鍛冶場 ―― 守護者イグナート。なまくらお断り」'] },
+      { x: 20, y: 12, kind: 'rock', solid: true }, { x: 6, y: 10, kind: 'barrel', solid: true }, { x: 18, y: 10, kind: 'crate', solid: true },
+      { x: 10, y: 6, kind: 'lamp', solid: true }, { x: 14, y: 6, kind: 'lamp', solid: true },
+    ],
+    // ストーリーイベント: 錬成炉を狙う灰化ヘルフレア(ヌシ扱い・撃破/捕獲で「灰化は人為」判明)
+    nushi: [{
+      x: 12, y: 7, id: 'volcano_ashflare', speciesId: 'hellflare', level: 25, talent: 0, status: '灰化',
+      lines: ['錬成炉の前に、色を失った幻獣が這い寄っている。', '灰にまみれたヘルフレア――誰かに"灰化"させられた個体だ。', 'イグナート「炉を守れ！ あれを止めるんだ！」'],
+    }],
+    intro: '鍛冶の鎚音が響く火山郷。中央の錬成炉が赤く燃える。守護者イグナートの鍛冶場は左。',
+  },
 }
 
 export const TRAINERS: Record<string, TrainerData> = {
@@ -784,12 +925,36 @@ export const TRAINERS: Record<string, TrainerData> = {
       'あたしの船で大陸へ送ってやる。灰の使徒の尻尾、掴んでみせな。',
     ],
   },
+  gym_fire: {
+    id: 'gym_fire',
+    name: '火の守護者 イグナート',
+    // ロードアウトは仮値(WORLD3_VOLCANO §6)。出荷前にsim_balanceで初見勝率50-60%を確認し確定させる。
+    // イグニス・レオはATK122の物理エース→開幕とうき(atk+2)が正しく機能する(火auraと主力技が噛み合う好例)。
+    team: [
+      // sim_balanceで初見勝率58.8%(プレイヤーLv24)を確認して確定した値(仮値Lv22/23/24 t1は94%で易しすぎた)
+      { speciesId: 'emberio', level: 25 },
+      { speciesId: 'lanternwisp', level: 26, talent: 2, moves: ['fire_t', 'dark_r', 'fire_x', 'dark_x'] },
+      { speciesId: 'ignisleo', level: 27, talent: 3, heldItem: 'powerband', moves: ['fire_a', 'fire_r', 'fire_x', 'sig'] },
+    ],
+    badge: '烈火の記章',
+    portrait: 'gym_volcano',
+    preBattle: [
+      'なまくらは要らん。……お前の幻獣、どれだけ打たれて、どれだけ立った？',
+      '儂の炉で鍛えた幻獣の、本物の熱を見せてやる。——構えい！',
+    ],
+    postBattle: [
+      '……ふん。いい刃だ。折れず、曲がらず、よく粘る。儂の負けだ。',
+      '烈火の記章、持っていけ。……それとな、小僧。炉を襲ったあれを見たろう。',
+      '灰化は天災じゃねえ。誰かが、火を歪めてやがる。儂は確信したぞ。',
+      '北の嵐嶺に、風を読む若いのがいる。次はそこだ。……その前に、儂の湯にでも浸かってけい。',
+    ],
+  },
 }
 
 export const ENCOUNTER_RATE = 0.18
 
 export function isWall(ch: string): boolean {
-  return ch === '#' || ch === 'H' || ch === 'W' || ch === 'C'
+  return ch === '#' || ch === 'H' || ch === 'W' || ch === 'C' || ch === 'M'
 }
 
 /** レッジ('L')は南向き(dy>0=飛び降り)にのみ通行可。北向き(dy<0=よじ登り)は塞ぐ。横移動(dy=0)は許可。 */

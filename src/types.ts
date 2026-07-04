@@ -138,6 +138,7 @@ export type BattleConfig =
       forcedSpeciesId?: string
       forcedLevel?: number
       forcedTalent?: number
+      forcedStatus?: StatusKind // 開始時の状態異常(灰化ヘルフレア等のストーリー演出)
       nushiId?: string // 勝利/捕獲で解放するヌシのid(flag=`nushi_<id>`)
     }
   | { kind: 'trainer'; trainer: TrainerData; biome?: string }
