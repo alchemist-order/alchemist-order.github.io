@@ -28,6 +28,7 @@ import {
   withSeen,
 } from './game/state'
 import * as audio from './game/audio'
+import { track } from './game/analytics'
 import { GetMonsterOverlay, ItemIcon, Sprite, TitleLogo, TypeBadge } from './ui'
 import Home from './screens/Home'
 import Battle from './screens/Battle'
@@ -194,6 +195,7 @@ export default function App() {
       setTower(null)
       setScreen('field')
       setGame((s) => ({ ...s, towerBest: Math.max(s.towerBest ?? 0, reached) }))
+      track('tower_end', { reached, best, updated: reached > prevBest })
       // スコアカード用データ(相棒=挑戦時のアクティブ個体)。reached>0でダイアログ後に共有カードを出す
       const lead = game.collection.find((o) => o.uid === game.activeUid) ?? game.collection[0]
       const makeShare = (): ShareData | null => {
@@ -215,6 +217,8 @@ export default function App() {
     setScreen('field')
     if (cfg?.kind === 'trainer' && cfg.trainer.postBattle?.length && game.defeatedTrainers.includes(cfg.trainer.id)) {
       setDialogue({ speaker: cfg.trainer.name, portrait: cfg.trainer.portrait, lines: cfg.trainer.postBattle })
+      // KPI最重要: 守護者撃破(記章獲得)。何人目かも記録
+      track('gym_defeated', { gym: cfg.trainer.id, badges: game.badges.length })
     }
     // ヌシ幻獣(パッケージD): 撃破/捕獲(won)で解放。逃走/敗北では再挑戦可能なままにする
     if (cfg?.kind === 'wild' && cfg.nushiId && won) {
@@ -397,6 +401,7 @@ export default function App() {
     setFuseStone(false)
     setFuseCharm(false)
     const sp = species(r.speciesId)
+    track('fusion', { result: r.speciesId, rare: !!r.rare })
     setGetMon({ id: r.speciesId, name: sp.name, type: sp.type, talent: r.talent, label: r.rare ? `✦レア錬成！ ${sp.name}が誕生！` : 'が 錬成された！' })
   }
 
@@ -461,6 +466,7 @@ export default function App() {
       next = withCaught(withSeen(next, id), id)
       return next
     })
+    track('starter_chosen', { species: id }) // ゲーム開始の実質的な起点=ファネル入口
     setStarterOpen(false)
     const m = species(id)
     audio.sfx('catch')

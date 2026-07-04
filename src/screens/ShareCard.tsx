@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { spriteFileNo } from '../game/sprites'
 import { rarityOf } from '../game/state'
+import { track } from '../game/analytics'
 
 const BASE = import.meta.env.BASE_URL
 
@@ -103,6 +104,7 @@ export default function ShareCard({ data, onClose }: { data: ShareData; onClose:
       a.click()
       URL.revokeObjectURL(url)
       setShareMsg('画像を保存しました')
+      track('share_card', { reached: data.reached, method: 'download' })
     }, 'image/png')
   }
 
@@ -117,6 +119,7 @@ export default function ShareCard({ data, onClose }: { data: ShareData; onClose:
         if (navigator.canShare?.({ files: [file] })) {
           await navigator.share({ files: [file], text })
           setShareMsg('共有しました')
+          track('share_card', { reached: data.reached, method: 'webshare' })
         } else {
           download()
         }
