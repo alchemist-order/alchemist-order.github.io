@@ -2,8 +2,8 @@
 
 **インストール不要。ブラウザで今すぐ遊べる、幻獣収集・育成RPG。**
 
-▶ **[今すぐプレイ](https://akinobu0619-netizen.github.io/alchemist-order/)** — スマホ・PC対応／登録不要／無料
-🏠 **[公式ページ（紹介LP）](https://akinobu0619-netizen.github.io/alchemist-order/lp/)**
+▶ **[今すぐプレイ](https://alchemist-order.github.io/)** — スマホ・PC対応／登録不要／無料
+🏠 **[公式ページ（紹介LP）](https://alchemist-order.github.io/lp/)**
 
 ![タイトル](public/bg/title.jpg)
 
