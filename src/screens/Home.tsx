@@ -33,6 +33,11 @@ interface Props {
   setActive: (uid: string) => void
   onField: () => void
   onDex: () => void
+  // 拠点アクション(歩行廃止に伴い、旧フィールドNPC由来の機能をここから開く)
+  onShop: () => void
+  onInn: () => void
+  onFusion: () => void
+  onTower: () => void
   initialTab?: 'party' | 'items' | 'note' | 'record'
 }
 
@@ -60,7 +65,7 @@ function ownedStats(o: OwnedMonster) {
   }
 }
 
-export default function Home({ state, setState, setActive, onField, onDex, initialTab = 'party' }: Props) {
+export default function Home({ state, setState, setActive, onField, onDex, onShop, onInn, onFusion, onTower, initialTab = 'party' }: Props) {
   const active = state.collection.find((o) => o.uid === state.activeUid) ?? state.collection[0]
   const [tab, setTab] = useState<'party' | 'items' | 'note' | 'record'>(initialTab)
   const [zoom, setZoom] = useState(false) // 幻獣の大きい表示
@@ -249,6 +254,25 @@ export default function Home({ state, setState, setActive, onField, onDex, initi
           <button className={`home-todo ${achievementReady ? 'hot' : ''}`} onClick={() => setTab('note')}>
             <span>実績</span>
             <b>{achievementReady ? `${achievementReady}件受取` : `${state.achievements?.length ?? 0}/${ACHIEVEMENTS.length}`}</b>
+          </button>
+        </div>
+        {/* 拠点アクション(旧フィールドの施設。歩行廃止に伴いここが正式導線) */}
+        <div className="home-todo-grid home-base-grid">
+          <button className="home-todo" onClick={onFusion}>
+            <span><ItemIcon kind="vessel_standard" size={20} /> 錬成釜</span>
+            <b>2体を編む</b>
+          </button>
+          <button className="home-todo" onClick={onShop}>
+            <span>🏪 ショップ</span>
+            <b>道具を買う</b>
+          </button>
+          <button className="home-todo" onClick={onInn}>
+            <span>🛏 宿で休む</span>
+            <b>全回復</b>
+          </button>
+          <button className="home-todo" onClick={onTower}>
+            <span>🗼 試練の塔</span>
+            <b>ベスト {state.towerBest ?? 0}階</b>
           </button>
         </div>
       </section>

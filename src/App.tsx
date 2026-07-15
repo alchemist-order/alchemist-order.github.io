@@ -542,6 +542,24 @@ export default function App() {
         setActive={(uid) => setGame((s) => setLeader(s, uid))}
         onField={() => setScreen('explore')}
         onDex={() => setScreen('dex')}
+        onShop={() => setShopOpen(true)}
+        onInn={() => {
+          audio.sfx('heal')
+          setDialogue({
+            speaker: '宿屋の主人',
+            portrait: 'inn',
+            lines: ['おう、休んでいきな。幻獣ってのは、人と同じだ。眠れば、ちゃんと元気になる。', '……ほら、すっかり顔色が戻った。気をつけて行きな！'],
+            after: () => setGame((s) => healParty(s)),
+          })
+        }}
+        onFusion={() => {
+          if (game.collection.length < 2) {
+            setDialogue({ speaker: '錬成師ミルカ', portrait: 'mirka', lines: ['錬成には 幻獣が2体必要よ。', 'まずは探索で 仲間を捕まえてきて。'] })
+          } else {
+            setFusionOpen(true)
+          }
+        }}
+        onTower={startTower}
         initialTab={homeTab}
       />
     )
