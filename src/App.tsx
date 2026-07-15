@@ -33,13 +33,13 @@ import { GetMonsterOverlay, ItemIcon, Sprite, TitleLogo, TypeBadge } from './ui'
 import Home from './screens/Home'
 import Battle from './screens/Battle'
 import Dex from './screens/Dex'
-import Field from './screens/Field'
+import Explore from './screens/Explore'
 import Opening from './screens/Opening'
 import Dialogue from './screens/Dialogue'
 import ShareCard, { type ShareData } from './screens/ShareCard'
 
 type Phase = 'title' | 'opening' | 'game'
-type Screen = 'field' | 'home' | 'battle' | 'dex'
+type Screen = 'home' | 'explore' | 'battle' | 'dex'
 interface DialogueData {
   speaker?: string
   portrait?: string
@@ -80,8 +80,9 @@ const titleBg = {
 export default function App() {
   const [game, setGame] = useState<GameState>(() => loadGame() ?? newGame())
   const [phase, setPhase] = useState<Phase>('title')
-  const [screen, setScreen] = useState<Screen>('field')
+  const [screen, setScreen] = useState<Screen>('home')
   const [battleConfig, setBattleConfig] = useState<BattleConfig | null>(null)
+  const [battleReturnScreen, setBattleReturnScreen] = useState<Screen>('explore')
   const [muted, setMuted] = useState(audio.isMuted())
   const [dialogue, setDialogue] = useState<DialogueData | null>(null)
   const [starterOpen, setStarterOpen] = useState(false)
@@ -159,6 +160,7 @@ export default function App() {
   const hasSave = game.collection.length > 0
   const active = game.collection.find((o) => o.uid === game.activeUid) ?? game.collection[0]
   const startBattle = (config: BattleConfig) => {
+    setBattleReturnScreen(screen === 'battle' ? 'explore' : screen)
     audio.sfx('encounter')
     setBattleConfig(config)
     setScreen('battle')
@@ -193,7 +195,7 @@ export default function App() {
       const prevBest = game.towerBest ?? 0
       const best = Math.max(prevBest, reached)
       setTower(null)
-      setScreen('field')
+      setScreen('home')
       setGame((s) => ({ ...s, towerBest: Math.max(s.towerBest ?? 0, reached) }))
       track('tower_end', { reached, best, updated: reached > prevBest })
       // スコアカード用データ(相棒=挑戦時のアクティブ個体)。reached>0でダイアログ後に共有カードを出す
@@ -214,7 +216,7 @@ export default function App() {
       })
       return
     }
-    setScreen('field')
+    setScreen(battleReturnScreen)
     if (cfg?.kind === 'trainer' && cfg.trainer.postBattle?.length && game.defeatedTrainers.includes(cfg.trainer.id)) {
       setDialogue({ speaker: cfg.trainer.name, portrait: cfg.trainer.portrait, lines: cfg.trainer.postBattle })
       // KPI最重要: 守護者撃破(記章獲得)。何人目かも記録
@@ -329,9 +331,6 @@ export default function App() {
     }
   }
 
-  const onBlockedExit = (msg: string) => {
-    setDialogue({ lines: [msg] })
-  }
 
   // 転送門から世界へワープ
   const warpToWorld = (w: (typeof WORLDS)[number]) => {
@@ -339,7 +338,7 @@ export default function App() {
     setWorldsOpen(false)
     audio.sfx('door')
     setGame((s) => ({ ...s, pos: { mapId: w.mapId, x: w.tx, y: w.ty } }))
-    setScreen('field')
+    setScreen('explore')
   }
 
   // 試練の塔(スコアアタック): 階層ごとに敵レベルが上がる連戦。HPは継続、回復は道具のみ。
@@ -468,6 +467,7 @@ export default function App() {
     })
     track('starter_chosen', { species: id }) // ゲーム開始の実質的な起点=ファネル入口
     setStarterOpen(false)
+    setScreen('home')
     const m = species(id)
     audio.sfx('catch')
     // 御三家talent演出(第2次品質スプリント): レア個体を選ぶと師が一言添える(引き直し不可のまま)
@@ -509,7 +509,7 @@ export default function App() {
             <button
               className="title-btn primary"
               onClick={() => {
-                setScreen('field')
+                setScreen('home')
                 setPhase('game')
               }}
             >
@@ -529,7 +529,7 @@ export default function App() {
         onDone={() => {
           // さいしょから: セーブを初期化して村へ
           setGame(newGame())
-          setScreen('field')
+          setScreen('home')
           setPhase('game')
         }}
       />
@@ -540,7 +540,7 @@ export default function App() {
         state={game}
         setState={setGame}
         setActive={(uid) => setGame((s) => setLeader(s, uid))}
-        onField={() => setScreen('field')}
+        onField={() => setScreen('explore')}
         onDex={() => setScreen('dex')}
         initialTab={homeTab}
       />
@@ -558,20 +558,29 @@ export default function App() {
     )
   } else if (screen === 'dex') {
     content = <Dex state={game} onBack={() => setScreen('home')} />
-  } else {
+  } else if (screen === 'explore' && active) {
     content = (
-      <Field
+      <Explore
         state={game}
-        setState={setGame}
+        onHome={() => { setHomeTab('party'); setScreen('home') }}
+        onVisitMap={(mapId) => setGame((s) => (s.pos.mapId === mapId ? s : { ...s, pos: { ...s.pos, mapId } }))}
         onStartBattle={startBattle}
         onTrainer={onTrainer}
         onChest={onChest}
         onNushi={onNushi}
         onSwitch={onSwitch}
-        onMenu={() => { setHomeTab('party'); setScreen('home') }}
         onTalk={onTalk}
-        onBlockedExit={onBlockedExit}
       />
+    )
+  } else {
+    content = (
+      <div className="screen">
+        <header>
+          <h1>アルケミスト・オーダー</h1>
+          <p className="subtitle">まずは最初の相棒を選ぼう。</p>
+        </header>
+        <button className="title-btn primary" style={{ width: '100%' }} onClick={() => setStarterOpen(true)}>相棒を選ぶ</button>
+      </div>
     )
   }
 
@@ -587,7 +596,7 @@ export default function App() {
       </div>
       {content}
 
-      {phase === 'game' && screen === 'field' && !dialogue && !getMon && (() => {
+      {phase === 'game' && screen === 'explore' && !dialogue && !getMon && (() => {
         const obj = currentObjective(game)
         if (!obj) return null
         return (
@@ -690,7 +699,7 @@ export default function App() {
                   setGame(loaded)
                   setImportText('')
                   setSettingsOpen(false)
-                  setScreen('field')
+                  setScreen('home')
                   setDialogue({ lines: ['セーブを 読み込んだ！'] })
                 } else {
                   setDialogue({ lines: ['コードが 正しくないようだ……', 'もう一度 確認してね。'] })
