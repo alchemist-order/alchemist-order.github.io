@@ -104,10 +104,17 @@ export function resolveQuickBattle(state: GameState, config: BattleConfig): { st
 
   const canCatch = next.flasks > 0 && !next.caught.includes(wild.id) && species(wild.id).role !== 'legendary'
   const catchBonus = Math.min(0.3, (next.items.catch_charm ?? 0) * 0.08)
-  if (canCatch && rng.chance(0.34 + catchBonus)) {
-    const owned = { ...makeOwned(wild.id, wild.level), talent: wild.talent }
-    next = withCaught({ ...next, flasks: next.flasks - 1, items: { ...next.items, catch_charm: Math.max(0, (next.items.catch_charm ?? 0) - 1) }, collection: [...next.collection, owned] }, wild.id)
-    lines.push(`${species(wild.id).name}を捕獲した。`)
+  if (canCatch) {
+    // フラスコは投げた(試みた)時点で消費する。手動戦闘(throwFlask)と経済を揃える —
+    // 成功時のみ消費だとクイック決着の失敗が無料になり、手動戦闘より一方的に有利になってしまう。
+    next = { ...next, flasks: next.flasks - 1 }
+    if (rng.chance(0.34 + catchBonus)) {
+      const owned = { ...makeOwned(wild.id, wild.level), talent: wild.talent }
+      next = withCaught({ ...next, items: { ...next.items, catch_charm: Math.max(0, (next.items.catch_charm ?? 0) - 1) }, collection: [...next.collection, owned] }, wild.id)
+      lines.push(`${species(wild.id).name}を捕獲した。`)
+    } else {
+      lines.push(`${species(wild.id).name}は フラスコから 逃げてしまった。`)
+    }
   }
   return { state: next, result: { won: true, title: config.nushiId ? 'ヌシ撃破' : '勝利', lines: [...lines, `${prize}ゲルとフラスコ1個を得た。`] } }
 }
