@@ -11,6 +11,8 @@ import {
   expToNext,
   getParty,
   grantReward,
+  grantExp,
+  healParty,
   ownedMoveset,
   playerTitle,
   releaseMon,
@@ -18,6 +20,8 @@ import {
   sellPrice,
   species,
   withdrawToParty,
+  withCaught,
+  withSeen,
   ALL_BADGES,
 } from '../game/state'
 import typechart from '../../data/typechart.json'
@@ -190,6 +194,47 @@ export default function Home({ state, setState, setActive, onField, onDex, onSho
   const traitLevel = sel.traitBoost ?? 0
   const canUseTalentStone = talentStoneCount > 0 && (sel.talent ?? 0) < 10
   const canUseTraitCharm = slotCharmCount > 0 && traitLevel < 5
+  const spendSelectedExpItem = (kind: 'exp_tome' | 'evo_dust', amount: number) => {
+    if (state.items[kind] <= 0) return
+    audio.sfx('coin')
+    setState((s) => {
+      let evolvedId: string | null = null
+      const collection = s.collection.map((o) => {
+        if (o.uid !== sel.uid) return o
+        const copy = { ...o }
+        const before = copy.speciesId
+        grantExp(copy, amount)
+        if (copy.speciesId !== before) evolvedId = copy.speciesId
+        return copy
+      })
+      let next: GameState = { ...s, items: { ...s.items, [kind]: Math.max(0, s.items[kind] - 1) }, collection }
+      if (evolvedId) next = withCaught(withSeen(next, evolvedId), evolvedId)
+      return next
+    })
+  }
+  const useTraitElixir = () => {
+    if (state.items.trait_elixir <= 0 || traitLevel >= 5) return
+    audio.sfx('coin')
+    setState((s) => ({
+      ...s,
+      items: { ...s.items, trait_elixir: Math.max(0, s.items.trait_elixir - 1) },
+      collection: s.collection.map((o) => (o.uid === sel.uid ? { ...o, traitBoost: Math.min(5, (o.traitBoost ?? 0) + 1) } : o)),
+    }))
+  }
+  const useHeal3 = () => {
+    if (state.items.heal3 <= 0) return
+    audio.sfx('heal')
+    setState((s) => healParty({ ...s, items: { ...s.items, heal3: Math.max(0, s.items.heal3 - 1) } }))
+  }
+  const useRevive = () => {
+    if (state.items.revive <= 0) return
+    audio.sfx('heal')
+    setState((s) => ({
+      ...s,
+      items: { ...s.items, revive: Math.max(0, s.items.revive - 1) },
+      collection: s.collection.map((o) => (o.uid === sel.uid ? { ...o, hp: undefined } : o)),
+    }))
+  }
 
   return (
     <div className="screen">
@@ -616,6 +661,41 @@ export default function Home({ state, setState, setActive, onField, onDex, onSho
               <div className="item-desc">野生の幻獣を捕まえる</div>
             </div>
             <span className="item-count">×{state.flasks}</span>
+          </div>
+          <div className="item-row">
+            <span className="item-ico"><ItemIcon kind="heal3" size={32} /></span>
+            <div className="grow"><div className="item-name">全癒の秘薬</div><div className="item-desc">手持ち全員を全回復する</div></div>
+            <span className="item-count">×{state.items.heal3}</span>
+            <button className="title-btn" style={{ padding: '5px 10px', fontSize: 12 }} disabled={state.items.heal3 <= 0} onClick={useHeal3}>使う</button>
+          </div>
+          <div className="item-row">
+            <span className="item-ico"><ItemIcon kind="exp_tome" size={32} /></span>
+            <div className="grow"><div className="item-name">経験の古書</div><div className="item-desc">選択中の幻獣に経験値を与える</div></div>
+            <span className="item-count">×{state.items.exp_tome}</span>
+            <button className="title-btn" style={{ padding: '5px 10px', fontSize: 12 }} disabled={state.items.exp_tome <= 0} onClick={() => spendSelectedExpItem('exp_tome', 160)}>使う</button>
+          </div>
+          <div className="item-row">
+            <span className="item-ico"><ItemIcon kind="evo_dust" size={32} /></span>
+            <div className="grow"><div className="item-name">進化の香粉</div><div className="item-desc">選択中の幻獣を1Lvぶん成長させる</div></div>
+            <span className="item-count">×{state.items.evo_dust}</span>
+            <button className="title-btn" style={{ padding: '5px 10px', fontSize: 12 }} disabled={state.items.evo_dust <= 0} onClick={() => spendSelectedExpItem('evo_dust', expToNext(sel.level))}>使う</button>
+          </div>
+          <div className="item-row">
+            <span className="item-ico"><ItemIcon kind="trait_elixir" size={32} /></span>
+            <div className="grow"><div className="item-name">特性の霊薬</div><div className="item-desc">選択中の特性鍛錬Lvを上げる</div></div>
+            <span className="item-count">×{state.items.trait_elixir}</span>
+            <button className="title-btn" style={{ padding: '5px 10px', fontSize: 12 }} disabled={state.items.trait_elixir <= 0 || traitLevel >= 5} onClick={useTraitElixir}>使う</button>
+          </div>
+          <div className="item-row">
+            <span className="item-ico"><ItemIcon kind="catch_charm" size={32} /></span>
+            <div className="grow"><div className="item-name">捕獲のお守り</div><div className="item-desc">クイック探索の捕獲率を上げ、捕獲時に1つ消費</div></div>
+            <span className="item-count">×{state.items.catch_charm}</span>
+          </div>
+          <div className="item-row">
+            <span className="item-ico"><ItemIcon kind="revive" size={32} /></span>
+            <div className="grow"><div className="item-name">目覚めの羽根</div><div className="item-desc">選択中の幻獣を復帰させる</div></div>
+            <span className="item-count">×{state.items.revive}</span>
+            <button className="title-btn" style={{ padding: '5px 10px', fontSize: 12 }} disabled={state.items.revive <= 0} onClick={useRevive}>使う</button>
           </div>
           <h3 className="section-title">記章 {state.badges.length}/8</h3>
           <div className="badge-list">

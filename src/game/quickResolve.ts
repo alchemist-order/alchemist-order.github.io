@@ -103,9 +103,10 @@ export function resolveQuickBattle(state: GameState, config: BattleConfig): { st
   if (config.nushiId) next = hasFlag(next, `nushi_${config.nushiId}`) ? next : withFlag(next, `nushi_${config.nushiId}`)
 
   const canCatch = next.flasks > 0 && !next.caught.includes(wild.id) && species(wild.id).role !== 'legendary'
-  if (canCatch && rng.chance(0.34)) {
+  const catchBonus = Math.min(0.3, (next.items.catch_charm ?? 0) * 0.08)
+  if (canCatch && rng.chance(0.34 + catchBonus)) {
     const owned = { ...makeOwned(wild.id, wild.level), talent: wild.talent }
-    next = withCaught({ ...next, flasks: next.flasks - 1, collection: [...next.collection, owned] }, wild.id)
+    next = withCaught({ ...next, flasks: next.flasks - 1, items: { ...next.items, catch_charm: Math.max(0, (next.items.catch_charm ?? 0) - 1) }, collection: [...next.collection, owned] }, wild.id)
     lines.push(`${species(wild.id).name}を捕獲した。`)
   }
   return { state: next, result: { won: true, title: config.nushiId ? 'ヌシ撃破' : '勝利', lines: [...lines, `${prize}ゲルとフラスコ1個を得た。`] } }

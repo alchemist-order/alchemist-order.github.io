@@ -102,7 +102,7 @@ export interface GameState {
   pos: { mapId: string; x: number; y: number } // フィールド上の位置
   badges: string[] // 獲得した記章
   defeatedTrainers: string[] // 撃破済みトレーナーid
-  items: { heal: number; heal2: number } // 傷薬 / 上傷薬
+  items: { heal: number; heal2: number; heal3: number; exp_tome: number; evo_dust: number; trait_elixir: number; catch_charm: number; revive: number } // 傷薬 / 上傷薬
   money: number // 所持金（ゲル）
   flags: string[] // 一度きりイベントの完了フラグ
   // やりこみ(日課・実績・図鑑報酬)

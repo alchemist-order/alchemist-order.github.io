@@ -54,6 +54,12 @@ const SHOP_ITEMS: { key: string; name: string; desc: string; price: number; appl
   { key: 'heal', name: '傷薬', desc: 'HP60%回復', price: 200, apply: (s) => ({ ...s, items: { ...s.items, heal: s.items.heal + 1 } }) },
   { key: 'heal2', name: '上傷薬', desc: 'HP全回復', price: 600, apply: (s) => ({ ...s, items: { ...s.items, heal2: s.items.heal2 + 1 } }) },
   { key: 'flask', name: '封獣フラスコ', desc: '幻獣を捕まえる', price: 150, apply: (s) => ({ ...s, flasks: s.flasks + 1 }) },
+  { key: 'heal3', name: '全癒の秘薬', desc: '手持ち全員を全回復', price: 1200, apply: (s) => ({ ...s, items: { ...s.items, heal3: s.items.heal3 + 1 } }) },
+  { key: 'exp_tome', name: '経験の古書', desc: '選択中の幻獣に経験値を与える', price: 900, apply: (s) => ({ ...s, items: { ...s.items, exp_tome: s.items.exp_tome + 1 } }) },
+  { key: 'evo_dust', name: '進化の香粉', desc: '選択中の幻獣を1Lvぶん成長させる', price: 1400, apply: (s) => ({ ...s, items: { ...s.items, evo_dust: s.items.evo_dust + 1 } }) },
+  { key: 'trait_elixir', name: '特性の霊薬', desc: '特性鍛錬Lvを1上げる', price: 1800, apply: (s) => ({ ...s, items: { ...s.items, trait_elixir: s.items.trait_elixir + 1 } }) },
+  { key: 'catch_charm', name: '捕獲のお守り', desc: 'クイック探索の捕獲率を高める', price: 1000, apply: (s) => ({ ...s, items: { ...s.items, catch_charm: s.items.catch_charm + 1 } }) },
+  { key: 'revive', name: '目覚めの羽根', desc: '倒れた幻獣を復帰させる', price: 800, apply: (s) => ({ ...s, items: { ...s.items, revive: s.items.revive + 1 } }) },
   {
     key: 'talentStone',
     name: '才能の結晶',
@@ -69,7 +75,6 @@ const SHOP_ITEMS: { key: string; name: string; desc: string; price: number; appl
     apply: (s) => ({ ...s, mats: { talentStone: s.mats?.talentStone ?? 0, slotCharm: (s.mats?.slotCharm ?? 0) + 1 } }),
   },
 ]
-
 const titleBg = {
   backgroundColor: '#15120d',
   backgroundImage: `linear-gradient(rgba(18,15,10,0.55), rgba(18,15,10,0.82)), url(${import.meta.env.BASE_URL}bg/title.jpg)`,
