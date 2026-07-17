@@ -20,6 +20,8 @@ interface Props {
   onTalk: (npc: Npc) => void
 }
 
+interface ExploreSummary { battles: number; catches: number; newDex: number; gold: number; chain?: string }
+
 const worldBadgeSlug: Record<string, string> = { forest: 'verdant', sea: 'tide', volcano: 'blaze' }
 
 function isAvailable(event: ExploreEvent, state: GameState): boolean {
@@ -43,6 +45,8 @@ export default function Explore({ state, setState, onHome, onVisitMap, onStartBa
   const [eventsDone, setEventsDone] = useState(0)
   const [pending, setPending] = useState<ExploreEvent | null>(null)
   const [expeditionLog, setExpeditionLog] = useState<string[]>([])
+  const [summary, setSummary] = useState<ExploreSummary | null>(null)
+  const [sessionStart, setSessionStart] = useState(() => ({ wins: state.wins, caught: state.caught.length, collection: state.collection.length, money: state.money }))
   const rng = useMemo(() => systemRng(), [worldId, nodeIndex])
   const mustChoose = eventsDone > 0 && eventsDone % 3 === 0 && !pending
   const bgUrl = `${import.meta.env.BASE_URL}${node.background}`
@@ -52,11 +56,28 @@ export default function Explore({ state, setState, onHome, onVisitMap, onStartBa
     setEventsDone(0)
     setPending(null)
     setExpeditionLog([])
+    setSummary(null)
+    setSessionStart({ wins: state.wins, caught: state.caught.length, collection: state.collection.length, money: state.money })
   }, [worldId])
 
   useEffect(() => {
     onVisitMap(node.mapId)
   }, [node.mapId, onVisitMap])
+  const buildSummary = (from: typeof sessionStart, to: GameState): ExploreSummary | null => {
+    const next: ExploreSummary = {
+      battles: Math.max(0, to.wins - from.wins),
+      catches: Math.max(0, to.collection.length - from.collection),
+      newDex: Math.max(0, to.caught.length - from.caught),
+      gold: Math.max(0, to.money - from.money),
+      chain: to.chain ? `${speciesName(to.chain.speciesId)} ?${to.chain.count}` : undefined,
+    }
+    return next.battles || next.catches || next.newDex || next.gold ? next : null
+  }
+
+  const speciesName = (id: string): string => {
+    const found = state.collection.find((m) => m.speciesId === id)
+    return found ? found.speciesId : id
+  }
 
   const drawEvent = () => {
     if (mustChoose) return
@@ -129,6 +150,7 @@ export default function Explore({ state, setState, onHome, onVisitMap, onStartBa
         }
       }
       setExpeditionLog(lines.slice(0, 24))
+      setSummary(buildSummary(sessionStart, next))
       return next
     })
     setEventsDone((n) => n + 5)
@@ -142,6 +164,8 @@ export default function Explore({ state, setState, onHome, onVisitMap, onStartBa
   }
 
   const returnHome = () => {
+    const result = summary ?? buildSummary(sessionStart, state)
+    if (result) { setSummary(result); return }
     setPending(null)
     setEventsDone(0)
     onHome()
@@ -257,6 +281,26 @@ export default function Explore({ state, setState, onHome, onVisitMap, onStartBa
             </div>
           ))}
         </section>
+      )}
+
+
+      {summary && (
+        <div className="modal-backdrop" onClick={() => setSummary(null)}>
+          <div className="modal" onClick={(e) => e.stopPropagation()}>
+            <div className="card-head">
+              <span className="mon-name">探索の成果</span>
+              <button className="modal-close" onClick={() => setSummary(null)}>?</button>
+            </div>
+            <div className="item-row"><span className="item-ico"><EventIcon kind="battle" size={32} /></span><div className="grow"><div className="item-name">戦闘 {summary.battles}勝</div></div></div>
+            <div className="item-row"><span className="item-ico"><StatIcon kind="dex" size={32} /></span><div className="grow"><div className="item-name">捕獲 {summary.catches}体 / NEW {summary.newDex}</div></div></div>
+            <div className="item-row"><span className="item-ico"><ItemIcon kind="money" size={32} /></span><div className="grow"><div className="item-name">+{summary.gold}ゲル</div></div></div>
+            {summary.chain && <div className="research-chip">チェーン継続中: {summary.chain}</div>}
+            <div className="home-hero-actions" style={{ marginTop: 12 }}>
+              <button className="home-primary-cta" onClick={() => { setSummary(null); setSessionStart({ wins: state.wins, caught: state.caught.length, collection: state.collection.length, money: state.money }); }}>もう一度潜る</button>
+              <button className="home-secondary-cta" onClick={() => { setSummary(null); setPending(null); setEventsDone(0); onHome(); }}>拠点へ戻る</button>
+            </div>
+          </div>
+        </div>
       )}
 
       <div className="moves" style={{ marginTop: 14 }}>
