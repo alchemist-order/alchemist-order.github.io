@@ -1,5 +1,5 @@
 // ゲーム状態の管理 — 種族データ参照・経験値/進化・捕獲・セーブ復元
-import type { Combatant, GameState, MonsterData, Move, OwnedMonster } from '../types'
+import type { Combatant, GameState, MonsterData, Move, OwnedMonster, ResearchEntry } from '../types'
 import monstersJson from '../../data/monsters.json'
 import { makeCombatant } from '../engine/battleEngine'
 import { systemRng, type Rng } from '../engine/rng'
@@ -18,6 +18,43 @@ export function species(id: string): MonsterData {
 
 const SAVE_KEY = 'alchemist-order-save-v1'
 const MAX_LEVEL = 100
+
+
+export const RESEARCH_THRESHOLDS = [1, 3, 7, 15, 30]
+export function researchLevel(entry?: ResearchEntry): number {
+  if (!entry || entry.caught <= 0) return 0
+  return RESEARCH_THRESHOLDS.reduce((lv, n) => entry.caught >= n ? lv + 1 : lv, 0)
+}
+export function researchCatchBonus(s: GameState, id: string): number {
+  return researchLevel(s.research?.[id]) * 0.01
+}
+export function buildResearchFromCollection(collection: OwnedMonster[], existing?: Record<string, ResearchEntry>): Record<string, ResearchEntry> {
+  const research: Record<string, ResearchEntry> = { ...(existing ?? {}) }
+  for (const o of collection) {
+    const cur = research[o.speciesId] ?? { caught: 0, bestTalent: 0, mutant: false }
+    research[o.speciesId] = {
+      caught: Math.max(cur.caught ?? 0, 1),
+      bestTalent: Math.max(cur.bestTalent ?? 0, o.talent ?? 0),
+      mutant: !!cur.mutant || !!o.mutant,
+    }
+  }
+  return research
+}
+export function recordCapture(s: GameState, owned: OwnedMonster): GameState {
+  const cur = s.research?.[owned.speciesId] ?? { caught: 0, bestTalent: 0, mutant: false }
+  const nextEntry: ResearchEntry = {
+    caught: cur.caught + 1,
+    bestTalent: Math.max(cur.bestTalent ?? 0, owned.talent ?? 0),
+    mutant: !!cur.mutant || !!owned.mutant,
+  }
+  return withCaught({ ...s, research: { ...(s.research ?? {}), [owned.speciesId]: nextEntry } }, owned.speciesId)
+}
+export function researchSummary(s: GameState, id: string): { entry?: ResearchEntry; level: number; next?: number; progressText: string } {
+  const entry = s.research?.[id]
+  const level = researchLevel(entry)
+  const next = RESEARCH_THRESHOLDS[level]
+  return { entry, level, next, progressText: next ? `${entry?.caught ?? 0}/${next}` : 'MAX' }
+}
 
 export const PARTY_MAX = 6 // 戦うパーティの上限。残りは預かりボックス
 
@@ -98,6 +135,7 @@ export function newGame(): GameState {
     party: [],
     seen: [],
     caught: [],
+    research: {},
     activeUid: null,
     flasks: 0,
     wins: 0,
@@ -121,6 +159,7 @@ export function loadGame(): GameState | null {
     // ネストは既定値で補完(旧セーブ対応)
     merged.items = { heal: p.items?.heal ?? 0, heal2: p.items?.heal2 ?? 0, heal3: p.items?.heal3 ?? 0, exp_tome: p.items?.exp_tome ?? 0, evo_dust: p.items?.evo_dust ?? 0, trait_elixir: p.items?.trait_elixir ?? 0, catch_charm: p.items?.catch_charm ?? 0, revive: p.items?.revive ?? 0 }
     merged.money = p.money ?? 0
+    merged.research = buildResearchFromCollection(merged.collection, p.research)
     merged.achievements = p.achievements ?? []
     merged.dexClaimed = p.dexClaimed ?? []
     merged.mats = { talentStone: p.mats?.talentStone ?? 0, slotCharm: p.mats?.slotCharm ?? 0 }

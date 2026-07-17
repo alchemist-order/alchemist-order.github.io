@@ -391,6 +391,8 @@ export function GetMonsterOverlay({
   label = 'を 仲間にした！',
   talent,
   mutant = false,
+  researchLevel,
+  researchNote,
   onClose,
 }: {
   id: string
@@ -399,6 +401,8 @@ export function GetMonsterOverlay({
   label?: string
   talent?: number
   mutant?: boolean
+  researchLevel?: number
+  researchNote?: string
   onClose: () => void
 }) {
   return (
@@ -415,6 +419,11 @@ export function GetMonsterOverlay({
           <span>{label}</span>
         </div>
         {rarityOf(talent ?? 0) && <div style={{ marginBottom: 4 }}><RarityBadge talent={talent} size={16} /></div>}
+        {(researchNote || researchLevel != null) && (
+          <div className="research-chip">
+            Research Lv.{researchLevel ?? 1}{researchNote ? ` / ${researchNote}` : ''}
+          </div>
+        )}
         <TypeBadge t={type} />
         <button className="title-btn primary get-ok" onClick={onClose}>
           やった！

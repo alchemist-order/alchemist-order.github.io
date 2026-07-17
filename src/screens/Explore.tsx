@@ -97,10 +97,10 @@ export default function Explore({ state, onHome, onVisitMap, onStartBattle, onTr
   return (
     <div className="screen explore-screen">
       <header className="home-header">
-        <h1>??</h1>
+        <h1>探索</h1>
         <div className="home-stats">
-          <span>?? {state.caught.length}</span>
-          <span>?? {state.badges.length}</span>
+          <span>📖 {state.caught.length}</span>
+          <span>🎖 {state.badges.length}</span>
           <span><ItemIcon kind="money" size={22} /> {state.money}</span>
         </div>
       </header>
@@ -122,10 +122,10 @@ export default function Explore({ state, onHome, onVisitMap, onStartBattle, onTr
               disabled={!unlocked}
               onClick={() => setWorldId(w.id)}
             >
-              <span className="explore-world-icon">{unlocked ? w.icon : '??'}</span>
+              <span className="explore-world-icon">{unlocked ? w.icon : '🔒'}</span>
               <span>
                 <b>{w.name}</b>
-                <small>{cleared ? '????' : unlocked ? w.desc : `${w.unlock}???`}</small>
+                <small>{cleared ? '踏破済み' : unlocked ? w.desc : `${w.unlock}で解放`}</small>
               </span>
             </button>
           )
@@ -135,11 +135,11 @@ export default function Explore({ state, onHome, onVisitMap, onStartBattle, onTr
       <section className="explore-node" style={{ backgroundImage: `linear-gradient(rgba(18,15,10,0.26), rgba(18,15,10,0.82)), url(${bgUrl})` }}>
         <div className="explore-node-head">
           <div>
-            <div className="home-hero-kicker">?? {node.depth}</div>
+            <div className="home-hero-kicker">深度 {node.depth}</div>
             <h2>{node.name}</h2>
             <p>{node.subtitle}</p>
           </div>
-          <div className="explore-depth-dots" aria-label="????">
+          <div className="explore-depth-dots" aria-label="探索深度">
             {world.nodes.map((n, i) => <span key={n.id} className={i <= nodeIndex ? 'on' : ''} />)}
           </div>
         </div>
@@ -155,34 +155,34 @@ export default function Explore({ state, onHome, onVisitMap, onStartBattle, onTr
               <div className="explore-event-actions">
                 {pending.kind === 'battle' && (
                   <button className="home-primary-cta" onClick={() => { const ev = pending; setPending(null); setEventsDone((n) => n + 1); onStartBattle(ev.config, true) }}>
-                    ??????
-                    <span>???????????</span>
+                    オートで戦う
+                    <span>観るだけで決着・捕獲チャンスあり</span>
                   </button>
                 )}
                 <button className="home-secondary-cta" onClick={consume}>
-                  {pending.kind === 'battle' ? '?????' : pending.kind === 'trainer' || pending.kind === 'nushi' ? '??' : '????'}
+                  {pending.kind === 'battle' ? '手動で戦う' : pending.kind === 'trainer' || pending.kind === 'nushi' ? '挑む' : '対応する'}
                 </button>
               </div>
             </div>
           ) : mustChoose ? (
             <div className="explore-choice">
-              <h3>?????????</h3>
-              <p>3??????????????????????????????</p>
+              <h3>探索を区切る</h3>
+              <p>3つの出来事を越えた。さらに奥へ進むほど、出会いは濃くなる。</p>
               <div className="home-hero-actions">
                 <button className="home-primary-cta" onClick={goNext} disabled={nodeIndex >= world.nodes.length - 1}>
-                  ?????
-                  <span>{nodeIndex >= world.nodes.length - 1 ? '?????????' : '???1????'}</span>
+                  さらに進む
+                  <span>{nodeIndex >= world.nodes.length - 1 ? 'この地の最奥です' : '深度を1つ上げる'}</span>
                 </button>
-                <button className="home-secondary-cta" onClick={returnHome}>????</button>
+                <button className="home-secondary-cta" onClick={returnHome}>帰還する</button>
               </div>
             </div>
           ) : (
             <div className="explore-choice">
               <h3>{world.icon} {world.name}</h3>
-              <p>???????????????????????????????????</p>
+              <p>歩き回らず、次の出来事へ。戦闘・宝箱・ヌシ・出会いが待っている。</p>
               <button className="home-primary-cta" onClick={drawEvent}>
-                ??????
-                <span>{3 - (eventsDone % 3)} ????????/?????</span>
+                探索を進める
+                <span>{3 - (eventsDone % 3)}イベント後に 進む/帰還を選択</span>
               </button>
             </div>
           )}
@@ -191,12 +191,12 @@ export default function Explore({ state, onHome, onVisitMap, onStartBattle, onTr
 
       <div className="moves" style={{ marginTop: 14 }}>
         <button className="move-btn subtle" onClick={returnHome}>
-          <span className="move-name">?????</span>
-          <span className="move-meta">??????????????</span>
+          <span className="move-name">🏠 拠点へ戻る</span>
+          <span className="move-meta">手持ち・道具・記録を確認する</span>
         </button>
         <button className="move-btn" onClick={() => { setNodeIndex(0); setEventsDone(0); setPending(null) }}>
-          <span className="move-name">???????</span>
-          <span className="move-meta">??????????</span>
+          <span className="move-name">🔁 この地を見直す</span>
+          <span className="move-meta">探索の流れをリセット</span>
         </button>
       </div>
     </div>

@@ -14,6 +14,9 @@ import {
   DEX,
   PARTY_MAX,
   catchChance,
+  recordCapture,
+  researchCatchBonus,
+  researchLevel,
   expReward,
   getParty,
   grantExp,
@@ -154,7 +157,7 @@ export default function Battle({ active, config, state, setState, onExit, auto =
   const [curUid, setCurUid] = useState(active.uid)
   const [mustSwitch, setMustSwitch] = useState(false)
   const [acting, setActing] = useState(false)
-  const [caught, setCaught] = useState<{ id: string; name: string; type: string; talent?: number; mutant?: boolean } | null>(null)
+  const [caught, setCaught] = useState<{ id: string; name: string; type: string; talent?: number; mutant?: boolean; researchLevel?: number; researchNote?: string } | null>(null)
   const [speed, setSpeed] = useState(getBattleSpeed())
   const [autoMode, setAutoMode] = useState(!!auto)
   const [capturePrompt, setCapturePrompt] = useState(false)
@@ -711,7 +714,7 @@ export default function Battle({ active, config, state, setState, onExit, auto =
   async function throwFlask() {
     setCapturePrompt(false)
     capturePrompted.current = true
-    track('capture_panel', { action: 'throw', rate: Math.round(catchChance(enemy) * 100) })
+    track('capture_panel', { action: 'throw', rate: Math.round(Math.min(0.95, catchChance(enemy) + researchCatchBonus(state, enemy.data.id)) * 100) })
     if (busy.current || phase !== 'fighting' || config.kind !== 'wild') return
     if (state.flasks <= 0) {
       pushLog('封獣フラスコを 持っていない！')
@@ -722,7 +725,8 @@ export default function Battle({ active, config, state, setState, onExit, auto =
     setState((s) => ({ ...s, flasks: s.flasks - 1 }))
     pushLog('封獣フラスコを なげた！')
     // 演出: 敵が吸い込まれる→フラスコが揺れる(揺れごとにポン、と音)
-    const success = brng.chance(catchChance(enemy))
+    const catchRate = Math.min(0.95, catchChance(enemy) + researchCatchBonus(state, enemy.data.id))
+    const success = brng.chance(catchRate)
     setCapture('suck')
     await sleep(520)
     setCapture('shake')
@@ -750,11 +754,11 @@ export default function Battle({ active, config, state, setState, onExit, auto =
       setState((s) => {
         const pty = getParty(s)
         const np = pty.length < PARTY_MAX ? [...pty, caught.uid] : pty // 空きがあればパーティへ、無ければ預かり
-        return withCaught({ ...s, collection: [...s.collection, caught], party: np }, enemy.data.id)
+        return recordCapture({ ...s, collection: [...s.collection, caught], party: np }, caught)
       })
       const toParty = getParty(state).length < PARTY_MAX
       pushLog(`やった！ 野生の ${enemy.mutant ? '✨変異種の ' : ''}${enemy.data.name}を 捕まえた！`, toParty ? '🔮 図鑑に 登録された。' : '🔮 図鑑に 登録された。(パーティが満員のため 預かり所へ)')
-      setCaught({ id: enemy.data.id, name: enemy.data.name, type: enemy.data.type, talent: enemy.talent ?? 0, mutant: enemy.mutant })
+      setCaught({ id: enemy.data.id, name: enemy.data.name, type: enemy.data.type, talent: enemy.talent ?? 0, mutant: enemy.mutant, researchLevel: researchLevel({ caught: (state.research?.[enemy.data.id]?.caught ?? 0) + 1, bestTalent: Math.max(state.research?.[enemy.data.id]?.bestTalent ?? 0, enemy.talent ?? 0), mutant: !!state.research?.[enemy.data.id]?.mutant || !!enemy.mutant }), researchNote: `Capture #${(state.research?.[enemy.data.id]?.caught ?? 0) + 1}` })
       setPhase('caught')
     } else {
       track('capture_result', { success: false, talent: enemy.talent ?? 0, mutant: !!enemy.mutant })
@@ -834,7 +838,7 @@ export default function Battle({ active, config, state, setState, onExit, auto =
     if (!capturePrompted.current && enemy.hp > 0 && enemy.hp / enemy.maxHp <= threshold) {
       capturePrompted.current = true
       setCapturePrompt(true)
-      track('capture_panel', { action: 'show', rate: Math.round(catchChance(enemy) * 100), talent: enemy.talent ?? 0, mutant: !!enemy.mutant })
+      track('capture_panel', { action: 'show', rate: Math.round(Math.min(0.95, catchChance(enemy) + researchCatchBonus(state, enemy.data.id)) * 100), talent: enemy.talent ?? 0, mutant: !!enemy.mutant })
       return
     }
     if (!retreatPrompted.current && player.hp > 0 && player.hp / player.maxHp <= 0.3) {
@@ -946,9 +950,9 @@ export default function Battle({ active, config, state, setState, onExit, auto =
           className={`speed-toggle ${autoMode ? 'on' : ''}`}
           style={{ position: 'absolute', top: 8, right: 86, zIndex: 20 }}
           onClick={() => setAutoMode((v) => !v)}
-          title="???????????"
+          title="Toggle auto battle"
         >
-          {autoMode ? '???' : '??'}
+          {autoMode ? 'Auto' : 'Manual'}
         </button>
         {config.kind === 'wild' && !state.caught.includes(enemy.data.id) && (
           <span className="new-badge">NEW!</span>
@@ -1091,19 +1095,19 @@ export default function Battle({ active, config, state, setState, onExit, auto =
         <div className="modal-backdrop" onClick={() => { setCapturePrompt(false); setAutoMode(false); track('capture_panel', { action: 'dismiss' }) }}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="card-head">
-              <span className="mon-name">??????</span>
+              <span className="mon-name">Capture Chance</span>
               <button className="modal-close" onClick={() => { setCapturePrompt(false); setAutoMode(false) }}>?</button>
             </div>
-            <p className="ink-dim">{enemy.data.name}??????????? {Math.round(catchChance(enemy) * 100)}%</p>
+            <p className="ink-dim">{enemy.data.name} is weakened. Chance {Math.round(Math.min(0.95, catchChance(enemy) + researchCatchBonus(state, enemy.data.id)) * 100)}%</p>
             <div className="cmd-grid" style={{ marginTop: 10 }}>
               <button className="cmd-btn" disabled={state.flasks <= 0} onClick={() => { void throwFlask() }}>
-                ????????<span className="cmd-sub">?? {state.flasks}</span>
+                Throw Flask<span className="cmd-sub">Stock {state.flasks}</span>
               </button>
               <button className="cmd-btn" onClick={() => { setCapturePrompt(false); track('capture_panel', { action: 'weaken' }) }}>
-                ???????<span className="cmd-sub">?????</span>
+                Weaken More<span className="cmd-sub">Higher chance, KO risk</span>
               </button>
               <button className="cmd-btn" onClick={() => { setCapturePrompt(false); setAutoMode(false); track('capture_panel', { action: 'stop' }) }}>
-                ??????<span className="cmd-sub">?????</span>
+                Finish Manually<span className="cmd-sub">Stop auto</span>
               </button>
             </div>
           </div>
@@ -1114,20 +1118,20 @@ export default function Battle({ active, config, state, setState, onExit, auto =
         <div className="modal-backdrop" onClick={() => { setRetreatPrompt(false); setAutoMode(false) }}>
           <div className="modal" onClick={(e) => e.stopPropagation()}>
             <div className="card-head">
-              <span className="mon-name">????</span>
+              <span className="mon-name">Danger</span>
               <button className="modal-close" onClick={() => { setRetreatPrompt(false); setAutoMode(false) }}>?</button>
             </div>
-            <p className="ink-dim">{player.data.name}?HP?????????????????????</p>
+            <p className="ink-dim">{player.data.name} is low on HP. Retreat or keep fighting?</p>
             <div className="cmd-grid" style={{ marginTop: 10 }}>
-              <button className="cmd-btn" onClick={flee}>????</button>
-              <button className="cmd-btn" onClick={() => { setRetreatPrompt(false); track('capture_panel', { action: 'continue_low_hp' }) }}>?????</button>
+              <button className="cmd-btn" onClick={flee}>Retreat</button>
+              <button className="cmd-btn" onClick={() => { setRetreatPrompt(false); track('capture_panel', { action: 'continue_low_hp' }) }}>Keep Fighting</button>
             </div>
           </div>
         </div>
       )}
 
       {caught && (
-        <GetMonsterOverlay id={caught.id} name={caught.name} type={caught.type} talent={caught.talent} mutant={caught.mutant} onClose={() => setCaught(null)} />
+        <GetMonsterOverlay id={caught.id} name={caught.name} type={caught.type} talent={caught.talent} mutant={caught.mutant} researchLevel={caught.researchLevel} researchNote={caught.researchNote} onClose={() => setCaught(null)} />
       )}
     </div>
   )

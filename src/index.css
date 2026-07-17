@@ -1706,3 +1706,30 @@ button:disabled {
     grid-template-columns: 1fr;
   }
 }
+
+.research-chip {
+  margin: 6px auto 8px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: rgba(95, 180, 140, 0.18);
+  border: 1px solid rgba(140, 220, 170, 0.45);
+  color: #d8f7dd;
+  font-weight: 800;
+  font-size: 12px;
+}
+.dex-research-mini {
+  font-size: 10px;
+  color: #8fd39a;
+  font-weight: 800;
+}
+.dex-research-panel {
+  display: grid;
+  gap: 4px;
+  margin: 10px 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(36, 62, 46, 0.38);
+  border: 1px solid rgba(143, 211, 154, 0.35);
+}
+.dex-research-panel b { color: #d8f7dd; }
+.dex-research-panel span, .dex-research-panel small { color: #efe3c2; }

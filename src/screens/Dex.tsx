@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { GameState, MonsterData } from '../types'
-import { DEX, DEX_TOTAL, species } from '../game/state'
+import { DEX, DEX_TOTAL, researchSummary, species } from '../game/state'
 import { Sprite, TypeBadge } from '../ui'
 
 const STAT_LABELS = ['HP', '攻', '防', '速', '魔']
@@ -76,6 +76,7 @@ export default function Dex({ state, onBack }: Props) {
                   <Sprite id={m.id} type={m.type} size={36} />
                   <span className="dex-cell-name">{m.name}</span>
                   <span className="dex-evo-hint">{evolutionHint(m, bestLv)}</span>
+                  {isCaught && <span className="dex-research-mini">Research Lv.{researchSummary(state, m.id).level} / {researchSummary(state, m.id).progressText}</span>}
                 </>
               ) : (
                 <>
