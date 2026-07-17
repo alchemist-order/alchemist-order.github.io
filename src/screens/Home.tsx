@@ -32,6 +32,7 @@ import { statAt } from '../engine/battleEngine'
 import * as audio from '../game/audio'
 import { ItemIcon, RarityBadge, Sprite, TypeBadge, TYPE_COLORS, BadgeIcon, MedalIcon, StatIcon, MenuIcon } from '../ui'
 import '../medals.css'
+import { routeOf } from '../game/acquisition'
 
 interface Props {
   state: GameState
@@ -238,6 +239,16 @@ export default function Home({ state, setState, setActive, onField, onDex, onSho
       items: { ...s.items, revive: Math.max(0, s.items.revive - 1) },
       collection: s.collection.map((o) => (o.uid === sel.uid ? { ...o, hp: undefined } : o)),
     }))
+  }
+
+  const useEvoIncense = () => {
+    const target = sp.to ? species(sp.to) : null
+    if (state.items.evo_incense <= 0 || !target || routeOf(target.id) !== 'item') return
+    audio.sfx('coin')
+    setState((s) => {
+      const collection = s.collection.map((o) => (o.uid === sel.uid ? { ...o, speciesId: target.id } : o))
+      return withCaught(withSeen({ ...s, items: { ...s.items, evo_incense: Math.max(0, s.items.evo_incense - 1) }, collection }, target.id), target.id)
+    })
   }
 
   return (
@@ -693,6 +704,12 @@ export default function Home({ state, setState, setActive, onField, onDex, onSho
             <div className="grow"><div className="item-name">進化の香粉</div><div className="item-desc">選択中の幻獣を1Lvぶん成長させる</div></div>
             <span className="item-count">×{state.items.evo_dust}</span>
             <button className="title-btn" style={{ padding: '5px 10px', fontSize: 12 }} disabled={state.items.evo_dust <= 0} onClick={() => spendSelectedExpItem('evo_dust', expToNext(sel.level))}>使う</button>
+          </div>
+          <div className="item-row">
+            <span className="item-ico"><ItemIcon kind="evo_incense" size={32} /></span>
+            <div className="grow"><div className="item-name">進化の秘香</div><div className="item-desc">進化の秘香進化の秘香進化の秘香</div></div>
+            <span className="item-count">?{state.items.evo_incense}</span>
+            <button className="title-btn" style={{ padding: '5px 10px', fontSize: 12 }} disabled={state.items.evo_incense <= 0 || !sp.to || routeOf(sp.to) !== 'item'} onClick={useEvoIncense}>??</button>
           </div>
           <div className="item-row">
             <span className="item-ico"><ItemIcon kind="trait_elixir" size={32} /></span>

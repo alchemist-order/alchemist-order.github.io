@@ -57,6 +57,7 @@ const SHOP_ITEMS: { key: string; name: string; desc: string; price: number; appl
   { key: 'heal3', name: '全癒の秘薬', desc: '手持ち全員を全回復', price: 1200, apply: (s) => ({ ...s, items: { ...s.items, heal3: s.items.heal3 + 1 } }) },
   { key: 'exp_tome', name: '経験の古書', desc: '選択中の幻獣に経験値を与える', price: 900, apply: (s) => ({ ...s, items: { ...s.items, exp_tome: s.items.exp_tome + 1 } }) },
   { key: 'evo_dust', name: '進化の香粉', desc: '選択中の幻獣を1Lvぶん成長させる', price: 1400, apply: (s) => ({ ...s, items: { ...s.items, evo_dust: s.items.evo_dust + 1 } }) },
+  { key: 'evo_incense', name: '進化の秘香', desc: '特別な進化をひらく希少な香', price: 4000, apply: (s) => ({ ...s, items: { ...s.items, evo_incense: s.items.evo_incense + 1 } }) },
   { key: 'trait_elixir', name: '特性の霊薬', desc: '特性鍛錬Lvを1上げる', price: 1800, apply: (s) => ({ ...s, items: { ...s.items, trait_elixir: s.items.trait_elixir + 1 } }) },
   { key: 'catch_charm', name: '捕獲のお守り', desc: 'クイック探索の捕獲率を高める', price: 1000, apply: (s) => ({ ...s, items: { ...s.items, catch_charm: s.items.catch_charm + 1 } }) },
   { key: 'revive', name: '目覚めの羽根', desc: '倒れた幻獣を復帰させる', price: 800, apply: (s) => ({ ...s, items: { ...s.items, revive: s.items.revive + 1 } }) },

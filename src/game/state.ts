@@ -4,6 +4,7 @@ import monstersJson from '../../data/monsters.json'
 import { makeCombatant } from '../engine/battleEngine'
 import { systemRng, type Rng } from '../engine/rng'
 import { getMoveset, signatureMove } from './moves'
+import { routeOf } from './acquisition'
 
 export const DEX = monstersJson.dex as unknown as MonsterData[]
 export const STARTER_IDS = monstersJson.meta.starters as string[]
@@ -174,7 +175,7 @@ export function newGame(): GameState {
     pos: { mapId: 'home2f', x: 2, y: 1 }, // 自室のベッドで目覚める
     badges: [],
     defeatedTrainers: [],
-    items: { heal: 0, heal2: 0, heal3: 0, exp_tome: 0, evo_dust: 0, trait_elixir: 0, catch_charm: 0, revive: 0 },
+    items: { heal: 0, heal2: 0, heal3: 0, exp_tome: 0, evo_dust: 0, trait_elixir: 0, catch_charm: 0, revive: 0, evo_incense: 0 },
     money: 0,
     flags: [],
     mats: { talentStone: 0, slotCharm: 0 },
@@ -189,7 +190,7 @@ export function loadGame(): GameState | null {
     const base = newGame()
     const merged = { ...base, ...p } as GameState
     // ネストは既定値で補完(旧セーブ対応)
-    merged.items = { heal: p.items?.heal ?? 0, heal2: p.items?.heal2 ?? 0, heal3: p.items?.heal3 ?? 0, exp_tome: p.items?.exp_tome ?? 0, evo_dust: p.items?.evo_dust ?? 0, trait_elixir: p.items?.trait_elixir ?? 0, catch_charm: p.items?.catch_charm ?? 0, revive: p.items?.revive ?? 0 }
+    merged.items = { heal: p.items?.heal ?? 0, heal2: p.items?.heal2 ?? 0, heal3: p.items?.heal3 ?? 0, exp_tome: p.items?.exp_tome ?? 0, evo_dust: p.items?.evo_dust ?? 0, trait_elixir: p.items?.trait_elixir ?? 0, catch_charm: p.items?.catch_charm ?? 0, revive: p.items?.revive ?? 0, evo_incense: p.items?.evo_incense ?? 0 }
     merged.money = p.money ?? 0
     merged.research = buildResearchFromCollection(merged.collection, p.research)
     merged.chain = p.chain && typeof p.chain.speciesId === 'string' && typeof p.chain.count === 'number' ? p.chain : undefined
@@ -209,7 +210,7 @@ export function loadGame(): GameState | null {
 }
 
 // ── やりこみ(日課/実績/図鑑報酬) ──
-export type Reward = { money?: number; flask?: number; heal?: number; heal2?: number; heal3?: number; exp_tome?: number; evo_dust?: number; trait_elixir?: number; catch_charm?: number; revive?: number; talentStone?: number; slotCharm?: number }
+export type Reward = { money?: number; flask?: number; heal?: number; heal2?: number; heal3?: number; exp_tome?: number; evo_dust?: number; trait_elixir?: number; catch_charm?: number; revive?: number; evo_incense?: number; talentStone?: number; slotCharm?: number }
 export const DAILY_GOAL = 3 // デイリー: 野生討伐数
 export const DAILY_REWARD: { money: number; flask: number } = { money: 150, flask: 2 }
 
@@ -244,7 +245,7 @@ export function grantReward(s: GameState, r: Reward): GameState {
     ...s,
     money: s.money + (r.money ?? 0),
     flasks: s.flasks + (r.flask ?? 0),
-    items: { ...s.items, heal: s.items.heal + (r.heal ?? 0), heal2: s.items.heal2 + (r.heal2 ?? 0), heal3: s.items.heal3 + (r.heal3 ?? 0), exp_tome: s.items.exp_tome + (r.exp_tome ?? 0), evo_dust: s.items.evo_dust + (r.evo_dust ?? 0), trait_elixir: s.items.trait_elixir + (r.trait_elixir ?? 0), catch_charm: s.items.catch_charm + (r.catch_charm ?? 0), revive: s.items.revive + (r.revive ?? 0) },
+    items: { ...s.items, heal: s.items.heal + (r.heal ?? 0), heal2: s.items.heal2 + (r.heal2 ?? 0), heal3: s.items.heal3 + (r.heal3 ?? 0), exp_tome: s.items.exp_tome + (r.exp_tome ?? 0), evo_dust: s.items.evo_dust + (r.evo_dust ?? 0), trait_elixir: s.items.trait_elixir + (r.trait_elixir ?? 0), catch_charm: s.items.catch_charm + (r.catch_charm ?? 0), revive: s.items.revive + (r.revive ?? 0), evo_incense: s.items.evo_incense + (r.evo_incense ?? 0) },
     mats: { talentStone: (s.mats?.talentStone ?? 0) + (r.talentStone ?? 0), slotCharm: (s.mats?.slotCharm ?? 0) + (r.slotCharm ?? 0) },
   }
 }
@@ -518,7 +519,7 @@ export function grantExp(owned: OwnedMonster, amount: number): string[] {
     owned.level++
     msgs.push(`${species(owned.speciesId).name}は レベル${owned.level}に あがった！`)
     const sp = species(owned.speciesId)
-    if (sp.to && sp.at !== null && owned.level >= sp.at) {
+    if (sp.to && sp.at !== null && owned.level >= sp.at && routeOf(sp.to) === 'levelup') {
       const beforeName = sp.name
       owned.speciesId = sp.to
       msgs.push(`おや……？ ${beforeName}の ようすが……！`)

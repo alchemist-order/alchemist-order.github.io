@@ -1,0 +1,1079 @@
+{
+  "stages": [
+    {
+      "id": "forest_1",
+      "worldId": "forest",
+      "name": "森の入口",
+      "desc": "霧の薄い森の外縁。",
+      "band": [
+        2,
+        5
+      ],
+      "typeWeights": {
+        "風": 3,
+        "地": 2
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 10,
+      "rare": null,
+      "bossTrainerId": null,
+      "unlock": {},
+      "dropTable": [
+        {
+          "key": "heal",
+          "rate": 0.18
+        },
+        {
+          "key": "catch_charm",
+          "rate": 0.08
+        },
+        {
+          "key": "exp_tome",
+          "rate": 0.03
+        }
+      ],
+      "bg": "bg/map/forest.png",
+      "extra": [
+        "g176"
+      ]
+    },
+    {
+      "id": "forest_2",
+      "worldId": "forest",
+      "name": "木漏れ日の小径",
+      "desc": "枝葉のあいだを小さな幻獣が走る。",
+      "band": [
+        4,
+        7
+      ],
+      "typeWeights": {
+        "聖": 2,
+        "風": 2,
+        "地": 1
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 10,
+      "rare": null,
+      "bossTrainerId": null,
+      "unlock": {
+        "prev": "forest_1"
+      },
+      "dropTable": [
+        {
+          "key": "heal",
+          "rate": 0.18
+        },
+        {
+          "key": "catch_charm",
+          "rate": 0.08
+        },
+        {
+          "key": "exp_tome",
+          "rate": 0.03
+        }
+      ],
+      "bg": "bg/map/forest.png",
+      "extra": []
+    },
+    {
+      "id": "forest_3",
+      "worldId": "forest",
+      "name": "毒霧の茂み",
+      "desc": "湿った毒草の香りが残る茂み。",
+      "band": [
+        6,
+        9
+      ],
+      "typeWeights": {
+        "毒": 3,
+        "地": 1
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 10,
+      "rare": null,
+      "bossTrainerId": null,
+      "unlock": {
+        "prev": "forest_2"
+      },
+      "dropTable": [
+        {
+          "key": "heal",
+          "rate": 0.18
+        },
+        {
+          "key": "catch_charm",
+          "rate": 0.08
+        },
+        {
+          "key": "exp_tome",
+          "rate": 0.03
+        }
+      ],
+      "bg": "bg/map/forest.png",
+      "extra": [
+        "g249"
+      ]
+    },
+    {
+      "id": "forest_4",
+      "worldId": "forest",
+      "name": "深い森",
+      "desc": "根と苔に覆われた森の中層。",
+      "band": [
+        8,
+        11
+      ],
+      "typeWeights": {
+        "地": 3,
+        "毒": 2,
+        "風": 1
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 12,
+      "rare": null,
+      "bossTrainerId": null,
+      "unlock": {
+        "prev": "forest_3"
+      },
+      "dropTable": [
+        {
+          "key": "heal",
+          "rate": 0.18
+        },
+        {
+          "key": "catch_charm",
+          "rate": 0.08
+        },
+        {
+          "key": "exp_tome",
+          "rate": 0.03
+        }
+      ],
+      "bg": "bg/map/forest.png",
+      "extra": []
+    },
+    {
+      "id": "forest_5",
+      "worldId": "forest",
+      "name": "霧の谷",
+      "desc": "白い霧が音を吸う谷筋。",
+      "band": [
+        10,
+        13
+      ],
+      "typeWeights": {
+        "風": 4,
+        "聖": 1
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 12,
+      "rare": null,
+      "bossTrainerId": null,
+      "unlock": {
+        "prev": "forest_4"
+      },
+      "dropTable": [
+        {
+          "key": "heal",
+          "rate": 0.18
+        },
+        {
+          "key": "catch_charm",
+          "rate": 0.08
+        },
+        {
+          "key": "exp_tome",
+          "rate": 0.03
+        }
+      ],
+      "bg": "bg/map/forest.png",
+      "extra": []
+    },
+    {
+      "id": "forest_6",
+      "worldId": "forest",
+      "name": "古木の祀",
+      "desc": "森の奥に残る古い祀。",
+      "band": [
+        11,
+        14
+      ],
+      "typeWeights": {
+        "聖": 3,
+        "冥": 1
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 12,
+      "rare": null,
+      "bossTrainerId": null,
+      "unlock": {
+        "prev": "forest_5"
+      },
+      "dropTable": [
+        {
+          "key": "heal",
+          "rate": 0.18
+        },
+        {
+          "key": "catch_charm",
+          "rate": 0.08
+        },
+        {
+          "key": "exp_tome",
+          "rate": 0.03
+        }
+      ],
+      "bg": "bg/map/forest.png",
+      "extra": []
+    },
+    {
+      "id": "forest_7",
+      "worldId": "forest",
+      "name": "樹冠の高み",
+      "desc": "枝の上を風が渡るレア狩りの高所。",
+      "band": [
+        12,
+        15
+      ],
+      "typeWeights": {
+        "風": 2,
+        "地": 2
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 12,
+      "rare": {
+        "tiers": [
+          1
+        ],
+        "chance": 0.12
+      },
+      "bossTrainerId": null,
+      "unlock": {
+        "prev": "forest_6"
+      },
+      "dropTable": [
+        {
+          "key": "heal",
+          "rate": 0.18
+        },
+        {
+          "key": "catch_charm",
+          "rate": 0.08
+        },
+        {
+          "key": "exp_tome",
+          "rate": 0.03
+        }
+      ],
+      "bg": "bg/map/forest.png",
+      "extra": []
+    },
+    {
+      "id": "forest_boss",
+      "worldId": "forest",
+      "name": "守護者の広間",
+      "desc": "森の守護者シルヴァが待つ広間。",
+      "band": [
+        13,
+        13
+      ],
+      "typeWeights": {
+        "風": 1
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 8,
+      "rare": null,
+      "bossTrainerId": "gym_forest",
+      "unlock": {
+        "prev": "forest_7"
+      },
+      "dropTable": [
+        {
+          "key": "heal",
+          "rate": 0.18
+        }
+      ],
+      "bg": "bg/map/forest.png",
+      "extra": []
+    },
+    {
+      "id": "sea_1",
+      "worldId": "sea",
+      "name": "潮騒の道",
+      "desc": "波音が続く海辺の道。",
+      "band": [
+        14,
+        17
+      ],
+      "typeWeights": {
+        "水": 4
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 12,
+      "rare": null,
+      "bossTrainerId": null,
+      "unlock": {
+        "badge": "新緑の記章"
+      },
+      "dropTable": [
+        {
+          "key": "heal",
+          "rate": 0.18
+        },
+        {
+          "key": "heal2",
+          "rate": 0.08
+        },
+        {
+          "key": "evo_dust",
+          "rate": 0.03
+        }
+      ],
+      "bg": "bg/map/coast_road.png",
+      "extra": []
+    },
+    {
+      "id": "sea_2",
+      "worldId": "sea",
+      "name": "白砂の浜",
+      "desc": "白い砂と小さな貝殻の浜。",
+      "band": [
+        15,
+        18
+      ],
+      "typeWeights": {
+        "地": 2,
+        "水": 2
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 12,
+      "rare": null,
+      "bossTrainerId": null,
+      "unlock": {
+        "prev": "sea_1"
+      },
+      "dropTable": [
+        {
+          "key": "heal",
+          "rate": 0.18
+        },
+        {
+          "key": "heal2",
+          "rate": 0.08
+        },
+        {
+          "key": "evo_dust",
+          "rate": 0.03
+        }
+      ],
+      "bg": "bg/map/coast_road.png",
+      "extra": []
+    },
+    {
+      "id": "sea_3",
+      "worldId": "sea",
+      "name": "碧の岩場",
+      "desc": "波しぶきのかかる岩場。",
+      "band": [
+        16,
+        19
+      ],
+      "typeWeights": {
+        "水": 2,
+        "雷": 2
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 12,
+      "rare": null,
+      "bossTrainerId": null,
+      "unlock": {
+        "prev": "sea_2"
+      },
+      "dropTable": [
+        {
+          "key": "heal",
+          "rate": 0.18
+        },
+        {
+          "key": "heal2",
+          "rate": 0.08
+        },
+        {
+          "key": "evo_dust",
+          "rate": 0.03
+        }
+      ],
+      "bg": "bg/map/coast_road.png",
+      "extra": []
+    },
+    {
+      "id": "sea_4",
+      "worldId": "sea",
+      "name": "珊瑚の入江",
+      "desc": "珊瑚礁に光が差す静かな入江。",
+      "band": [
+        17,
+        20
+      ],
+      "typeWeights": {
+        "水": 3,
+        "聖": 1
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 12,
+      "rare": null,
+      "bossTrainerId": null,
+      "unlock": {
+        "prev": "sea_3"
+      },
+      "dropTable": [
+        {
+          "key": "heal",
+          "rate": 0.18
+        },
+        {
+          "key": "heal2",
+          "rate": 0.08
+        },
+        {
+          "key": "evo_dust",
+          "rate": 0.03
+        }
+      ],
+      "bg": "bg/map/coast_road.png",
+      "extra": []
+    },
+    {
+      "id": "sea_5",
+      "worldId": "sea",
+      "name": "港の外れ",
+      "desc": "嵐の前触れが残る港外れ。",
+      "band": [
+        18,
+        21
+      ],
+      "typeWeights": {
+        "雷": 4
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 12,
+      "rare": null,
+      "bossTrainerId": null,
+      "unlock": {
+        "prev": "sea_4"
+      },
+      "dropTable": [
+        {
+          "key": "heal",
+          "rate": 0.18
+        },
+        {
+          "key": "heal2",
+          "rate": 0.08
+        },
+        {
+          "key": "evo_dust",
+          "rate": 0.03
+        }
+      ],
+      "bg": "bg/map/port.png",
+      "extra": []
+    },
+    {
+      "id": "sea_6",
+      "worldId": "sea",
+      "name": "夜霧の桟橋",
+      "desc": "夜霧に沈む桟橋。冥の幻獣が集う。",
+      "band": [
+        19,
+        22
+      ],
+      "typeWeights": {
+        "冥": 3,
+        "水": 1
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 12,
+      "rare": null,
+      "bossTrainerId": null,
+      "unlock": {
+        "prev": "sea_5"
+      },
+      "dropTable": [
+        {
+          "key": "heal",
+          "rate": 0.18
+        },
+        {
+          "key": "heal2",
+          "rate": 0.08
+        },
+        {
+          "key": "evo_dust",
+          "rate": 0.03
+        }
+      ],
+      "bg": "bg/map/port.png",
+      "extra": []
+    },
+    {
+      "id": "sea_7",
+      "worldId": "sea",
+      "name": "嵐の岬",
+      "desc": "風と雷がぶつかる岬。",
+      "band": [
+        20,
+        23
+      ],
+      "typeWeights": {
+        "風": 2,
+        "雷": 2
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 12,
+      "rare": {
+        "tiers": [
+          1
+        ],
+        "chance": 0.12
+      },
+      "bossTrainerId": null,
+      "unlock": {
+        "prev": "sea_6"
+      },
+      "dropTable": [
+        {
+          "key": "heal",
+          "rate": 0.18
+        },
+        {
+          "key": "heal2",
+          "rate": 0.08
+        },
+        {
+          "key": "evo_dust",
+          "rate": 0.03
+        }
+      ],
+      "bg": "bg/map/port.png",
+      "extra": []
+    },
+    {
+      "id": "sea_boss",
+      "worldId": "sea",
+      "name": "守護者の桟橋",
+      "desc": "港の守護者マレアが待つ桟橋。",
+      "band": [
+        18,
+        20
+      ],
+      "typeWeights": {
+        "水": 1
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 8,
+      "rare": null,
+      "bossTrainerId": "gym_port",
+      "unlock": {
+        "prev": "sea_7"
+      },
+      "dropTable": [
+        {
+          "key": "heal2",
+          "rate": 0.18
+        }
+      ],
+      "bg": "bg/map/port.png",
+      "extra": []
+    },
+    {
+      "id": "volcano_1",
+      "worldId": "volcano",
+      "name": "溶岩回廊",
+      "desc": "赤い熱気の満ちる回廊。",
+      "band": [
+        24,
+        27
+      ],
+      "typeWeights": {
+        "火": 4
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 12,
+      "rare": null,
+      "bossTrainerId": null,
+      "unlock": {
+        "badge": "蒼潮の記章"
+      },
+      "dropTable": [
+        {
+          "key": "heal2",
+          "rate": 0.18
+        },
+        {
+          "key": "revive",
+          "rate": 0.08
+        },
+        {
+          "key": "trait_elixir",
+          "rate": 0.03
+        }
+      ],
+      "bg": "bg/map/volcano_road.png",
+      "extra": []
+    },
+    {
+      "id": "volcano_2",
+      "worldId": "volcano",
+      "name": "湯けむり岩場",
+      "desc": "火山の中で水の幻獣が息をつく岩場。",
+      "band": [
+        24,
+        27
+      ],
+      "typeWeights": {
+        "水": 2,
+        "地": 2
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 12,
+      "rare": null,
+      "bossTrainerId": null,
+      "unlock": {
+        "prev": "volcano_1"
+      },
+      "dropTable": [
+        {
+          "key": "heal2",
+          "rate": 0.18
+        },
+        {
+          "key": "revive",
+          "rate": 0.08
+        },
+        {
+          "key": "trait_elixir",
+          "rate": 0.03
+        }
+      ],
+      "bg": "bg/map/volcano_road.png",
+      "extra": []
+    },
+    {
+      "id": "volcano_3",
+      "worldId": "volcano",
+      "name": "黒曜石の崖",
+      "desc": "黒い岩肌が続く崖道。",
+      "band": [
+        25,
+        28
+      ],
+      "typeWeights": {
+        "地": 4
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 12,
+      "rare": null,
+      "bossTrainerId": null,
+      "unlock": {
+        "prev": "volcano_2"
+      },
+      "dropTable": [
+        {
+          "key": "heal2",
+          "rate": 0.18
+        },
+        {
+          "key": "revive",
+          "rate": 0.08
+        },
+        {
+          "key": "trait_elixir",
+          "rate": 0.03
+        }
+      ],
+      "bg": "bg/map/volcano_road.png",
+      "extra": []
+    },
+    {
+      "id": "volcano_4",
+      "worldId": "volcano",
+      "name": "灼熱の洞窟",
+      "desc": "炎と冥い影が揺れる洞窟。",
+      "band": [
+        26,
+        29
+      ],
+      "typeWeights": {
+        "火": 2,
+        "冥": 2
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 12,
+      "rare": null,
+      "bossTrainerId": null,
+      "unlock": {
+        "prev": "volcano_3"
+      },
+      "dropTable": [
+        {
+          "key": "heal2",
+          "rate": 0.18
+        },
+        {
+          "key": "revive",
+          "rate": 0.08
+        },
+        {
+          "key": "trait_elixir",
+          "rate": 0.03
+        }
+      ],
+      "bg": "bg/map/volcano_road.png",
+      "extra": []
+    },
+    {
+      "id": "volcano_5",
+      "worldId": "volcano",
+      "name": "鍛冶場跡",
+      "desc": "錬成タイプの気配が濃い古い鍛冶場。",
+      "band": [
+        27,
+        30
+      ],
+      "typeWeights": {
+        "錬成": 4
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 12,
+      "rare": null,
+      "bossTrainerId": null,
+      "unlock": {
+        "prev": "volcano_4"
+      },
+      "dropTable": [
+        {
+          "key": "heal2",
+          "rate": 0.18
+        },
+        {
+          "key": "revive",
+          "rate": 0.08
+        },
+        {
+          "key": "trait_elixir",
+          "rate": 0.03
+        }
+      ],
+      "bg": "bg/map/volcano_town.png",
+      "extra": [
+        "g256"
+      ]
+    },
+    {
+      "id": "volcano_6",
+      "worldId": "volcano",
+      "name": "火の川の畔",
+      "desc": "溶岩流のそばで錬成獣がうごめく。",
+      "band": [
+        28,
+        31
+      ],
+      "typeWeights": {
+        "火": 3,
+        "錬成": 1
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 12,
+      "rare": {
+        "tiers": [
+          1
+        ],
+        "chance": 0.12
+      },
+      "bossTrainerId": null,
+      "unlock": {
+        "prev": "volcano_5"
+      },
+      "dropTable": [
+        {
+          "key": "heal2",
+          "rate": 0.18
+        },
+        {
+          "key": "revive",
+          "rate": 0.08
+        },
+        {
+          "key": "trait_elixir",
+          "rate": 0.03
+        }
+      ],
+      "bg": "bg/map/volcano_town.png",
+      "extra": []
+    },
+    {
+      "id": "volcano_7",
+      "worldId": "volcano",
+      "name": "火口への道",
+      "desc": "火口へ続く最後の道。",
+      "band": [
+        29,
+        32
+      ],
+      "typeWeights": {
+        "火": 2,
+        "地": 2
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 12,
+      "rare": {
+        "tiers": [
+          1
+        ],
+        "chance": 0.12
+      },
+      "bossTrainerId": null,
+      "unlock": {
+        "prev": "volcano_6"
+      },
+      "dropTable": [
+        {
+          "key": "heal2",
+          "rate": 0.18
+        },
+        {
+          "key": "revive",
+          "rate": 0.08
+        },
+        {
+          "key": "trait_elixir",
+          "rate": 0.03
+        }
+      ],
+      "bg": "bg/map/volcano_town.png",
+      "extra": []
+    },
+    {
+      "id": "volcano_boss",
+      "worldId": "volcano",
+      "name": "火山郷の炉前",
+      "desc": "火の守護者イグナートが待つ炉前。",
+      "band": [
+        25,
+        27
+      ],
+      "typeWeights": {
+        "火": 1
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 8,
+      "rare": null,
+      "bossTrainerId": "gym_fire",
+      "unlock": {
+        "prev": "volcano_7"
+      },
+      "dropTable": [
+        {
+          "key": "heal2",
+          "rate": 0.18
+        }
+      ],
+      "bg": "bg/map/volcano_town.png",
+      "extra": []
+    },
+    {
+      "id": "deep_1",
+      "worldId": "deep",
+      "name": "星霜の平原",
+      "desc": "聖と雷の気配が満ちる深域。",
+      "band": [
+        30,
+        38
+      ],
+      "typeWeights": {
+        "聖": 3,
+        "雷": 2
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 16,
+      "rare": null,
+      "bossTrainerId": null,
+      "unlock": {
+        "badges": 1
+      },
+      "dropTable": [
+        {
+          "key": "heal2",
+          "rate": 0.18
+        },
+        {
+          "key": "exp_tome",
+          "rate": 0.08
+        },
+        {
+          "key": "talentStone",
+          "rate": 0.02
+        },
+        {
+          "key": "slotCharm",
+          "rate": 0.02
+        }
+      ],
+      "bg": "bg/battle/town.jpg",
+      "extra": []
+    },
+    {
+      "id": "deep_2",
+      "worldId": "deep",
+      "name": "忘却の墓所",
+      "desc": "冥と毒が沈む深域。",
+      "band": [
+        34,
+        42
+      ],
+      "typeWeights": {
+        "冥": 3,
+        "毒": 2
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 16,
+      "rare": null,
+      "bossTrainerId": null,
+      "unlock": {
+        "badges": 2
+      },
+      "dropTable": [
+        {
+          "key": "heal2",
+          "rate": 0.18
+        },
+        {
+          "key": "exp_tome",
+          "rate": 0.08
+        },
+        {
+          "key": "talentStone",
+          "rate": 0.02
+        },
+        {
+          "key": "slotCharm",
+          "rate": 0.02
+        }
+      ],
+      "bg": "bg/battle/sea.jpg",
+      "extra": [
+        "g227"
+      ]
+    },
+    {
+      "id": "deep_3",
+      "worldId": "deep",
+      "name": "原初の霊峰",
+      "desc": "すべてのタイプが交差する最奥深域。",
+      "band": [
+        40,
+        50
+      ],
+      "typeWeights": {
+        "火": 1,
+        "水": 1,
+        "地": 1,
+        "風": 1,
+        "雷": 1,
+        "聖": 1,
+        "冥": 1,
+        "毒": 1,
+        "錬成": 1
+      },
+      "tiers": [
+        1
+      ],
+      "poolSize": 28,
+      "rare": {
+        "tiers": [
+          1
+        ],
+        "chance": 0.2
+      },
+      "bossTrainerId": null,
+      "unlock": {
+        "badges": 3
+      },
+      "dropTable": [
+        {
+          "key": "heal2",
+          "rate": 0.18
+        },
+        {
+          "key": "exp_tome",
+          "rate": 0.08
+        },
+        {
+          "key": "talentStone",
+          "rate": 0.02
+        },
+        {
+          "key": "slotCharm",
+          "rate": 0.02
+        }
+      ],
+      "bg": "bg/battle/forest.jpg",
+      "extra": [
+        "falcone"
+      ]
+    }
+  ]
+}
