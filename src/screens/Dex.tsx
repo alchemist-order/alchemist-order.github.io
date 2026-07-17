@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { GameState, MonsterData } from '../types'
-import { DEX, DEX_TOTAL, researchSummary, species, speciesOfTheDay, today } from '../game/state'
+import { DEX, DEX_TOTAL, grantReward, researchSummary, species, speciesOfTheDay, today } from '../game/state'
 import { Sprite, TypeBadge } from '../ui'
 
 const STAT_LABELS = ['HP', '攻', '防', '速', '魔']
@@ -31,10 +31,11 @@ function evolutionHint(m: MonsterData, level: number | null): string {
 
 interface Props {
   state: GameState
+  setState: (updater: (s: GameState) => GameState) => void
   onBack: () => void
 }
 
-export default function Dex({ state, onBack }: Props) {
+export default function Dex({ state, setState, onBack }: Props) {
   const [selected, setSelected] = useState<MonsterData | null>(null)
   const todayTarget = speciesOfTheDay(today())
   const seen = useMemo(() => new Set(state.seen), [state.seen])
@@ -43,6 +44,20 @@ export default function Dex({ state, onBack }: Props) {
   const seenRate = Math.round((seen.size / DEX_TOTAL) * 100)
   const rank = caughtRate >= 80 ? '大錬獣師' : caughtRate >= 50 ? '幻獣蒐集家' : caughtRate >= 20 ? '見習い調査員' : '旅立ちの記録者'
   const nextGoal = caught.size >= DEX_TOTAL ? '図鑑完成！' : `あと${Math.max(1, Math.ceil((caught.size + 1) / 10) * 10 - caught.size)}体集めよう`
+  const claimTypeReward = (key: string, reward: 500 | "stone") => {
+    setState((cur) => {
+      if ((cur.dexTypeClaimed ?? []).includes(key)) return cur
+      const granted = reward === "stone" ? grantReward(cur, { talentStone: 1 }) : grantReward(cur, { money: reward })
+      return { ...granted, dexTypeClaimed: [...(granted.dexTypeClaimed ?? []), key] }
+    })
+  }
+
+  const typeRows = Array.from(new Set(DEX.flatMap((m) => [m.type, m.type2].filter(Boolean) as string[]))).map((type) => {
+    const total = DEX.filter((m) => m.type === type || m.type2 === type).length
+    const got = DEX.filter((m) => (m.type === type || m.type2 === type) && caught.has(m.id)).length
+    const pct = total ? got / total : 0
+    return { type, total, got, pct, key50: `${type}_50`, key100: `${type}_100` }
+  })
 
   return (
     <div className="screen">
@@ -57,6 +72,23 @@ export default function Dex({ state, onBack }: Props) {
       <section className="dex-collector">
         <div><b>収集ランク</b><span>{rank}</span></div>
         <div><b>次の目標</b><span>{nextGoal}</span></div>
+      </section>
+
+
+      <section className="dex-collector" style={{ marginTop: 10 }}>
+        <div><b>タイプ別達成</b><span>中間目標で集める</span></div>
+        {typeRows.map((row) => {
+          const claimed50 = (state.dexTypeClaimed ?? []).includes(row.key50)
+          const claimed100 = (state.dexTypeClaimed ?? []).includes(row.key100)
+          return (
+            <div key={row.type} style={{ display: 'grid', gridTemplateColumns: '70px 1fr auto auto', gap: 6, alignItems: 'center', width: '100%' }}>
+              <TypeBadge t={row.type} />
+              <span>{row.got}/{row.total}</span>
+              <button className="title-btn" style={{ padding: '4px 8px', fontSize: 12 }} disabled={row.pct < 0.5 || claimed50} onClick={() => claimTypeReward(row.key50, 500)}>50% +500</button>
+              <button className="title-btn" style={{ padding: '4px 8px', fontSize: 12 }} disabled={row.pct < 1 || claimed100} onClick={() => claimTypeReward(row.key100, 'stone')}>100% 結晶</button>
+            </div>
+          )
+        })}
       </section>
 
       <div className="dex-grid">

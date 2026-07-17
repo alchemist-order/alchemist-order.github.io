@@ -585,7 +585,7 @@ export default function App() {
       />
     )
   } else if (screen === 'dex') {
-    content = <Dex state={game} onBack={() => setScreen('home')} />
+    content = <Dex state={game} setState={setGame} onBack={() => setScreen('home')} />
   } else if (screen === 'explore' && active) {
     content = (
       <Explore

@@ -195,6 +195,7 @@ export function loadGame(): GameState | null {
     merged.chain = p.chain && typeof p.chain.speciesId === 'string' && typeof p.chain.count === 'number' ? p.chain : undefined
     merged.achievements = p.achievements ?? []
     merged.dexClaimed = p.dexClaimed ?? []
+    merged.dexTypeClaimed = p.dexTypeClaimed ?? []
     merged.mats = { talentStone: p.mats?.talentStone ?? 0, slotCharm: p.mats?.slotCharm ?? 0 }
     merged.loginTotal = p.loginTotal ?? 0
     // パーティ移行(旧セーブはparty無し→先頭PARTY_MAX体)。collectionに無いidは除外

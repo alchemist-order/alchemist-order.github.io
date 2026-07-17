@@ -50,6 +50,8 @@ export default function Explore({ state, setState, onHome, onVisitMap, onStartBa
   const rng = useMemo(() => systemRng(), [worldId, nodeIndex])
   const mustChoose = eventsDone > 0 && eventsDone % 3 === 0 && !pending
   const bgUrl = `${import.meta.env.BASE_URL}${node.background}`
+  const visitedFlag = `visited_node_${node.id}`
+  const nodeVisited = hasFlag(state, visitedFlag) || state.defeatedTrainers.includes(world.boss)
 
   useEffect(() => {
     setNodeIndex(0)
@@ -88,6 +90,7 @@ export default function Explore({ state, setState, onHome, onVisitMap, onStartBa
   const consume = () => {
     if (!pending) return
     const event = pending
+    setState((s) => withFlag(s, visitedFlag))
     setPending(null)
     setEventsDone((n) => n + 1)
     if (event.kind === 'battle') onStartBattle({ ...event.config, chain: state.chain }, false)
@@ -258,10 +261,12 @@ export default function Explore({ state, setState, onHome, onVisitMap, onStartBa
               <h3><BadgeIcon slug={worldBadgeSlug[world.id] ?? 'verdant'} size={30} /> {world.name}</h3>
               <p>歩き回らず、次の出来事へ。戦闘・宝箱・ヌシ・出会いが待っている。</p>
               <div className="home-hero-actions">
-                <button className="home-primary-cta" onClick={runExpedition}>
+                {nodeVisited && (
+                  <button className="home-primary-cta" onClick={runExpedition}>
                   おまかせ遠征
                   <span>5回ぶんの戦闘・捕獲・収集をまとめて処理</span>
                 </button>
+                )}
                 <button className="home-secondary-cta" onClick={drawEvent}>
                   1件ずつ探索
                 </button>
