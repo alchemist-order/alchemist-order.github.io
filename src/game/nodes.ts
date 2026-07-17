@@ -1,6 +1,8 @@
-import type { Chest, GameMap, Npc, NushiSpot, RuneSwitch } from './maps'
-import { MAPS, TRAINERS, WORLDS } from './maps'
+
+import { TRAINERS, WORLDS } from './maps'
+import type { Chest, Npc, NushiSpot, RuneSwitch } from './maps'
 import type { BattleConfig, TrainerData } from '../types'
+import { STAGES, buildStagePool, type StageDef } from './stages'
 
 export type ExploreEvent =
   | { id: string; kind: 'battle'; title: string; desc: string; mapId: string; biome: string; config: Extract<BattleConfig, { kind: 'wild' }> }
@@ -18,6 +20,7 @@ export interface ExploreNode {
   subtitle: string
   depth: number
   background: string
+  stage: StageDef
   events: ExploreEvent[]
 }
 
@@ -31,115 +34,66 @@ export interface ExploreWorld {
   nodes: ExploreNode[]
 }
 
-const NODE_MAPS: Record<string, string[]> = {
-  forest: ['forest'],
-  sea: ['coast_road', 'port'],
-  volcano: ['volcano_road', 'volcano_town'],
+const WORLD_META: Record<string, { name: string; icon: string; desc: string; boss: string; unlock: string | null }> = {
+  forest: WORLDS.find((w) => w.id === 'forest') ?? { name: '緑霧の森', icon: 'F', desc: '霧立ちこめる迷いの森。', boss: 'gym_forest', unlock: null },
+  sea: WORLDS.find((w) => w.id === 'sea') ?? { name: '潮鳴りの海', icon: 'S', desc: '潮騒の道から港町へ。', boss: 'gym_port', unlock: '新緑の記章' },
+  volcano: WORLDS.find((w) => w.id === 'volcano') ?? { name: '紅蓮の火山郷', icon: 'V', desc: '灼熱の溶岩回廊。', boss: 'gym_fire', unlock: '蒼潮の記章' },
+  deep: { name: '星蝕の深域', icon: '*', desc: '記章を集めた錬獣師だけが潜れる高難度の深域。', boss: 'deep', unlock: '新緑の記章' },
 }
 
-const NODE_NAMES: Record<string, string[]> = {
-  forest: ['森の入口', '深い森', '霧の最深部', '守護者の広場'],
-  sea: ['潮騒の道', '珊瑚の岩場', '港の外れ', '守護者の桟橋'],
-  volcano: ['溶岩回廊', '湯けむり岩場', '火口への道', '火山郷の炉前'],
+function mapIdFor(stage: StageDef): string {
+  if (stage.bg.includes('coast_road')) return 'coast_road'
+  if (stage.bg.includes('port')) return 'port'
+  if (stage.bg.includes('volcano_road')) return 'volcano_road'
+  if (stage.bg.includes('volcano_town')) return 'volcano_town'
+  if (stage.worldId === 'deep') return 'forest'
+  return 'forest'
 }
 
-function bg(mapId: string): string {
-  return `bg/map/${mapId}.png`
-}
-
-function mapEvents(map: GameMap): ExploreEvent[] {
-  const events: ExploreEvent[] = []
-  const biome = map.biome
-
-  map.zones?.forEach((z, i) => {
-    events.push({
-      id: `${map.id}:zone:${i}`,
-      kind: 'battle',
-      title: i >= (map.zones?.length ?? 1) - 1 ? '濃い気配' : '野生の気配',
-      desc: `Lv.${z.min}-${z.max} の幻獣が潜んでいる`,
-      mapId: map.id,
-      biome,
-      config: { kind: 'wild', biome, pool: z.pool, min: z.min, max: z.max },
-    })
-    if (z.rarePool?.length) {
-      events.push({
-        id: `${map.id}:rare:${i}`,
-        kind: 'battle',
-        title: '珍しい足跡',
-        desc: `まれな幻獣の痕跡。Lv.${z.min}-${z.max}`,
-        mapId: map.id,
-        biome,
-        config: { kind: 'wild', biome, pool: z.rarePool, min: z.min + 1, max: z.max + 1 },
-      })
-    }
-  })
-
-  if (!events.some((e) => e.kind === 'battle') && map.encounter?.pool.length) {
-    events.push({
-      id: `${map.id}:encounter`,
-      kind: 'battle',
-      title: '野生の気配',
-      desc: `Lv.${map.encounter.min}-${map.encounter.max} の幻獣が現れそうだ`,
-      mapId: map.id,
-      biome,
-      config: { kind: 'wild', biome, pool: map.encounter.pool, min: map.encounter.min, max: map.encounter.max },
-    })
-  }
-
-  map.chests?.forEach((chest) => {
-    events.push({ id: `${map.id}:chest:${chest.id}`, kind: 'chest', title: '古い宝箱', desc: '探索の途中で宝箱を見つけた', mapId: map.id, chest })
-  })
-  map.nushi?.forEach((nushi) => {
-    events.push({ id: `${map.id}:nushi:${nushi.id}`, kind: 'nushi', title: 'ヌシの気配', desc: '道を塞ぐ大きな幻獣がいる', mapId: map.id, biome, nushi })
-  })
-  map.switches?.forEach((sw) => {
-    events.push({ id: `${map.id}:switch:${sw.id}`, kind: 'switch', title: sw.name ?? 'ルーン盤', desc: '古い仕掛けが淡く光っている', mapId: map.id, sw })
-  })
-  map.npcs?.filter((npc) => npc.kind === 'villager' || npc.kind === 'sign').forEach((npc, i) => {
-    events.push({ id: `${map.id}:talk:${npc.kind}:${i}`, kind: 'talk', title: npc.name, desc: npc.kind === 'sign' ? '案内板を読む' : '旅人の話を聞く', mapId: map.id, npc })
-  })
-  if (map.leader) {
-    const trainer = TRAINERS[map.leader.trainerId]
-    if (trainer) {
-      events.push({ id: `${map.id}:trainer:${trainer.id}`, kind: 'trainer', title: trainer.name, desc: 'この地の守護者に挑む', mapId: map.id, biome, trainer })
-    }
+function stageEvents(stage: StageDef): ExploreEvent[] {
+  const biome = stage.worldId === 'deep' ? 'forest' : stage.worldId
+  const mapId = mapIdFor(stage)
+  const events: ExploreEvent[] = [{
+    id: `${stage.id}:wild`,
+    kind: 'battle',
+    title: `${stage.name}の幻獣`,
+    desc: `Lv.${stage.band[0]}-${stage.band[1]}の野生幻獣が出現`,
+    mapId,
+    biome,
+    config: { kind: 'wild', biome, pool: buildStagePool(stage), min: stage.band[0], max: stage.band[1] },
+  }]
+  if (stage.bossTrainerId && TRAINERS[stage.bossTrainerId]) {
+    const trainer = TRAINERS[stage.bossTrainerId]
+    events.push({ id: `${stage.id}:trainer:${trainer.id}`, kind: 'trainer', title: trainer.name, desc: 'この地の守護者に挑む', mapId, biome, trainer })
   }
   return events
 }
 
-function splitEvents(events: ExploreEvent[], chunks: number): ExploreEvent[][] {
-  const out = Array.from({ length: chunks }, () => [] as ExploreEvent[])
-  events.forEach((event, i) => out[Math.min(chunks - 1, i % chunks)].push(event))
-  return out
+function nodeForStage(stage: StageDef, index: number): ExploreNode {
+  const mapId = mapIdFor(stage)
+  return {
+    id: stage.id,
+    worldId: stage.worldId,
+    mapId,
+    name: stage.name,
+    subtitle: stage.desc,
+    depth: index + 1,
+    background: stage.bg,
+    stage,
+    events: stageEvents(stage),
+  }
 }
 
-function buildNodes(worldId: string, mapIds: string[]): ExploreNode[] {
-  const names = NODE_NAMES[worldId] ?? mapIds
-  const all = mapIds.flatMap((mapId) => mapEvents(MAPS[mapId]).map((event) => ({ ...event, mapId })))
-  const chunks = splitEvents(all, Math.max(3, Math.min(4, names.length)))
-  return chunks.map((events, i) => {
-    const mapId = mapIds[Math.min(mapIds.length - 1, Math.floor((i / Math.max(1, chunks.length - 1)) * (mapIds.length - 1)))]
-    return {
-      id: `${worldId}_${i + 1}`,
-      worldId,
-      mapId,
-      name: names[i] ?? `${MAPS[mapId].name} ${i + 1}`,
-      subtitle: MAPS[mapId].intro ?? MAPS[mapId].name,
-      depth: i + 1,
-      background: bg(mapId),
-      events,
-    }
-  })
-}
+export const EXPLORE_WORLDS: ExploreWorld[] = Object.entries(WORLD_META)
+  .map(([id, meta]) => ({
+    id,
+    name: meta.name,
+    icon: meta.icon,
+    desc: meta.desc,
+    unlock: meta.unlock,
+    boss: meta.boss,
+    nodes: STAGES.filter((stage) => stage.worldId === id).map(nodeForStage),
+  }))
+  .filter((world) => world.nodes.length > 0)
 
-export const EXPLORE_WORLDS: ExploreWorld[] = WORLDS.map((world) => ({
-  id: world.id,
-  name: world.name,
-  icon: world.icon,
-  desc: world.desc,
-  unlock: world.unlock,
-  boss: world.boss,
-  nodes: buildNodes(world.id, NODE_MAPS[world.id] ?? [world.mapId]),
-}))
-
-export const MAP_BACKGROUNDS = Object.keys(MAPS).map((mapId) => bg(mapId))
+export const MAP_BACKGROUNDS = Array.from(new Set(STAGES.map((stage) => stage.bg)))

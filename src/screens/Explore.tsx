@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { BattleConfig, GameState, TrainerData } from '../types'
 import type { Chest, Npc, NushiSpot, RuneSwitch } from '../game/maps'
-import { hasFlag, withFlag } from '../game/state'
+import { hasFlag, species, withFlag } from '../game/state'
 import { systemRng } from '../engine/rng'
 import { EXPLORE_WORLDS, MAP_BACKGROUNDS, type ExploreEvent, type ExploreNode } from '../game/nodes'
 import { resolveQuickBattle } from '../game/quickResolve'
-import { BadgeIcon, EventIcon, ItemIcon, MenuIcon, StatIcon } from '../ui'
+import { BadgeIcon, EventIcon, ItemIcon, MenuIcon, Sprite, StatIcon, TypeBadge } from '../ui'
 
 interface Props {
   state: GameState
@@ -22,7 +22,21 @@ interface Props {
 
 interface ExploreSummary { battles: number; catches: number; newDex: number; gold: number; chain?: string }
 
-const worldBadgeSlug: Record<string, string> = { forest: 'verdant', sea: 'tide', volcano: 'blaze' }
+const worldBadgeSlug: Record<string, string> = { forest: 'verdant', sea: 'tide', volcano: 'blaze', deep: 'alchemy' }
+
+function dropRateLabel(rate: number): string {
+  if (rate >= 0.06) return 'ときどき'
+  if (rate >= 0.06) return 'ときどき'
+  return 'まれに'
+}
+
+function stageUnlocked(stage: ExploreNode['stage'], state: GameState): boolean {
+  const unlock = stage.unlock
+  if (unlock.prev && !hasFlag(state, `visited_node_${unlock.prev}`)) return false
+  if (unlock.badge && !state.badges.includes(unlock.badge)) return false
+  if (unlock.badges && state.badges.length < unlock.badges) return false
+  return true
+}
 
 function isAvailable(event: ExploreEvent, state: GameState): boolean {
   if (event.kind === 'chest') return !hasFlag(state, `chest_${event.chest.id}`)
@@ -212,6 +226,20 @@ export default function Explore({ state, setState, onHome, onVisitMap, onStartBa
         })}
       </section>
 
+      <section className="explore-stage-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 8, marginTop: 10 }}>
+        {world.nodes.map((n, i) => {
+          const unlocked = stageUnlocked(n.stage, state)
+          const cleared = hasFlag(state, `visited_node_${n.id}`)
+          return (
+            <button key={n.id} className={`home-todo ${i === nodeIndex ? 'hot' : ''}`} disabled={!unlocked} onClick={() => { setNodeIndex(i); setEventsDone(0); setPending(null); setExpeditionLog([]); setSummary(null) }}>
+              <span>{cleared ? '踏破済' : unlocked ? '探索地' : '未解放'}</span>
+              <b>{n.name}</b>
+              <small>Lv.{n.stage.band[0]}-{n.stage.band[1]}</small>
+            </button>
+          )
+        })}
+      </section>
+
       <section className="explore-node" style={{ backgroundImage: `linear-gradient(rgba(18,15,10,0.26), rgba(18,15,10,0.82)), url(${bgUrl})` }}>
         <div className="explore-node-head">
           <div>
@@ -221,6 +249,37 @@ export default function Explore({ state, setState, onHome, onVisitMap, onStartBa
           </div>
           <div className="explore-depth-dots" aria-label="探索深度">
             {world.nodes.map((n, i) => <span key={n.id} className={i <= nodeIndex ? 'on' : ''} />)}
+          </div>
+        </div>
+
+        <div className="stage-monster-preview" style={{ display: 'grid', gap: 10, margin: '10px 0' }}>
+          <div className="item-row" style={{ alignItems: 'flex-start' }}>
+            <span className="item-ico"><MenuIcon kind="dex" size={32} /></span>
+            <div className="grow">
+              <div className="item-name">出現する幻獣</div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 6 }}>
+                {node.events.find((e) => e.kind === 'battle')?.kind === 'battle' && node.events.find((e) => e.kind === 'battle')!.config.pool?.slice(0, 12).map((id) => {
+                  const sp = species(id)
+                  const known = state.seen.includes(id) || state.caught.includes(id)
+                  return (
+                    <span key={id} className="move-chip" style={{ minWidth: 74, textAlign: 'center', filter: known ? undefined : 'brightness(0)' }} title={known ? sp.name : '???'}>
+                      <Sprite id={id} type={sp.type} size={32} />
+                      <span className="dex-text" style={{ display: 'block', fontSize: 10 }}>{known ? sp.name : '???'}</span>
+                    </span>
+                  )
+                })}
+              </div>
+            </div>
+          </div>
+          <div className="item-row">
+            <span className="item-ico"><ItemIcon kind="flask" size={30} /></span>
+            <div className="grow">
+              <div className="item-name">落ちるもの</div>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 4 }}>
+                {node.stage.dropTable.map((drop) => <span key={drop.key} className="move-chip"><ItemIcon kind={drop.key} size={20} /> {dropRateLabel(drop.rate)}</span>)}
+              </div>
+            </div>
+            <TypeBadge t={Object.keys(node.stage.typeWeights)[0]} />
           </div>
         </div>
 
