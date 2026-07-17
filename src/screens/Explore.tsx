@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
 import type { BattleConfig, GameState, TrainerData } from '../types'
 import type { Chest, Npc, NushiSpot, RuneSwitch } from '../game/maps'
-import { hasFlag } from '../game/state'
+import { hasFlag, withFlag } from '../game/state'
 import { systemRng } from '../engine/rng'
 import { EXPLORE_WORLDS, MAP_BACKGROUNDS, type ExploreEvent, type ExploreNode } from '../game/nodes'
+import { resolveQuickBattle } from '../game/quickResolve'
 import { BadgeIcon, EventIcon, ItemIcon, MenuIcon, StatIcon } from '../ui'
 
 interface Props {
@@ -33,7 +34,7 @@ function fallbackEvent(node: ExploreNode): ExploreEvent | null {
   return node.events.find((event) => event.kind === 'battle') ?? node.events[0] ?? null
 }
 
-export default function Explore({ state, onHome, onVisitMap, onStartBattle, onTrainer, onChest, onNushi, onSwitch, onTalk }: Props) {
+export default function Explore({ state, setState, onHome, onVisitMap, onStartBattle, onTrainer, onChest, onNushi, onSwitch, onTalk }: Props) {
   const unlockedWorlds = EXPLORE_WORLDS.filter((world) => !world.unlock || state.badges.includes(world.unlock))
   const [worldId, setWorldId] = useState(unlockedWorlds[0]?.id ?? EXPLORE_WORLDS[0].id)
   const world = EXPLORE_WORLDS.find((w) => w.id === worldId) ?? unlockedWorlds[0] ?? EXPLORE_WORLDS[0]
@@ -41,6 +42,7 @@ export default function Explore({ state, onHome, onVisitMap, onStartBattle, onTr
   const node = world.nodes[Math.min(nodeIndex, world.nodes.length - 1)]
   const [eventsDone, setEventsDone] = useState(0)
   const [pending, setPending] = useState<ExploreEvent | null>(null)
+  const [expeditionLog, setExpeditionLog] = useState<string[]>([])
   const rng = useMemo(() => systemRng(), [worldId, nodeIndex])
   const mustChoose = eventsDone > 0 && eventsDone % 3 === 0 && !pending
   const bgUrl = `${import.meta.env.BASE_URL}${node.background}`
@@ -49,6 +51,7 @@ export default function Explore({ state, onHome, onVisitMap, onStartBattle, onTr
     setNodeIndex(0)
     setEventsDone(0)
     setPending(null)
+    setExpeditionLog([])
   }, [worldId])
 
   useEffect(() => {
@@ -72,6 +75,63 @@ export default function Explore({ state, onHome, onVisitMap, onStartBattle, onTr
     else if (event.kind === 'nushi') onNushi(event.nushi, event.biome)
     else if (event.kind === 'switch') onSwitch(event.sw)
     else onTalk(event.npc)
+  }
+
+
+  const runExpedition = () => {
+    if (mustChoose || pending) return
+    const available = node.events.filter((event) => isAvailable(event, state))
+    const repeatable = node.events.filter((event) => event.kind === 'battle')
+    const source = available.length ? available : repeatable
+    if (!source.length) {
+      setExpeditionLog(['この地では今できる遠征が見つからなかった。'])
+      return
+    }
+    setPending(null)
+    setState((current) => {
+      let next = current
+      const lines: string[] = [`${node.name}へ おまかせ遠征に出発。`]
+      const picks: ExploreEvent[] = []
+      for (let i = 0; i < 5; i++) {
+        const pool = source.filter((event) => isAvailable(event, next))
+        const fallback = repeatable.length ? repeatable : source
+        picks.push(rng.pick(pool.length ? pool : fallback))
+      }
+      for (const event of picks) {
+        if (event.kind === 'battle') {
+          const resolved = resolveQuickBattle(next, event.config)
+          next = resolved.state
+          lines.push(`[${resolved.result.title}] ${event.title}`)
+          lines.push(...resolved.result.lines.slice(0, 5))
+        } else if (event.kind === 'chest') {
+          const flag = `chest_${event.chest.id}`
+          if (hasFlag(next, flag)) {
+            lines.push('宝箱は空だった。')
+          } else {
+            next = withFlag(next, flag)
+            if (event.chest.item === 'money') next = { ...next, money: next.money + event.chest.amount }
+            else if (event.chest.item === 'flask') next = { ...next, flasks: next.flasks + event.chest.amount }
+            else next = { ...next, items: { ...next.items, [event.chest.item]: next.items[event.chest.item] + event.chest.amount } }
+            const label = event.chest.item === 'money' ? `${event.chest.amount}ゲル` : event.chest.item === 'flask' ? `フラスコx${event.chest.amount}` : `${event.chest.item}x${event.chest.amount}`
+            lines.push(`宝箱から ${label} を入手。`)
+          }
+        } else if (event.kind === 'switch') {
+          if (!hasFlag(next, event.sw.flag)) {
+            next = withFlag(next, event.sw.flag)
+            lines.push(`${event.title}を起動。近道が開いた。`)
+          }
+        } else if (event.kind === 'talk') {
+          lines.push(`${event.title}の話を聞いた。`)
+        } else if (event.kind === 'nushi') {
+          lines.push('強いヌシの気配を発見。挑戦は手動で行える。')
+        } else if (event.kind === 'trainer') {
+          lines.push(`${event.trainer.name}を発見。記章戦は手動で挑める。`)
+        }
+      }
+      setExpeditionLog(lines.slice(0, 24))
+      return next
+    })
+    setEventsDone((n) => n + 5)
   }
 
 
@@ -173,14 +233,31 @@ export default function Explore({ state, onHome, onVisitMap, onStartBattle, onTr
             <div className="explore-choice">
               <h3><BadgeIcon slug={worldBadgeSlug[world.id] ?? 'verdant'} size={30} /> {world.name}</h3>
               <p>歩き回らず、次の出来事へ。戦闘・宝箱・ヌシ・出会いが待っている。</p>
-              <button className="home-primary-cta" onClick={drawEvent}>
-                探索を進める
-                <span>{3 - (eventsDone % 3)}イベント後に 進む/帰還を選択</span>
-              </button>
+              <div className="home-hero-actions">
+                <button className="home-primary-cta" onClick={runExpedition}>
+                  おまかせ遠征
+                  <span>5回ぶんの戦闘・捕獲・収集をまとめて処理</span>
+                </button>
+                <button className="home-secondary-cta" onClick={drawEvent}>
+                  1件ずつ探索
+                </button>
+              </div>
             </div>
           )}
         </div>
       </section>
+
+      {expeditionLog.length > 0 && (
+        <section className="items-pane" style={{ marginTop: 14 }}>
+          <h3 className="section-title"><MenuIcon kind="field" size={24} /> 遠征結果</h3>
+          {expeditionLog.map((line, i) => (
+            <div className="item-row" key={`${i}-${line}`}>
+              <span className="item-ico"><EventIcon kind={i === 0 ? 'switch' : 'battle'} size={30} /></span>
+              <div className="grow"><div className="item-desc">{line}</div></div>
+            </div>
+          ))}
+        </section>
+      )}
 
       <div className="moves" style={{ marginTop: 14 }}>
         <button className="move-btn subtle" onClick={returnHome}>
