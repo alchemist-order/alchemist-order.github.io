@@ -765,8 +765,8 @@ export default function Battle({ active, config, state, setState, onExit, auto =
         return recordCapture({ ...s, collection: [...s.collection, caught], party: np }, caught)
       })
       const toParty = getParty(state).length < PARTY_MAX
-      pushLog(`Caught wild ${enemy.mutant ? 'Mutant ' : ''}${enemy.data.name}!`, toParty ? 'Registered to the Codex.' : 'Registered to the Codex. Sent to storage because the party is full.', ...researchHighlights.map((h) => `Research: ${h}`))
-      setCaught({ id: enemy.data.id, name: enemy.data.name, type: enemy.data.type, talent: enemy.talent ?? 0, mutant: enemy.mutant, researchLevel: researchLevel(nextResearch), researchNote: `Capture #${nextResearch.caught}`, researchHighlights })
+      pushLog(`やった！ 野生の ${enemy.mutant ? '変異種の ' : ''}${enemy.data.name}を 捕まえた！`, toParty ? '図鑑に 登録された。' : '図鑑に 登録された。（パーティが満員のため 預かり所へ）', ...researchHighlights.map((h) => `研究: ${h}`))
+      setCaught({ id: enemy.data.id, name: enemy.data.name, type: enemy.data.type, talent: enemy.talent ?? 0, mutant: enemy.mutant, researchLevel: researchLevel(nextResearch), researchNote: `捕獲#${nextResearch.caught}`, researchHighlights })
       setPhase('caught')
     } else {
       track('capture_result', { success: false, talent: enemy.talent ?? 0, mutant: !!enemy.mutant })

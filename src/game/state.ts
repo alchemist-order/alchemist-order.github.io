@@ -61,12 +61,12 @@ export function captureResearchHighlights(prev: ResearchEntry | undefined, next:
   const prevCaught = prev?.caught ?? 0
   const prevTalent = prev?.bestTalent ?? 0
   const talent = owned.talent ?? 0
-  if (prevCaught <= 0) highlights.push('NEW: first capture')
-  if (talent > prevTalent) highlights.push(`Best talent ${prevTalent} -> ${talent}`)
-  if (!!owned.mutant && !prev?.mutant) highlights.push('First mutant found')
+  if (prevCaught <= 0) highlights.push('初めての個体')
+  if (talent > prevTalent) highlights.push(`才能最高更新 ${prevTalent} → ${talent}`)
+  if (!!owned.mutant && !prev?.mutant) highlights.push('初の変異種を発見')
   const prevLevel = researchLevel(prev)
   const nextLevel = researchLevel(next)
-  if (nextLevel > prevLevel) highlights.push(`Research Lv ${prevLevel} -> ${nextLevel}`)
+  if (nextLevel > prevLevel) highlights.push(`研究Lvアップ ${prevLevel} → ${nextLevel}`)
   return highlights
 }
 

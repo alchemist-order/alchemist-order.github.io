@@ -299,6 +299,24 @@ export function MedalIcon({ id, done = true, size = 40 }: { id: string; done?: b
 }
 
 // 宝箱。public/ui/chest(_open).png があれば画像、無ければCSSの宝箱。openで開いた見た目。
+
+
+// Stat icons for the record panel. Uses public/ui/stat_<kind>.png, then falls back to emoji.
+const statImgState: Record<string, boolean> = {}
+export function StatIcon({ kind, fallback = '?', size = 34 }: { kind: string; fallback?: string; size?: number }) {
+  const [failed, setFailed] = useState(!!statImgState[kind])
+  if (failed) return <span style={{ fontSize: size, lineHeight: 1 }}>{fallback}</span>
+  return (
+    <img
+      className="stat-icon-img"
+      src={`${import.meta.env.BASE_URL}ui/stat_${kind}.png`}
+      alt=""
+      style={{ width: size, height: size, objectFit: 'contain', display: 'block' }}
+      onError={() => { statImgState[kind] = true; setFailed(true) }}
+    />
+  )
+}
+
 const chestImgState = { missing: false }
 export function ChestToken({ open = false, size = 30 }: { open?: boolean; size?: number }) {
   const [failed, setFailed] = useState(chestImgState.missing)
@@ -423,12 +441,12 @@ export function GetMonsterOverlay({
         {rarityOf(talent ?? 0) && <div style={{ marginBottom: 4 }}><RarityBadge talent={talent} size={16} /></div>}
         {(researchNote || researchLevel != null) && (
           <div className="research-chip">
-            Research Lv.{researchLevel ?? 1}{researchNote ? ` / ${researchNote}` : ''}
+            研究Lv.{researchLevel ?? 1}{researchNote ? ` / ${researchNote}` : ''}
           </div>
         )}
         {researchHighlights.length > 0 && (
           <div className="research-highlights">
-            {researchHighlights.map((h) => <span key={h}>Research: {h}</span>)}
+            {researchHighlights.map((h) => <span key={h}>研究: {h}</span>)}
           </div>
         )}
         <TypeBadge t={type} />

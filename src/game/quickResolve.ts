@@ -121,7 +121,7 @@ export function resolveQuickBattle(state: GameState, config: BattleConfig): { st
       }
       const highlights = captureResearchHighlights(prevResearch, nextResearch, owned)
       next = recordCapture({ ...next, items: { ...next.items, catch_charm: Math.max(0, (next.items.catch_charm ?? 0) - 1) }, collection: [...next.collection, owned] }, owned)
-      lines.push(`${species(wild.id).name} captured.`, ...highlights.map((h) => `Research: ${h}`))
+      lines.push(`${species(wild.id).name}を捕獲した。`, ...highlights.map((h) => `研究: ${h}`))
     } else {
       lines.push(`${species(wild.id).name}は フラスコから 逃げてしまった。`)
     }

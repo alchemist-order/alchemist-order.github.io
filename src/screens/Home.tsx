@@ -28,7 +28,7 @@ import typechart from '../../data/typechart.json'
 import { abilityOf, HELD_ITEMS, HELD_ITEM_IDS } from '../game/abilities'
 import { statAt } from '../engine/battleEngine'
 import * as audio from '../game/audio'
-import { ItemIcon, RarityBadge, Sprite, TypeBadge, TYPE_COLORS, BadgeIcon, MedalIcon } from '../ui'
+import { ItemIcon, RarityBadge, Sprite, TypeBadge, TYPE_COLORS, BadgeIcon, MedalIcon, StatIcon } from '../ui'
 import '../medals.css'
 
 interface Props {
@@ -600,19 +600,19 @@ export default function Home({ state, setState, setActive, onField, onDex, onSho
           <h3 className="section-title">戦績</h3>
           {(() => {
             const pct = Math.round((state.caught.length / DEX_TOTAL) * 100)
-            const rows: { ico: string; name: string; val: string }[] = [
-              { ico: '📖', name: '図鑑コンプリート', val: `${state.caught.length} / ${DEX_TOTAL} 体（${pct}%）` },
-              { ico: '🎖', name: '記章', val: `${state.badges.length} / 8` },
-              { ico: '🗼', name: '試練の塔 自己ベスト', val: `${state.towerBest ?? 0} 階` },
-              { ico: '⚔', name: '通算勝利数', val: `${state.wins} 勝` },
-              { ico: '🏛', name: '撃破した守護者', val: `${state.defeatedTrainers.length} 人` },
-              { ico: '💰', name: '所持金', val: `${state.money} ゲル` },
-              { ico: '🔥', name: '連続ログイン', val: `${state.loginStreak ?? 1} 日` },
-              { ico: '🧬', name: '所持幻獣', val: `${state.collection.length} 体（パーティ ${partyMons.length}）` },
+            const rows: { icon: string; fallback: string; name: string; val: string }[] = [
+              { icon: 'dex', fallback: '?', name: '図鑑コンプリート', val: `${state.caught.length} / ${DEX_TOTAL} 体 (${pct}%)` },
+              { icon: 'badge', fallback: '🎖', name: '記章', val: `${state.badges.length} / 8` },
+              { icon: 'tower', fallback: '🗼', name: '試練の塔 自己ベスト', val: `${state.towerBest ?? 0} 階` },
+              { icon: 'wins', fallback: '⚔', name: '通算勝利数', val: `${state.wins} 勝` },
+              { icon: 'guardian', fallback: '🏛', name: '撃破した守護者', val: `${state.defeatedTrainers.length} 人` },
+              { icon: 'money', fallback: '💰', name: '所持金', val: `${state.money} ゲル` },
+              { icon: 'login', fallback: '🔥', name: '連続ログイン', val: `${state.loginStreak ?? 1} 日` },
+              { icon: 'monsters', fallback: '?', name: '所持幻獣', val: `${state.collection.length} 体 (パーティ ${partyMons.length})` },
             ]
             return rows.map((r) => (
               <div className="item-row" key={r.name}>
-                <span className="item-ico">{r.ico}</span>
+                <span className="item-ico"><StatIcon kind={r.icon} fallback={r.fallback} size={34} /></span>
                 <div className="grow"><div className="item-name">{r.name}</div></div>
                 <span className="item-count">{r.val}</span>
               </div>
