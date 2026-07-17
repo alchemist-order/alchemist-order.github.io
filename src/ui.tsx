@@ -393,6 +393,7 @@ export function GetMonsterOverlay({
   mutant = false,
   researchLevel,
   researchNote,
+  researchHighlights = [],
   onClose,
 }: {
   id: string
@@ -403,6 +404,7 @@ export function GetMonsterOverlay({
   mutant?: boolean
   researchLevel?: number
   researchNote?: string
+  researchHighlights?: string[]
   onClose: () => void
 }) {
   return (
@@ -422,6 +424,11 @@ export function GetMonsterOverlay({
         {(researchNote || researchLevel != null) && (
           <div className="research-chip">
             Research Lv.{researchLevel ?? 1}{researchNote ? ` / ${researchNote}` : ''}
+          </div>
+        )}
+        {researchHighlights.length > 0 && (
+          <div className="research-highlights">
+            {researchHighlights.map((h) => <span key={h}>Research: {h}</span>)}
           </div>
         )}
         <TypeBadge t={type} />

@@ -14,6 +14,7 @@ import {
   DEX,
   PARTY_MAX,
   catchChance,
+  captureResearchHighlights,
   recordCapture,
   researchCatchBonus,
   researchLevel,
@@ -157,7 +158,7 @@ export default function Battle({ active, config, state, setState, onExit, auto =
   const [curUid, setCurUid] = useState(active.uid)
   const [mustSwitch, setMustSwitch] = useState(false)
   const [acting, setActing] = useState(false)
-  const [caught, setCaught] = useState<{ id: string; name: string; type: string; talent?: number; mutant?: boolean; researchLevel?: number; researchNote?: string } | null>(null)
+  const [caught, setCaught] = useState<{ id: string; name: string; type: string; talent?: number; mutant?: boolean; researchLevel?: number; researchNote?: string; researchHighlights?: string[] } | null>(null)
   const [speed, setSpeed] = useState(getBattleSpeed())
   const [autoMode, setAutoMode] = useState(!!auto)
   const [capturePrompt, setCapturePrompt] = useState(false)
@@ -751,14 +752,21 @@ export default function Battle({ active, config, state, setState, onExit, auto =
         talent: enemy.talent ?? 0, // 野生個体の質を引き継ぐ(レア個体はそのまま捕獲)
         mutant: enemy.mutant, // 変異種(色違い)も引き継ぐ
       }
+      const prevResearch = state.research?.[enemy.data.id]
+      const nextResearch = {
+        caught: (prevResearch?.caught ?? 0) + 1,
+        bestTalent: Math.max(prevResearch?.bestTalent ?? 0, enemy.talent ?? 0),
+        mutant: !!prevResearch?.mutant || !!enemy.mutant,
+      }
+      const researchHighlights = captureResearchHighlights(prevResearch, nextResearch, caught)
       setState((s) => {
         const pty = getParty(s)
-        const np = pty.length < PARTY_MAX ? [...pty, caught.uid] : pty // 空きがあればパーティへ、無ければ預かり
+        const np = pty.length < PARTY_MAX ? [...pty, caught.uid] : pty // add to party if there is room; otherwise storage
         return recordCapture({ ...s, collection: [...s.collection, caught], party: np }, caught)
       })
       const toParty = getParty(state).length < PARTY_MAX
-      pushLog(`やった！ 野生の ${enemy.mutant ? '✨変異種の ' : ''}${enemy.data.name}を 捕まえた！`, toParty ? '🔮 図鑑に 登録された。' : '🔮 図鑑に 登録された。(パーティが満員のため 預かり所へ)')
-      setCaught({ id: enemy.data.id, name: enemy.data.name, type: enemy.data.type, talent: enemy.talent ?? 0, mutant: enemy.mutant, researchLevel: researchLevel({ caught: (state.research?.[enemy.data.id]?.caught ?? 0) + 1, bestTalent: Math.max(state.research?.[enemy.data.id]?.bestTalent ?? 0, enemy.talent ?? 0), mutant: !!state.research?.[enemy.data.id]?.mutant || !!enemy.mutant }), researchNote: `Capture #${(state.research?.[enemy.data.id]?.caught ?? 0) + 1}` })
+      pushLog(`Caught wild ${enemy.mutant ? 'Mutant ' : ''}${enemy.data.name}!`, toParty ? 'Registered to the Codex.' : 'Registered to the Codex. Sent to storage because the party is full.', ...researchHighlights.map((h) => `Research: ${h}`))
+      setCaught({ id: enemy.data.id, name: enemy.data.name, type: enemy.data.type, talent: enemy.talent ?? 0, mutant: enemy.mutant, researchLevel: researchLevel(nextResearch), researchNote: `Capture #${nextResearch.caught}`, researchHighlights })
       setPhase('caught')
     } else {
       track('capture_result', { success: false, talent: enemy.talent ?? 0, mutant: !!enemy.mutant })
@@ -1131,7 +1139,7 @@ export default function Battle({ active, config, state, setState, onExit, auto =
       )}
 
       {caught && (
-        <GetMonsterOverlay id={caught.id} name={caught.name} type={caught.type} talent={caught.talent} mutant={caught.mutant} researchLevel={caught.researchLevel} researchNote={caught.researchNote} onClose={() => setCaught(null)} />
+        <GetMonsterOverlay id={caught.id} name={caught.name} type={caught.type} talent={caught.talent} mutant={caught.mutant} researchLevel={caught.researchLevel} researchNote={caught.researchNote} researchHighlights={caught.researchHighlights} onClose={() => setCaught(null)} />
       )}
     </div>
   )

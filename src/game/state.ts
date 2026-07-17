@@ -56,6 +56,20 @@ export function researchSummary(s: GameState, id: string): { entry?: ResearchEnt
   return { entry, level, next, progressText: next ? `${entry?.caught ?? 0}/${next}` : 'MAX' }
 }
 
+export function captureResearchHighlights(prev: ResearchEntry | undefined, next: ResearchEntry, owned: OwnedMonster): string[] {
+  const highlights: string[] = []
+  const prevCaught = prev?.caught ?? 0
+  const prevTalent = prev?.bestTalent ?? 0
+  const talent = owned.talent ?? 0
+  if (prevCaught <= 0) highlights.push('NEW: first capture')
+  if (talent > prevTalent) highlights.push(`Best talent ${prevTalent} -> ${talent}`)
+  if (!!owned.mutant && !prev?.mutant) highlights.push('First mutant found')
+  const prevLevel = researchLevel(prev)
+  const nextLevel = researchLevel(next)
+  if (nextLevel > prevLevel) highlights.push(`Research Lv ${prevLevel} -> ${nextLevel}`)
+  return highlights
+}
+
 export const PARTY_MAX = 6 // 戦うパーティの上限。残りは預かりボックス
 
 // ── 個体差・レア度 ──

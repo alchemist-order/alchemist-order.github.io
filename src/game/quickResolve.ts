@@ -2,6 +2,7 @@ import type { BattleConfig, GameState, OwnedMonster } from '../types'
 import { makeCombatant } from '../engine/battleEngine'
 import { systemRng } from '../engine/rng'
 import {
+  captureResearchHighlights,
   expReward,
   getParty,
   grantExp,
@@ -112,8 +113,15 @@ export function resolveQuickBattle(state: GameState, config: BattleConfig): { st
     next = { ...next, flasks: next.flasks - 1 }
     if (rng.chance(0.34 + catchBonus)) {
       const owned = { ...makeOwned(wild.id, wild.level), talent: wild.talent }
+      const prevResearch = next.research?.[wild.id]
+      const nextResearch = {
+        caught: (prevResearch?.caught ?? 0) + 1,
+        bestTalent: Math.max(prevResearch?.bestTalent ?? 0, owned.talent ?? 0),
+        mutant: !!prevResearch?.mutant || !!owned.mutant,
+      }
+      const highlights = captureResearchHighlights(prevResearch, nextResearch, owned)
       next = recordCapture({ ...next, items: { ...next.items, catch_charm: Math.max(0, (next.items.catch_charm ?? 0) - 1) }, collection: [...next.collection, owned] }, owned)
-      lines.push(`${species(wild.id).name}を捕獲した。`)
+      lines.push(`${species(wild.id).name} captured.`, ...highlights.map((h) => `Research: ${h}`))
     } else {
       lines.push(`${species(wild.id).name}は フラスコから 逃げてしまった。`)
     }

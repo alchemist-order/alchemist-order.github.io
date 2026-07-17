@@ -1733,3 +1733,21 @@ button:disabled {
 }
 .dex-research-panel b { color: #d8f7dd; }
 .dex-research-panel span, .dex-research-panel small { color: #efe3c2; }
+
+.research-highlights {
+  display: grid;
+  gap: 5px;
+  margin: 2px auto 10px;
+  max-width: 260px;
+}
+.research-highlights span {
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, rgba(239, 197, 93, 0.24), rgba(95, 180, 140, 0.18));
+  border: 1px solid rgba(239, 197, 93, 0.45);
+  color: #fff1bd;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  box-shadow: 0 5px 14px rgba(0, 0, 0, 0.18);
+}
