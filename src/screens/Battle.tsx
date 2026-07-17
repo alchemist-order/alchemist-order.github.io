@@ -952,7 +952,11 @@ export default function Battle({ active, config, state, setState, onExit, auto =
       <div className={spriteCapCls}>
         <Sprite id={c.data.id} type={c.data.type} size={who === 'e' ? 146 : 166} bare flip={who === 'e'} mutant={c.mutant} />
       </div>
-      {cap && <span className={`capture-flask cap-${cap}`} data-rarity={enemy.mutant ? 'rainbow' : (enemy.talent ?? 0) >= 6 ? 'gold' : undefined} aria-hidden>🔮</span>}
+      {cap && (
+        <span className={`capture-flask cap-${cap}`} data-rarity={enemy.mutant ? 'rainbow' : (enemy.talent ?? 0) >= 6 ? 'gold' : undefined} aria-hidden>
+          <img className="capture-flask-img" src={`${import.meta.env.BASE_URL}ui/item_flask.png`} alt="" />
+        </span>
+      )}
       {cap === 'caught' && <span className="capture-stars" aria-hidden>✦✦✦</span>}
       <div className="ground-shadow" />
     </div>

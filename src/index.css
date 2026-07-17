@@ -920,6 +920,82 @@ button:disabled {
 @keyframes lunge-right { 50% { transform: translateX(18px); } }
 @keyframes lunge-left { 50% { transform: translateX(-18px); } }
 
+.capture-flask {
+  position: absolute;
+  left: 50%;
+  top: 43%;
+  width: 62px;
+  height: 62px;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  pointer-events: none;
+  filter: drop-shadow(0 8px 8px rgba(0,0,0,0.5));
+}
+.capture-flask-img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+.capture-flask[data-rarity="gold"] .capture-flask-img {
+  filter: drop-shadow(0 0 8px rgba(255,210,92,0.95)) saturate(1.16);
+}
+.capture-flask[data-rarity="rainbow"] .capture-flask-img {
+  filter: drop-shadow(0 0 9px rgba(132,240,255,0.95)) drop-shadow(0 0 12px rgba(255,118,231,0.65)) saturate(1.25);
+}
+.cap-suck { animation: flaskSuck 0.46s ease-out both; }
+.cap-shake { animation: flaskShake 0.34s ease-in-out infinite; }
+.cap-caught { animation: flaskCaught 0.72s ease-out both; }
+.cap-break { animation: flaskBreak 0.48s ease-out both; }
+.sprite-captured { animation: spriteSucked 0.46s ease-out both; transform-origin: center bottom; }
+.sprite-broke { animation: spriteBroke 0.42s ease-out both; transform-origin: center bottom; }
+.capture-stars {
+  position: absolute;
+  left: 50%;
+  top: 18%;
+  transform: translateX(-50%);
+  z-index: 6;
+  color: #ffe28a;
+  font-size: 22px;
+  letter-spacing: 4px;
+  text-shadow: 0 0 8px rgba(255,226,138,0.85), 0 2px 2px rgba(0,0,0,0.6);
+  animation: captureStars 0.8s ease-out both;
+  pointer-events: none;
+}
+@keyframes flaskSuck {
+  0% { opacity: 0; transform: translate(-130%, -120%) scale(0.6) rotate(-24deg); }
+  62% { opacity: 1; transform: translate(-50%, -50%) scale(1.16) rotate(10deg); }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+}
+@keyframes flaskShake {
+  0%, 100% { transform: translate(-50%, -50%) rotate(-7deg); }
+  50% { transform: translate(-50%, -52%) rotate(7deg); }
+}
+@keyframes flaskCaught {
+  0% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+  45% { transform: translate(-50%, -53%) scale(1.08) rotate(-5deg); }
+  100% { transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+}
+@keyframes flaskBreak {
+  0% { opacity: 1; transform: translate(-50%, -50%) scale(1) rotate(0deg); }
+  60% { opacity: 1; transform: translate(-50%, -78%) scale(1.08) rotate(15deg); }
+  100% { opacity: 0; transform: translate(-50%, -108%) scale(0.72) rotate(32deg); }
+}
+@keyframes spriteSucked {
+  0% { opacity: 1; transform: scale(1); filter: brightness(1); }
+  100% { opacity: 0.1; transform: translateY(-22px) scale(0.15); filter: brightness(1.8) saturate(1.3); }
+}
+@keyframes spriteBroke {
+  0% { opacity: 0.2; transform: translateY(-18px) scale(0.2); filter: brightness(1.6); }
+  100% { opacity: 1; transform: translateY(0) scale(1); filter: none; }
+}
+@keyframes captureStars {
+  0% { opacity: 0; transform: translate(-50%, 10px) scale(0.7); }
+  40% { opacity: 1; transform: translate(-50%, 0) scale(1.18); }
+  100% { opacity: 0; transform: translate(-50%, -16px) scale(1); }
+}
+
+
 .info-row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px; }
 .info-plate {
   background: var(--panel); border: 2px solid var(--border);
