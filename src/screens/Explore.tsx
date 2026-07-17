@@ -4,7 +4,7 @@ import type { Chest, Npc, NushiSpot, RuneSwitch } from '../game/maps'
 import { hasFlag } from '../game/state'
 import { systemRng } from '../engine/rng'
 import { EXPLORE_WORLDS, MAP_BACKGROUNDS, type ExploreEvent, type ExploreNode } from '../game/nodes'
-import { ItemIcon } from '../ui'
+import { BadgeIcon, EventIcon, ItemIcon, MenuIcon, StatIcon } from '../ui'
 
 interface Props {
   state: GameState
@@ -19,14 +19,7 @@ interface Props {
   onTalk: (npc: Npc) => void
 }
 
-const eventIcon: Record<ExploreEvent['kind'], string> = {
-  battle: '⚔️',
-  chest: '🎁',
-  nushi: '🐾',
-  switch: '🔷',
-  talk: '💬',
-  trainer: '🎖',
-}
+const worldBadgeSlug: Record<string, string> = { forest: 'verdant', sea: 'tide', volcano: 'blaze' }
 
 function isAvailable(event: ExploreEvent, state: GameState): boolean {
   if (event.kind === 'chest') return !hasFlag(state, `chest_${event.chest.id}`)
@@ -99,8 +92,8 @@ export default function Explore({ state, onHome, onVisitMap, onStartBattle, onTr
       <header className="home-header">
         <h1>探索</h1>
         <div className="home-stats">
-          <span>📖 {state.caught.length}</span>
-          <span>🎖 {state.badges.length}</span>
+          <span><StatIcon kind="dex" size={22} /> {state.caught.length}</span>
+          <span><StatIcon kind="badge" size={22} /> {state.badges.length}</span>
           <span><ItemIcon kind="money" size={22} /> {state.money}</span>
         </div>
       </header>
@@ -122,7 +115,7 @@ export default function Explore({ state, onHome, onVisitMap, onStartBattle, onTr
               disabled={!unlocked}
               onClick={() => setWorldId(w.id)}
             >
-              <span className="explore-world-icon">{unlocked ? w.icon : '🔒'}</span>
+              <span className="explore-world-icon">{unlocked ? <BadgeIcon slug={worldBadgeSlug[w.id] ?? 'verdant'} size={34} /> : <MenuIcon kind="lock" size={30} />}</span>
               <span>
                 <b>{w.name}</b>
                 <small>{cleared ? '踏破済み' : unlocked ? w.desc : `${w.unlock}で解放`}</small>
@@ -147,7 +140,7 @@ export default function Explore({ state, onHome, onVisitMap, onStartBattle, onTr
         <div className="explore-event-panel">
           {pending ? (
             <div className={`explore-event ${pending.kind}`}>
-              <span className="explore-event-icon">{eventIcon[pending.kind]}</span>
+              <span className="explore-event-icon"><EventIcon kind={pending.kind} size={42} /></span>
               <div>
                 <h3>{pending.title}</h3>
                 <p>{pending.desc}</p>
@@ -178,7 +171,7 @@ export default function Explore({ state, onHome, onVisitMap, onStartBattle, onTr
             </div>
           ) : (
             <div className="explore-choice">
-              <h3>{world.icon} {world.name}</h3>
+              <h3><BadgeIcon slug={worldBadgeSlug[world.id] ?? 'verdant'} size={30} /> {world.name}</h3>
               <p>歩き回らず、次の出来事へ。戦闘・宝箱・ヌシ・出会いが待っている。</p>
               <button className="home-primary-cta" onClick={drawEvent}>
                 探索を進める
@@ -191,11 +184,11 @@ export default function Explore({ state, onHome, onVisitMap, onStartBattle, onTr
 
       <div className="moves" style={{ marginTop: 14 }}>
         <button className="move-btn subtle" onClick={returnHome}>
-          <span className="move-name">🏠 拠点へ戻る</span>
+          <span className="move-name"><MenuIcon kind="home" size={24} /> 拠点へ戻る</span>
           <span className="move-meta">手持ち・道具・記録を確認する</span>
         </button>
         <button className="move-btn" onClick={() => { setNodeIndex(0); setEventsDone(0); setPending(null) }}>
-          <span className="move-name">🔁 この地を見直す</span>
+          <span className="move-name"><MenuIcon kind="refresh" size={24} /> この地を見直す</span>
           <span className="move-meta">探索の流れをリセット</span>
         </button>
       </div>

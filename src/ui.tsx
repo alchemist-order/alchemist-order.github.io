@@ -317,6 +317,38 @@ export function StatIcon({ kind, fallback = '?', size = 34 }: { kind: string; fa
   )
 }
 
+
+
+const menuImgState: Record<string, boolean> = {}
+export function MenuIcon({ kind, size = 28 }: { kind: string; size?: number }) {
+  const [failed, setFailed] = useState(!!menuImgState[kind])
+  if (failed) return <span className="menu-icon-fallback" aria-hidden="true">?</span>
+  return (
+    <img
+      className="menu-icon-img"
+      src={`${import.meta.env.BASE_URL}ui/menu_${kind}.png`}
+      alt=""
+      style={{ width: size, height: size, objectFit: 'contain', display: 'inline-block', verticalAlign: 'middle' }}
+      onError={() => { menuImgState[kind] = true; setFailed(true) }}
+    />
+  )
+}
+
+const eventImgState: Record<string, boolean> = {}
+export function EventIcon({ kind, size = 36 }: { kind: string; size?: number }) {
+  const [failed, setFailed] = useState(!!eventImgState[kind])
+  if (failed) return <span className="menu-icon-fallback" aria-hidden="true">?</span>
+  return (
+    <img
+      className="event-icon-img"
+      src={`${import.meta.env.BASE_URL}ui/event_${kind}.png`}
+      alt=""
+      style={{ width: size, height: size, objectFit: 'contain', display: 'inline-block', verticalAlign: 'middle' }}
+      onError={() => { eventImgState[kind] = true; setFailed(true) }}
+    />
+  )
+}
+
 const chestImgState = { missing: false }
 export function ChestToken({ open = false, size = 30 }: { open?: boolean; size?: number }) {
   const [failed, setFailed] = useState(chestImgState.missing)

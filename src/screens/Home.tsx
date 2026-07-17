@@ -28,7 +28,7 @@ import typechart from '../../data/typechart.json'
 import { abilityOf, HELD_ITEMS, HELD_ITEM_IDS } from '../game/abilities'
 import { statAt } from '../engine/battleEngine'
 import * as audio from '../game/audio'
-import { ItemIcon, RarityBadge, Sprite, TypeBadge, TYPE_COLORS, BadgeIcon, MedalIcon, StatIcon } from '../ui'
+import { ItemIcon, RarityBadge, Sprite, TypeBadge, TYPE_COLORS, BadgeIcon, MedalIcon, StatIcon, MenuIcon } from '../ui'
 import '../medals.css'
 
 interface Props {
@@ -47,11 +47,11 @@ interface Props {
 
 function rewardLabel(r: { money?: number; flask?: number; heal?: number; heal2?: number }): string {
   const parts: string[] = []
-  if (r.money) parts.push(`💰${r.money}`)
-  if (r.flask) parts.push(`🔮×${r.flask}`)
-  if (r.heal) parts.push(`🧪傷×${r.heal}`)
-  if (r.heal2) parts.push(`🧪上×${r.heal2}`)
-  return parts.join(' ')
+  if (r.money) parts.push(`${r.money}ゲル`)
+  if (r.flask) parts.push(`フラスコ?${r.flask}`)
+  if (r.heal) parts.push(`傷薬?${r.heal}`)
+  if (r.heal2) parts.push(`上傷薬?${r.heal2}`)
+  return parts.join(' / ')
 }
 
 const STAT_LABELS = ['さいだいHP', 'こうげき', 'ぼうぎょ', 'すばやさ', 'まりょく']
@@ -241,8 +241,8 @@ export default function Home({ state, setState, setActive, onField, onDex, onSho
       <header className="home-header">
         <h1>メニュー</h1>
         <div className="home-stats">
-          <span>📖 {state.caught.length}/{DEX_TOTAL}</span>
-          <span>🎖 {state.badges.length}</span>
+          <span><StatIcon kind="dex" size={22} /> {state.caught.length}/{DEX_TOTAL}</span>
+          <span><StatIcon kind="badge" size={22} /> {state.badges.length}</span>
           <span><ItemIcon kind="money" size={22} /> {state.money}</span>
         </div>
       </header>
@@ -264,7 +264,7 @@ export default function Home({ state, setState, setActive, onField, onDex, onSho
               <span>Lv.{sel.level}</span>
               <TypeBadge t={sp.type} />
               {sp.type2 && <TypeBadge t={sp.type2} />}
-              {sel.mutant && <span className="rare-tag">変異</span>}
+              {sel.mutant && <span className="rare-tag" title="変異種" style={{ marginLeft: 6 }}>変異</span>}
             </div>
             <p className="home-hero-flavor">{partnerMood}</p>
             <div className="home-hero-bars">
@@ -313,15 +313,15 @@ export default function Home({ state, setState, setActive, onField, onDex, onSho
             <b>2体を編む</b>
           </button>
           <button className="home-todo" onClick={onShop}>
-            <span>🏪 ショップ</span>
+            <span><MenuIcon kind="shop" size={22} /> ショップ</span>
             <b>道具を買う</b>
           </button>
           <button className="home-todo" onClick={onInn}>
-            <span>🛏 宿で休む</span>
+            <span><MenuIcon kind="inn" size={22} /> 宿で休む</span>
             <b>全回復</b>
           </button>
           <button className="home-todo" onClick={onTower}>
-            <span>🗼 試練の塔</span>
+            <span><MenuIcon kind="tower" size={22} /> 試練の塔</span>
             <b>ベスト {state.towerBest ?? 0}階</b>
           </button>
         </div>
@@ -345,11 +345,11 @@ export default function Home({ state, setState, setActive, onField, onDex, onSho
       {tab === 'note' ? (
         <div className="items-pane">
           {/* ログイン */}
-          <div className="money-box">🔥 連続ログイン <b>{state.loginStreak ?? 1}</b> 日</div>
+          <div className="money-box"><StatIcon kind="login" size={28} /> 連続ログイン <b>{state.loginStreak ?? 1}</b> 日</div>
           {/* デイリー */}
           <h3 className="section-title">デイリー</h3>
           <div className="item-row">
-            <span className="item-ico">⚔</span>
+            <span className="item-ico"><MenuIcon kind="daily" size={34} /></span>
             <div className="grow">
               <div className="item-name">野生の幻獣を {DAILY_GOAL}体 たおす</div>
               <div className="item-desc">進捗 {Math.min(state.daily?.wild ?? 0, DAILY_GOAL)}/{DAILY_GOAL} ・ 報酬 {rewardLabel(DAILY_REWARD)}</div>
@@ -365,13 +365,13 @@ export default function Home({ state, setState, setActive, onField, onDex, onSho
             const reached = state.caught.length >= m.n
             return (
               <div className="item-row" key={m.n}>
-                <span className="item-ico">📖</span>
+                <span className="item-ico"><StatIcon kind="dex" size={34} /></span>
                 <div className="grow">
                   <div className="item-name">{m.n}体 とうろく</div>
                   <div className="item-desc">報酬 {rewardLabel(m.reward)}</div>
                 </div>
                 <button className="title-btn" style={{ padding: '6px 14px', fontSize: 14 }} disabled={!reached || claimed} onClick={() => claimDex(m.n, m.reward)}>
-                  {claimed ? '受取済' : reached ? '受け取る' : '🔒'}
+                  {claimed ? '受取済' : reached ? '受け取る' : <MenuIcon kind="lock" size={20} />}
                 </button>
               </div>
             )
@@ -389,7 +389,7 @@ export default function Home({ state, setState, setActive, onField, onDex, onSho
                   <div className="item-desc">{a.desc} ・ 報酬 {rewardLabel(a.reward)}</div>
                 </div>
                 <button className="title-btn" style={{ padding: '6px 14px', fontSize: 14 }} disabled={done || !met} onClick={() => claimAch(a.id)}>
-                  {done ? '達成' : met ? '受け取る' : '🔒'}
+                  {done ? '達成' : met ? '受け取る' : <MenuIcon kind="lock" size={20} />}
                 </button>
               </div>
             )
@@ -402,7 +402,7 @@ export default function Home({ state, setState, setActive, onField, onDex, onSho
             <div className="card-head">
               <span className="mon-name">
                 {sp.name}
-                {sel.mutant && <span title="変異種" style={{ marginLeft: 2 }}>✨</span>}
+                {sel.mutant && <span className="rare-tag" title="変異種" style={{ marginLeft: 6 }}>変異</span>}
                 {isActive && <span className="lead-tag">先頭</span>}
                 <RarityBadge talent={sel.talent} />
                 {sel.talent ? <span className="cmd-sub" style={{ marginLeft: 4 }}>才能{sel.talent}</span> : null}
@@ -416,7 +416,7 @@ export default function Home({ state, setState, setActive, onField, onDex, onSho
                   <TypeBadge t={sp.type} />
                   {sp.type2 && <TypeBadge t={sp.type2} />}
                 </div>
-                <span className="dex-text" style={{ marginTop: 2, fontSize: 11, opacity: 0.7 }}>🔍 タップで拡大</span>
+                <span className="dex-text" style={{ marginTop: 2, fontSize: 11, opacity: 0.7 }}><MenuIcon kind="search" size={16} /> タップで拡大</span>
               </div>
               <div className="grow">
                 <div className="stat-line">
@@ -557,7 +557,7 @@ export default function Home({ state, setState, setActive, onField, onDex, onSho
 
           {/* 預かりボックス */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-            <h3 className="section-title" style={{ margin: '12px 0 6px' }}>📦 預かり所 {boxMons.length}体</h3>
+            <h3 className="section-title" style={{ margin: '12px 0 6px' }}><MenuIcon kind="storage" size={24} /> 預かり所 {boxMons.length}体</h3>
             {boxMons.length > 1 && (
               <select
                 value={boxSort}
@@ -602,12 +602,12 @@ export default function Home({ state, setState, setActive, onField, onDex, onSho
             const pct = Math.round((state.caught.length / DEX_TOTAL) * 100)
             const rows: { icon: string; fallback: string; name: string; val: string }[] = [
               { icon: 'dex', fallback: '?', name: '図鑑コンプリート', val: `${state.caught.length} / ${DEX_TOTAL} 体 (${pct}%)` },
-              { icon: 'badge', fallback: '🎖', name: '記章', val: `${state.badges.length} / 8` },
-              { icon: 'tower', fallback: '🗼', name: '試練の塔 自己ベスト', val: `${state.towerBest ?? 0} 階` },
-              { icon: 'wins', fallback: '⚔', name: '通算勝利数', val: `${state.wins} 勝` },
-              { icon: 'guardian', fallback: '🏛', name: '撃破した守護者', val: `${state.defeatedTrainers.length} 人` },
-              { icon: 'money', fallback: '💰', name: '所持金', val: `${state.money} ゲル` },
-              { icon: 'login', fallback: '🔥', name: '連続ログイン', val: `${state.loginStreak ?? 1} 日` },
+              { icon: 'badge', fallback: '?', name: '記章', val: `${state.badges.length} / 8` },
+              { icon: 'tower', fallback: '?', name: '試練の塔 自己ベスト', val: `${state.towerBest ?? 0} 階` },
+              { icon: 'wins', fallback: '?', name: '通算勝利数', val: `${state.wins} 勝` },
+              { icon: 'guardian', fallback: '?', name: '撃破した守護者', val: `${state.defeatedTrainers.length} 人` },
+              { icon: 'money', fallback: '?', name: '所持金', val: `${state.money} ゲル` },
+              { icon: 'login', fallback: '?', name: '連続ログイン', val: `${state.loginStreak ?? 1} 日` },
               { icon: 'monsters', fallback: '?', name: '所持幻獣', val: `${state.collection.length} 体 (パーティ ${partyMons.length})` },
             ]
             return rows.map((r) => (
@@ -633,7 +633,7 @@ export default function Home({ state, setState, setActive, onField, onDex, onSho
             })}
           </div>
 
-          <div className="money-box" style={{ marginTop: 14 }}>🏆 共通ランキングは準備中。この記録（塔ベスト等）を提出して順位を競う予定。</div>
+          <div className="money-box" style={{ marginTop: 14 }}><StatIcon kind="tower" size={28} /> 共通ランキングは準備中。この記録（塔ベスト等）を提出して順位を競う予定。</div>
         </div>
       ) : (
         <div className="items-pane">
@@ -701,7 +701,7 @@ export default function Home({ state, setState, setActive, onField, onDex, onSho
           <div className="badge-list">
             {state.badges.length === 0 && <span className="ink-dim">まだ記章を持っていない。</span>}
             {state.badges.map((b) => (
-              <span key={b} className="badge-pill">🎖 {b}</span>
+              <span key={b} className="badge-pill"><BadgeIcon slug={ALL_BADGES.find((x) => x.name === b)?.slug ?? 'verdant'} size={24} /> {b}</span>
             ))}
           </div>
         </div>
@@ -709,15 +709,15 @@ export default function Home({ state, setState, setActive, onField, onDex, onSho
 
       <div className="moves" style={{ marginTop: 18 }}>
         <button className="move-btn subtle" onClick={onField}>
-          <span className="move-name">🗺 フィールドを歩く</span>
+          <span className="move-name"><MenuIcon kind="field" size={24} /> フィールドを歩く</span>
           <span className="move-meta">世界を眺めながら探索する</span>
         </button>
         <button className="move-btn" onClick={onDex}>
-          <span className="move-name">📖 幻獣図鑑をひらく</span>
+          <span className="move-name"><MenuIcon kind="dex" size={24} /> 幻獣図鑑をひらく</span>
           <span className="move-meta">{state.caught.length}/{DEX_TOTAL} 体を記録</span>
         </button>
         <button className="move-btn" onClick={() => setShowHelp(true)}>
-          <span className="move-name">📘 遊び方・相性表</span>
+          <span className="move-name"><MenuIcon kind="help" size={24} /> 遊び方・相性表</span>
           <span className="move-meta">タイプ相性と基本ルール</span>
         </button>
       </div>
@@ -737,7 +737,7 @@ export default function Home({ state, setState, setActive, onField, onDex, onSho
           <div onClick={() => setShowHelp(false)} style={{ position: 'fixed', inset: 0, zIndex: 300, background: 'rgba(10,8,5,0.94)', overflow: 'auto', padding: 16 }}>
             <div onClick={(e) => e.stopPropagation()} style={{ maxWidth: 560, margin: '0 auto', color: '#f3e6c4' }}>
               <div className="card-head">
-                <span className="mon-name">📘 遊び方・タイプ相性</span>
+                <span className="mon-name"><MenuIcon kind="help" size={24} /> 遊び方・タイプ相性</span>
                 <button className="modal-close" onClick={() => setShowHelp(false)}>×</button>
               </div>
               <ul className="dex-text" style={{ paddingLeft: 18, lineHeight: 1.7 }}>
