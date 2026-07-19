@@ -487,6 +487,108 @@ button:disabled {
   background: linear-gradient(180deg, rgba(104, 79, 34, 0.86), rgba(58, 45, 25, 0.86));
   box-shadow: 0 0 0 1px rgba(240, 217, 154, 0.12), 0 0 16px rgba(215, 181, 106, 0.14);
 }
+
+.starter-guide {
+  position: relative;
+  z-index: 1;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid rgba(240, 217, 154, 0.46);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 15% 0%, rgba(240, 217, 154, 0.13), transparent 34%),
+    linear-gradient(180deg, rgba(41, 35, 24, 0.84), rgba(24, 22, 17, 0.78));
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24);
+}
+.starter-guide-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.starter-guide-head span {
+  display: block;
+  color: var(--ink-dim);
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+}
+.starter-guide-head b {
+  display: block;
+  color: var(--gold-bright);
+  font-size: 16px;
+}
+.starter-guide-head small {
+  color: var(--gold-bright);
+  font-weight: 900;
+  font-variant-numeric: tabular-nums;
+}
+.starter-guide-steps {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.starter-step {
+  display: grid;
+  grid-template-columns: 30px minmax(0, 1fr);
+  grid-template-areas: "mark copy" "mark action";
+  gap: 2px 8px;
+  align-items: center;
+  min-height: 82px;
+  padding: 10px;
+  border: 1px solid rgba(240, 217, 154, 0.23);
+  border-radius: 13px;
+  background: rgba(18, 17, 13, 0.34);
+  color: var(--ink);
+  text-align: left;
+  font-family: inherit;
+  cursor: pointer;
+}
+.starter-step.hot {
+  border-color: rgba(255, 225, 135, 0.86);
+  background: linear-gradient(180deg, rgba(101, 78, 32, 0.82), rgba(38, 31, 19, 0.82));
+  animation: ftuePulse 1.45s ease-in-out infinite;
+}
+.starter-step.done {
+  opacity: 0.72;
+}
+.starter-step-mark {
+  grid-area: mark;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 999px;
+  background: rgba(240, 217, 154, 0.16);
+  color: var(--gold-bright);
+  font-weight: 900;
+}
+.starter-step-copy { grid-area: copy; min-width: 0; }
+.starter-step-copy b {
+  display: block;
+  color: var(--gold-bright);
+  font-size: 13px;
+}
+.starter-step-copy em {
+  display: block;
+  margin-top: 3px;
+  color: var(--ink-dim);
+  font-size: 11px;
+  font-style: normal;
+  line-height: 1.45;
+}
+.starter-step strong {
+  grid-area: action;
+  color: #f8dfa0;
+  font-size: 12px;
+  font-weight: 900;
+}
+@media (max-width: 640px) {
+  .starter-guide-steps { grid-template-columns: 1fr; }
+  .starter-step { min-height: 68px; }
+}
+
 .active-mon {
   border-color: var(--gold);
 }

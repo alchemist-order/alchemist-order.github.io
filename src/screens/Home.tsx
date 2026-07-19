@@ -190,6 +190,14 @@ export default function Home({ state, setState, setActive, onField, onDex, onSho
   const achievementReady = ACHIEVEMENTS.filter((a) => a.check(state) && !(state.achievements ?? []).includes(a.id)).length
   const chainSpecies = state.chain ? species(state.chain.speciesId) : null
   const todayTarget = speciesOfTheDay(today())
+  const firstExploreDone = (state.flags ?? []).includes('ftue_explored')
+  const firstCatchDone = (state.flags ?? []).includes('ftue_first_catch')
+  const starterGuideVisible = !firstExploreDone || !firstCatchDone || state.caught.length < 10
+  const starterGuideSteps = [
+    { done: firstExploreDone, title: '探索地を選ぶ', body: 'まずは緑霧の森へ。遠征で戦闘・捕獲・収集をまとめて進めます。', action: onField, actionText: '探索へ' },
+    { done: firstCatchDone, title: '幻獣を捕まえる', body: '弱った幻獣はフラスコで仲間に。今日の幻獣は捕獲率が上がります。', action: onField, actionText: '捕獲に行く' },
+    { done: state.caught.length >= 10, title: '図鑑10体を目指す', body: `あと${Math.max(0, 10 - state.caught.length)}体で最初の図鑑報酬。集めるほど報酬が増えます。`, action: onDex, actionText: '図鑑を見る' },
+  ]
   const partnerMood = sel.mutant
     ? '今日は不思議な光をまとっている。'
     : (sel.talent ?? 0) >= 6
@@ -304,6 +312,26 @@ export default function Home({ state, setState, setActive, onField, onDex, onSho
             </div>
           </div>
         </div>
+        {starterGuideVisible && (
+          <section className="starter-guide" aria-label="はじめの任務">
+            <div className="starter-guide-head">
+              <div>
+                <span>はじめの任務</span>
+                <b>まずは探索で仲間を増やそう</b>
+              </div>
+              <small>{starterGuideSteps.filter((s) => s.done).length}/3</small>
+            </div>
+            <div className="starter-guide-steps">
+              {starterGuideSteps.map((step, i) => (
+                <button key={step.title} className={`starter-step ${step.done ? 'done' : i === starterGuideSteps.findIndex((s) => !s.done) ? 'hot' : ''}`} onClick={step.action}>
+                  <span className="starter-step-mark">{step.done ? '済' : i + 1}</span>
+                  <span className="starter-step-copy"><b>{step.title}</b><em>{step.body}</em></span>
+                  <strong>{step.done ? '完了' : step.actionText}</strong>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
         <div className="home-todo-grid">
           <button className={`home-todo ${dailyClaimable ? 'hot' : ''}`} onClick={() => setTab('note')}>
             <span>日課</span>
