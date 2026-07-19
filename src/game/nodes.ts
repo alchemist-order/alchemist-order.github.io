@@ -96,4 +96,3 @@ export const EXPLORE_WORLDS: ExploreWorld[] = Object.entries(WORLD_META)
   }))
   .filter((world) => world.nodes.length > 0)
 
-export const MAP_BACKGROUNDS = Array.from(new Set(STAGES.map((stage) => stage.bg)))

@@ -3,7 +3,7 @@ import type { BattleConfig, GameState, TrainerData } from '../types'
 import type { Chest, Npc, NushiSpot, RuneSwitch } from '../game/maps'
 import { grantReward, hasFlag, species, withFlag } from '../game/state'
 import { systemRng } from '../engine/rng'
-import { EXPLORE_WORLDS, MAP_BACKGROUNDS, type ExploreEvent, type ExploreNode } from '../game/nodes'
+import { EXPLORE_WORLDS, type ExploreEvent, type ExploreNode } from '../game/nodes'
 import { resolveQuickBattle } from '../game/quickResolve'
 import { BadgeIcon, EventIcon, ItemIcon, MenuIcon, Sprite, StatIcon, TypeBadge } from '../ui'
 
@@ -121,7 +121,7 @@ export default function Explore({ state, setState, onHome, onVisitMap, onStartBa
   const consume = () => {
     if (!pending) return
     const event = pending
-    setState((s) => withFlag(s, visitedFlag))
+    setState((s) => withFlag(withFlag(s, visitedFlag), 'ftue_explored'))
     setPending(null)
     setEventsDone((n) => n + 1)
     if (event.kind === 'battle') onStartBattle({ ...event.config, chain: state.chain }, false)
@@ -144,7 +144,7 @@ export default function Explore({ state, setState, onHome, onVisitMap, onStartBa
     }
     setPending(null)
     setState((current) => {
-      let next = current
+      let next = withFlag(withFlag(current, visitedFlag), 'ftue_explored')
       const lines: string[] = [`${node.name}へ おまかせ遠征に出発。`]
       const picks: ExploreEvent[] = []
       for (let i = 0; i < 5; i++) {
@@ -224,11 +224,6 @@ export default function Explore({ state, setState, onHome, onVisitMap, onStartBa
         </div>
       </header>
 
-      <div className="explore-backdrops" aria-hidden="true">
-        {MAP_BACKGROUNDS.map((path) => (
-          <span key={path} style={{ backgroundImage: `url(${import.meta.env.BASE_URL}${path})` }} />
-        ))}
-      </div>
 
       <section className="explore-worlds">
         {EXPLORE_WORLDS.map((w) => {

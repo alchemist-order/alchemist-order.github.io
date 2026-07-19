@@ -46,6 +46,7 @@ interface Props {
   onFusion: () => void
   onTower: () => void
   initialTab?: 'party' | 'items' | 'note' | 'record'
+  ftuePulse?: boolean
 }
 
 function rewardLabel(r: { money?: number; flask?: number; heal?: number; heal2?: number }): string {
@@ -72,7 +73,7 @@ function ownedStats(o: OwnedMonster) {
   }
 }
 
-export default function Home({ state, setState, setActive, onField, onDex, onShop, onInn, onFusion, onTower, initialTab = 'party' }: Props) {
+export default function Home({ state, setState, setActive, onField, onDex, onShop, onInn, onFusion, onTower, initialTab = 'party', ftuePulse = false }: Props) {
   const active = state.collection.find((o) => o.uid === state.activeUid) ?? state.collection[0]
   const [tab, setTab] = useState<'party' | 'items' | 'note' | 'record'>(initialTab)
   const [zoom, setZoom] = useState(false) // 幻獣の大きい表示
@@ -295,7 +296,7 @@ export default function Home({ state, setState, setActive, onField, onDex, onSho
               </div>
             </div>
             <div className="home-hero-actions">
-              <button className="home-primary-cta" onClick={onField}>
+              <button className={`home-primary-cta ${ftuePulse ? 'ftue-pulse' : ''}`} onClick={onField}>
                 探索する
                 <span>戦闘・捕獲・素材集めをまとめて進める</span>
               </button>

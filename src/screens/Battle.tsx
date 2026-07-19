@@ -25,12 +25,14 @@ import {
   getParty,
   grantExp,
   grantReward,
+  hasFlag,
   rarityOf,
   rollTalent,
   species,
   speciesOfTheDay,
   today,
   withCaught,
+  withFlag,
   withSeen,
 } from '../game/state'
 import { getMoveset, moveById } from '../game/moves'
@@ -774,6 +776,7 @@ export default function Battle({ active, config, state, setState, onExit, auto =
         const pty = getParty(s)
         const np = pty.length < PARTY_MAX ? [...pty, caught.uid] : pty // add to party if there is room; otherwise storage
         let next = applyCaptureChain(recordCapture({ ...s, collection: [...s.collection, caught], party: np }, caught), caught.speciesId)
+        next = withFlag(next, 'ftue_first_catch')
         if (isTodayTarget && !(s.daily?.date === today() && s.daily.todayCatch)) {
           next = grantReward({ ...next, daily: { ...(next.daily ?? { date: today(), wild: 0, claimed: false }), date: today(), todayCatch: true } }, { money: 300, heal2: 1 })
           track('sotd_catch', { species: caught.speciesId })
@@ -1129,6 +1132,7 @@ export default function Battle({ active, config, state, setState, onExit, auto =
               <button className="modal-close" onClick={() => { setCapturePrompt(false); setAutoMode(false) }}>×</button>
             </div>
             <p className="ink-dim">{enemy.data.name}は弱っている。成功率 {Math.round(Math.min(0.95, catchChance(enemy) + researchCatchBonus(state, enemy.data.id) + todayCaptureBonus) * 100)}%</p>
+            {!hasFlag(state, 'ftue_first_catch') && <p className="ink-dim">弱らせるほど捕獲しやすくなります。フラスコを投げて仲間にしましょう。</p>}
             <div className="cmd-grid" style={{ marginTop: 10 }}>
               <button className="cmd-btn" disabled={state.flasks <= 0} onClick={() => { void throwFlask() }}>
                 フラスコを投げる<span className="cmd-sub">所持 {state.flasks}</span>

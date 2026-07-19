@@ -34,7 +34,7 @@
           "rate": 0.03
         }
       ],
-      "bg": "bg/map/forest.png",
+      "bg": "bg/map/forest.webp",
       "extra": [
         "g176"
       ]
@@ -76,7 +76,7 @@
           "rate": 0.03
         }
       ],
-      "bg": "bg/map/forest.png",
+      "bg": "bg/map/forest.webp",
       "extra": []
     },
     {
@@ -115,7 +115,7 @@
           "rate": 0.03
         }
       ],
-      "bg": "bg/map/forest.png",
+      "bg": "bg/map/forest.webp",
       "extra": [
         "g249"
       ]
@@ -157,7 +157,7 @@
           "rate": 0.03
         }
       ],
-      "bg": "bg/map/forest.png",
+      "bg": "bg/map/forest.webp",
       "extra": []
     },
     {
@@ -196,7 +196,7 @@
           "rate": 0.03
         }
       ],
-      "bg": "bg/map/forest.png",
+      "bg": "bg/map/forest.webp",
       "extra": []
     },
     {
@@ -235,7 +235,7 @@
           "rate": 0.03
         }
       ],
-      "bg": "bg/map/forest.png",
+      "bg": "bg/map/forest.webp",
       "extra": []
     },
     {
@@ -279,7 +279,7 @@
           "rate": 0.03
         }
       ],
-      "bg": "bg/map/forest.png",
+      "bg": "bg/map/forest.webp",
       "extra": []
     },
     {
@@ -309,7 +309,7 @@
           "rate": 0.18
         }
       ],
-      "bg": "bg/map/forest.png",
+      "bg": "bg/map/forest.webp",
       "extra": []
     },
     {
@@ -347,7 +347,7 @@
           "rate": 0.03
         }
       ],
-      "bg": "bg/map/coast_road.png",
+      "bg": "bg/map/coast_road.webp",
       "extra": []
     },
     {
@@ -386,7 +386,7 @@
           "rate": 0.03
         }
       ],
-      "bg": "bg/map/coast_road.png",
+      "bg": "bg/map/coast_road.webp",
       "extra": []
     },
     {
@@ -425,7 +425,7 @@
           "rate": 0.03
         }
       ],
-      "bg": "bg/map/coast_road.png",
+      "bg": "bg/map/coast_road.webp",
       "extra": []
     },
     {
@@ -464,7 +464,7 @@
           "rate": 0.03
         }
       ],
-      "bg": "bg/map/coast_road.png",
+      "bg": "bg/map/coast_road.webp",
       "extra": []
     },
     {
@@ -502,7 +502,7 @@
           "rate": 0.03
         }
       ],
-      "bg": "bg/map/port.png",
+      "bg": "bg/map/port.webp",
       "extra": []
     },
     {
@@ -541,7 +541,7 @@
           "rate": 0.03
         }
       ],
-      "bg": "bg/map/port.png",
+      "bg": "bg/map/port.webp",
       "extra": []
     },
     {
@@ -585,7 +585,7 @@
           "rate": 0.03
         }
       ],
-      "bg": "bg/map/port.png",
+      "bg": "bg/map/port.webp",
       "extra": []
     },
     {
@@ -615,7 +615,7 @@
           "rate": 0.18
         }
       ],
-      "bg": "bg/map/port.png",
+      "bg": "bg/map/port.webp",
       "extra": []
     },
     {
@@ -653,7 +653,7 @@
           "rate": 0.03
         }
       ],
-      "bg": "bg/map/volcano_road.png",
+      "bg": "bg/map/volcano_road.webp",
       "extra": []
     },
     {
@@ -692,7 +692,7 @@
           "rate": 0.03
         }
       ],
-      "bg": "bg/map/volcano_road.png",
+      "bg": "bg/map/volcano_road.webp",
       "extra": []
     },
     {
@@ -730,7 +730,7 @@
           "rate": 0.03
         }
       ],
-      "bg": "bg/map/volcano_road.png",
+      "bg": "bg/map/volcano_road.webp",
       "extra": []
     },
     {
@@ -769,7 +769,7 @@
           "rate": 0.03
         }
       ],
-      "bg": "bg/map/volcano_road.png",
+      "bg": "bg/map/volcano_road.webp",
       "extra": []
     },
     {
@@ -807,7 +807,7 @@
           "rate": 0.03
         }
       ],
-      "bg": "bg/map/volcano_town.png",
+      "bg": "bg/map/volcano_town.webp",
       "extra": [
         "g256"
       ]
@@ -853,7 +853,7 @@
           "rate": 0.03
         }
       ],
-      "bg": "bg/map/volcano_town.png",
+      "bg": "bg/map/volcano_town.webp",
       "extra": []
     },
     {
@@ -897,7 +897,7 @@
           "rate": 0.03
         }
       ],
-      "bg": "bg/map/volcano_town.png",
+      "bg": "bg/map/volcano_town.webp",
       "extra": []
     },
     {
@@ -927,7 +927,7 @@
           "rate": 0.18
         }
       ],
-      "bg": "bg/map/volcano_town.png",
+      "bg": "bg/map/volcano_town.webp",
       "extra": []
     },
     {

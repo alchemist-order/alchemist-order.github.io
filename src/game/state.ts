@@ -18,6 +18,7 @@ export function species(id: string): MonsterData {
 }
 
 const SAVE_KEY = 'alchemist-order-save-v1'
+const BACKUP_KEYS = ['ao-save-backup-1', 'ao-save-backup-2', 'ao-save-backup-3'] as const
 const MAX_LEVEL = 100
 
 
@@ -182,6 +183,64 @@ export function newGame(): GameState {
   }
 }
 
+
+export interface SaveBackupInfo { key: string; date: string; summary: string }
+interface SaveBackupPayload { date: string; data: GameState }
+
+function backupSummary(s: Partial<GameState>): string {
+  return `図鑑 ${s.caught?.length ?? 0} / 記章 ${s.badges?.length ?? 0} / ${s.money ?? 0}ゲル`
+}
+
+function readBackup(key: string): SaveBackupPayload | null {
+  try {
+    const raw = localStorage.getItem(key)
+    if (!raw) return null
+    const parsed = JSON.parse(raw) as SaveBackupPayload
+    if (!parsed || !parsed.date || !parsed.data) return null
+    return parsed
+  } catch {
+    return null
+  }
+}
+
+export function rotateBackup(force = false): void {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY)
+    if (!raw) return
+    const data = JSON.parse(raw) as GameState
+    if (!data || !Array.isArray(data.collection)) return
+    const t = today()
+    const latest = readBackup(BACKUP_KEYS[0])
+    if (!force && latest?.date === t) return
+    const b1 = localStorage.getItem(BACKUP_KEYS[0])
+    const b2 = localStorage.getItem(BACKUP_KEYS[1])
+    if (b2) localStorage.setItem(BACKUP_KEYS[2], b2)
+    if (b1) localStorage.setItem(BACKUP_KEYS[1], b1)
+    localStorage.setItem(BACKUP_KEYS[0], JSON.stringify({ date: t, data }))
+  } catch {
+    /* バックアップ不可でもゲーム進行は止めない */
+  }
+}
+
+export function listBackups(): SaveBackupInfo[] {
+  return BACKUP_KEYS.flatMap((key) => {
+    const b = readBackup(key)
+    return b ? [{ key, date: b.date, summary: backupSummary(b.data) }] : []
+  })
+}
+
+export function restoreBackup(key: string): boolean {
+  const b = BACKUP_KEYS.includes(key as typeof BACKUP_KEYS[number]) ? readBackup(key) : null
+  if (!b) return false
+  try {
+    rotateBackup(true)
+    localStorage.setItem(SAVE_KEY, JSON.stringify(b.data))
+    return true
+  } catch {
+    return false
+  }
+}
+
 export function loadGame(): GameState | null {
   try {
     const raw = localStorage.getItem(SAVE_KEY)
@@ -203,6 +262,7 @@ export function loadGame(): GameState | null {
     merged.party = getParty(merged)
     // リーダー(activeUid)は必ずパーティ内に
     if (merged.activeUid == null || !merged.party.includes(merged.activeUid)) merged.activeUid = merged.party[0] ?? null
+    rotateBackup()
     return merged
   } catch {
     return null
@@ -408,6 +468,7 @@ export function importSave(code: string): GameState | null {
     const json = t.startsWith('{') ? t : decodeURIComponent(escape(atob(t)))
     const p = JSON.parse(json)
     if (!p || !Array.isArray(p.collection)) return null // 最低限の妥当性チェック
+    rotateBackup(true)
     localStorage.setItem(SAVE_KEY, JSON.stringify(p))
     return loadGame() // 既定値補完・移行を通す
   } catch {

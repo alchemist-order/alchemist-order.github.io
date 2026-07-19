@@ -11,6 +11,9 @@ import {
   exportSave,
   getParty,
   importSave,
+  listBackups,
+  restoreBackup,
+  rotateBackup,
   rollTalent,
   fuseResult,
   hasFlag,
@@ -107,12 +110,17 @@ export default function App() {
   const [settingsOpen, setSettingsOpen] = useState(false)
   const [backupCode, setBackupCode] = useState('') // セーブ書き出し表示用
   const [importText, setImportText] = useState('') // セーブ読み込み入力
+  const [backupList, setBackupList] = useState(() => listBackups())
   const [vol, setVol] = useState(audio.getVolume())
   const [sfxOn, setSfxOn] = useState(audio.isSfxOn())
 
   useEffect(() => {
     saveGame(game)
   }, [game])
+
+  useEffect(() => {
+    if (settingsOpen) setBackupList(listBackups())
+  }, [settingsOpen, game])
 
   useEffect(() => {
     const h = () => audio.unlock()
@@ -140,6 +148,7 @@ export default function App() {
   const loginRef = useRef(false)
   useEffect(() => {
     if (phase !== 'game' || loginRef.current) return
+    if (!hasFlag(game, 'ftue_intro') && game.collection.length <= 1) return
     loginRef.current = true
     const { state: ns, reward } = applyDailyLogin(game)
     setGame(() => ns)
@@ -473,6 +482,7 @@ export default function App() {
     setGame((s) => {
       let next: GameState = { ...s, collection: [owned], party: [owned.uid], activeUid: owned.uid, flasks: STARTER_FLASKS }
       next = withCaught(withSeen(next, id), id)
+      next = withFlag(next, 'ftue_intro')
       return next
     })
     track('starter_chosen', { species: id }) // ゲーム開始の実質的な起点=ファネル入口
@@ -537,7 +547,8 @@ export default function App() {
     content = (
       <Opening
         onDone={() => {
-          // さいしょから: セーブを初期化して村へ
+          // さいしょから: 既存セーブを強制バックアップしてから初期化
+          rotateBackup(true)
           setGame(newGame())
           setScreen('home')
           setPhase('game')
@@ -550,7 +561,8 @@ export default function App() {
         state={game}
         setState={setGame}
         setActive={(uid) => setGame((s) => setLeader(s, uid))}
-        onField={() => setScreen('explore')}
+        onField={() => { setGame((s) => withFlag(s, 'ftue_explored')); setScreen('explore') }}
+        ftuePulse={hasFlag(game, 'ftue_intro') && !hasFlag(game, 'ftue_explored')}
         onDex={() => setScreen('dex')}
         onShop={() => setShopOpen(true)}
         onInn={() => {
@@ -738,6 +750,32 @@ export default function App() {
             >
               セーブを読み込む
             </button>
+
+
+            <h3 className="section-title" style={{ marginTop: 14 }}>自動バックアップ</h3>
+            <p className="cmd-sub" style={{ marginTop: 0 }}>1日1回、直近3世代まで自動で退避します。読み込みや最初から始める前にも退避します。</p>
+            {backupList.length === 0 ? (
+              <p className="cmd-sub">まだバックアップはありません。</p>
+            ) : (
+              <div style={{ display: 'grid', gap: 6 }}>
+                {backupList.map((b) => (
+                  <div key={b.key} className="setting-row" style={{ alignItems: 'center' }}>
+                    <span className="setting-label">{b.date}　{b.summary}</span>
+                    <button
+                      className="title-btn"
+                      style={{ padding: '5px 12px', fontSize: 13 }}
+                      onClick={() => {
+                        if (!window.confirm('現在のデータをこのバックアップで置き換えます。元に戻せません。よろしいですか？')) return
+                        if (restoreBackup(b.key)) location.reload()
+                        else setDialogue({ lines: ['バックアップを復元できませんでした。'] })
+                      }}
+                    >
+                      復元
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

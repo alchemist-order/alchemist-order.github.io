@@ -72,6 +72,7 @@ export function Sprite({
       className={`sprite-img${mutant ? ' sprite-mutant' : ''}`}
       src={src}
       alt=""
+      decoding="async"
       loading="lazy"
       onError={() => {
         missingSprites.add(id)
@@ -132,6 +133,8 @@ export function PlayerToken({ dir = 'down', step = 0, size = 34 }: { dir?: Dir; 
         className="player-sprite"
         src={`${import.meta.env.BASE_URL}ui/player_${useDir}_${frame}.png`}
         alt=""
+        loading="lazy"
+        decoding="async"
         style={{ height: size, width: 'auto', transform: flip ? 'scaleX(-1)' : undefined }}
       />
     )
@@ -146,6 +149,8 @@ export function PlayerToken({ dir = 'down', step = 0, size = 34 }: { dir?: Dir; 
       className="player-sprite"
       src={`${import.meta.env.BASE_URL}ui/player.png`}
       alt=""
+      loading="lazy"
+      decoding="async"
       style={{ height: size, width: 'auto', transform }}
       onError={() => {
         playerSprite.legacyMissing = true
@@ -167,6 +172,8 @@ export function LeaderToken({ trainerId, defeated, size = 46 }: { trainerId: str
       className="leader-sprite"
       src={`${import.meta.env.BASE_URL}ui/${trainerId}.png`}
       alt=""
+      loading="lazy"
+      decoding="async"
       style={{ height: size, width: 'auto', opacity: defeated ? 0.5 : 1 }}
       onError={() => {
         leaderImgState[trainerId] = true
@@ -188,6 +195,8 @@ export function NpcToken({ kind, emoji, sprite, size = 46 }: { kind: string; emo
       className="leader-sprite"
       src={`${import.meta.env.BASE_URL}ui/${file}.png`}
       alt=""
+      loading="lazy"
+      decoding="async"
       style={{ height: size, width: 'auto' }}
       onError={() => {
         npcImgState[file] = true
@@ -207,6 +216,8 @@ export function BattlePortrait({ trainerId, size = 132 }: { trainerId: string; s
       className="battle-portrait-img"
       src={`${import.meta.env.BASE_URL}portraits/${trainerId}.png`}
       alt=""
+      loading="lazy"
+      decoding="async"
       style={{ height: size, width: 'auto' }}
       onError={() => {
         trainerPortraitState[trainerId] = true
@@ -232,6 +243,8 @@ export function PropToken({ kind, emoji, size = 30 }: { kind: string; emoji?: st
         className="prop-sprite"
         src={`${import.meta.env.BASE_URL}ui/prop_${kind}.png`}
         alt=""
+        loading="lazy"
+        decoding="async"
         style={{ width: size, height: size, objectFit: 'contain', objectPosition: '50% 100%' }}
         onError={() => {
           propImgState[kind] = true
@@ -255,6 +268,8 @@ export function ItemIcon({ kind, size = 26 }: { kind: string; size?: number }) {
       className="item-icon-img"
       src={`${import.meta.env.BASE_URL}ui/item_${kind}.png`}
       alt=""
+      loading="lazy"
+      decoding="async"
       style={{ width: size, height: size, objectFit: 'contain', display: 'inline-block', verticalAlign: 'middle' }}
       onError={() => {
         itemImgState[kind] = true
@@ -275,6 +290,8 @@ export function BadgeIcon({ slug, owned = true, size = 40 }: { slug: string; own
       className="badge-icon-img"
       src={`${import.meta.env.BASE_URL}ui/badge_${slug}.png`}
       alt=""
+      loading="lazy"
+      decoding="async"
       style={{ width: size, height: size, objectFit: 'contain', display: 'block', ...dim }}
       onError={() => { badgeImgState[slug] = true; setFailed(true) }}
     />
@@ -292,6 +309,8 @@ export function MedalIcon({ id, done = true, size = 40 }: { id: string; done?: b
       className="medal-icon-img"
       src={`${import.meta.env.BASE_URL}ui/medal_${id}.png`}
       alt=""
+      loading="lazy"
+      decoding="async"
       style={{ width: size, height: size, objectFit: 'contain', display: 'block', ...dim }}
       onError={() => { medalImgState[id] = true; setFailed(true) }}
     />
@@ -311,6 +330,8 @@ export function StatIcon({ kind, fallback = '?', size = 34 }: { kind: string; fa
       className="stat-icon-img"
       src={`${import.meta.env.BASE_URL}ui/stat_${kind}.png`}
       alt=""
+      loading="lazy"
+      decoding="async"
       style={{ width: size, height: size, objectFit: 'contain', display: 'block' }}
       onError={() => { statImgState[kind] = true; setFailed(true) }}
     />
@@ -328,6 +349,8 @@ export function MenuIcon({ kind, size = 28 }: { kind: string; size?: number }) {
       className="menu-icon-img"
       src={`${import.meta.env.BASE_URL}ui/menu_${kind}.png`}
       alt=""
+      loading="lazy"
+      decoding="async"
       style={{ width: size, height: size, objectFit: 'contain', display: 'inline-block', verticalAlign: 'middle' }}
       onError={() => { menuImgState[kind] = true; setFailed(true) }}
     />
@@ -343,6 +366,8 @@ export function EventIcon({ kind, size = 36 }: { kind: string; size?: number }) 
       className="event-icon-img"
       src={`${import.meta.env.BASE_URL}ui/event_${kind}.png`}
       alt=""
+      loading="lazy"
+      decoding="async"
       style={{ width: size, height: size, objectFit: 'contain', display: 'inline-block', verticalAlign: 'middle' }}
       onError={() => { eventImgState[kind] = true; setFailed(true) }}
     />
@@ -358,6 +383,8 @@ export function ChestToken({ open = false, size = 30 }: { open?: boolean; size?:
         className="chest-img"
         src={`${import.meta.env.BASE_URL}ui/${open ? 'chest_open' : 'chest'}.png`}
         alt=""
+        loading="lazy"
+        decoding="async"
         style={{ width: size, height: size, objectFit: 'contain', objectPosition: '50% 100%' }}
         onError={() => {
           chestImgState.missing = true
@@ -389,6 +416,8 @@ export function Building({ kind, w, tile, doorOpen = false }: { kind: string; w:
           className="building-img"
           src={`${import.meta.env.BASE_URL}ui/building_${kind}.png`}
           alt=""
+          loading="lazy"
+          decoding="async"
           style={{ width: widthPx, height: 'auto' }}
           onError={() => {
             buildingImgState[kind] = true
@@ -428,6 +457,8 @@ export function TitleLogo() {
       className="title-logo-img"
       src={`${import.meta.env.BASE_URL}ui/logo.png`}
       alt="錬金幻獣録 アルケミスト・オーダー"
+      loading="lazy"
+      decoding="async"
       onError={() => setFailed(true)}
     />
   )

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "node scripts/check_rng.mjs && node scripts/check_acquisition_coverage.mjs && tsc --noEmit && vite build",
+    "build": "node scripts/check_rng.mjs && node scripts/check_acquisition_coverage.mjs && tsc --noEmit && vite build && node scripts/check_asset_budget.mjs",
     "preview": "vite preview"
   },
   "dependencies": {

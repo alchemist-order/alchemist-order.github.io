@@ -129,6 +129,7 @@ export function resolveQuickBattle(state: GameState, config: BattleConfig): { st
       }
       const highlights = captureResearchHighlights(prevResearch, nextResearch, owned)
       next = applyCaptureChain(recordCapture({ ...next, items: { ...next.items, catch_charm: Math.max(0, (next.items.catch_charm ?? 0) - 1) }, collection: [...next.collection, owned] }, owned), owned.speciesId)
+      next = withFlag(next, 'ftue_first_catch')
       if (isTodayTarget && !(next.daily?.date === today() && next.daily.todayCatch)) {
         next = grantReward({ ...next, daily: { ...(next.daily ?? { date: today(), wild: 0, claimed: false }), date: today(), todayCatch: true } }, { money: 300, heal2: 1 })
         lines.push('今日の幻獣ボーナス: 300ゲルと上傷薬1個。')
