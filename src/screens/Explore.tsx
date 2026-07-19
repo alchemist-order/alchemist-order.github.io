@@ -20,7 +20,28 @@ interface Props {
   onTalk: (npc: Npc) => void
 }
 
-interface ExploreSummary { battles: number; catches: number; newDex: number; gold: number; chain?: string }
+interface ExploreSummary {
+  battles: number
+  catches: number
+  newDex: number
+  gold: number
+  chain?: string
+  captured: { id: string; name: string; type: string; talent: number; mutant?: boolean; newDex: boolean }[]
+  drops: { kind: string; label: string; amount: number }[]
+}
+
+function sessionSnapshot(s: GameState) {
+  return {
+    wins: s.wins,
+    caught: s.caught.length,
+    caughtIds: [...s.caught],
+    collection: s.collection.length,
+    money: s.money,
+    flasks: s.flasks,
+    items: { ...s.items },
+    mats: { ...(s.mats ?? { talentStone: 0, slotCharm: 0 }) },
+  }
+}
 
 const worldBadgeSlug: Record<string, string> = { forest: 'verdant', sea: 'tide', volcano: 'blaze', deep: 'alchemy' }
 
@@ -94,7 +115,7 @@ export default function Explore({ state, setState, onHome, onVisitMap, onStartBa
   const [pending, setPending] = useState<ExploreEvent | null>(null)
   const [expeditionLog, setExpeditionLog] = useState<string[]>([])
   const [summary, setSummary] = useState<ExploreSummary | null>(null)
-  const [sessionStart, setSessionStart] = useState(() => ({ wins: state.wins, caught: state.caught.length, collection: state.collection.length, money: state.money }))
+  const [sessionStart, setSessionStart] = useState(() => sessionSnapshot(state))
   const rng = useMemo(() => systemRng(), [worldId, nodeIndex])
   const mustChoose = eventsDone > 0 && eventsDone % 3 === 0 && !pending
   const bgUrl = `${import.meta.env.BASE_URL}${node.background}`
@@ -106,21 +127,38 @@ export default function Explore({ state, setState, onHome, onVisitMap, onStartBa
     setPending(null)
     setExpeditionLog([])
     setSummary(null)
-    setSessionStart({ wins: state.wins, caught: state.caught.length, collection: state.collection.length, money: state.money })
+    setSessionStart(sessionSnapshot(state))
   }, [worldId])
 
   useEffect(() => {
     onVisitMap(node.mapId)
   }, [node.mapId, onVisitMap])
   const buildSummary = (from: typeof sessionStart, to: GameState): ExploreSummary | null => {
+    const captured = to.collection.slice(from.collection).map((owned) => {
+      const sp = species(owned.speciesId)
+      return { id: owned.speciesId, name: sp.name, type: sp.type, talent: owned.talent ?? 0, mutant: owned.mutant, newDex: !from.caughtIds.includes(owned.speciesId) }
+    })
+    const drops: ExploreSummary['drops'] = []
+    const flaskDelta = Math.max(0, to.flasks - from.flasks)
+    if (flaskDelta) drops.push({ kind: 'flask', label: dropLabel('flask'), amount: flaskDelta })
+    for (const [kind, amount] of Object.entries(to.items)) {
+      const delta = Math.max(0, amount - (from.items[kind as keyof typeof from.items] ?? 0))
+      if (delta) drops.push({ kind, label: dropLabel(kind), amount: delta })
+    }
+    for (const [kind, amount] of Object.entries(to.mats ?? {})) {
+      const delta = Math.max(0, amount - (from.mats[kind as keyof typeof from.mats] ?? 0))
+      if (delta) drops.push({ kind, label: dropLabel(kind), amount: delta })
+    }
     const next: ExploreSummary = {
       battles: Math.max(0, to.wins - from.wins),
       catches: Math.max(0, to.collection.length - from.collection),
       newDex: Math.max(0, to.caught.length - from.caught),
       gold: Math.max(0, to.money - from.money),
-      chain: to.chain ? `${speciesName(to.chain.speciesId)} ×${to.chain.count}` : undefined,
+      chain: to.chain ? `${speciesName(to.chain.speciesId)} ?${to.chain.count}` : undefined,
+      captured,
+      drops,
     }
-    return next.battles || next.catches || next.newDex || next.gold ? next : null
+    return next.battles || next.catches || next.newDex || next.gold || next.drops.length ? next : null
   }
 
   const speciesName = (id: string): string => species(id).name
@@ -389,9 +427,32 @@ export default function Explore({ state, setState, onHome, onVisitMap, onStartBa
             <div className="item-row"><span className="item-ico"><EventIcon kind="battle" size={32} /></span><div className="grow"><div className="item-name">戦闘 {summary.battles}勝</div></div></div>
             <div className="item-row"><span className="item-ico"><StatIcon kind="dex" size={32} /></span><div className="grow"><div className="item-name">捕獲 {summary.catches}体 / 初登録 {summary.newDex}</div></div></div>
             <div className="item-row"><span className="item-ico"><ItemIcon kind="money" size={32} /></span><div className="grow"><div className="item-name">+{summary.gold}ゲル</div></div></div>
+            {summary.captured.length > 0 && (
+              <div className="result-section">
+                <h4>捕まえた幻獣</h4>
+                <div className="result-capture-grid">
+                  {summary.captured.slice(0, 6).map((m, i) => (
+                    <div className="result-capture-card" key={`${m.id}-${i}`}>
+                      <Sprite id={m.id} type={m.type} size={50} mutant={m.mutant} />
+                      <span><b>{m.name}</b><em>{m.newDex ? '初登録' : '捕獲'}・才能{m.talent}</em></span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+            {summary.drops.length > 0 && (
+              <div className="result-section">
+                <h4>入手した道具</h4>
+                <div className="result-drop-list">
+                  {summary.drops.slice(0, 8).map((d) => (
+                    <span className="research-chip" key={d.kind}><ItemIcon kind={d.kind} size={22} /> {d.label}×{d.amount}</span>
+                  ))}
+                </div>
+              </div>
+            )}
             {summary.chain && <div className="research-chip">チェーン継続中: {summary.chain}</div>}
             <div className="home-hero-actions" style={{ marginTop: 12 }}>
-              <button className="home-primary-cta" onClick={() => { setSummary(null); setSessionStart({ wins: state.wins, caught: state.caught.length, collection: state.collection.length, money: state.money }); }}>もう一度潜る</button>
+              <button className="home-primary-cta" onClick={() => { setSummary(null); setSessionStart(sessionSnapshot(state)); }}>もう一度潜る</button>
               <button className="home-secondary-cta" onClick={() => { setSummary(null); setPending(null); setEventsDone(0); onHome(); }}>拠点へ戻る</button>
             </div>
           </div>
